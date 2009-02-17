@@ -4,6 +4,9 @@
 
   * [http://www.google.com/coop/cse?cx=000451457997241263125:jx8g3wcd_uk Parrot Search - A useful custom search engine.]
 
+== Docs ==
+
+  * [http://www.gnu.org/software/octave/doc/interpreter/ Octave Documentation]
 
 == Articles ==
 
