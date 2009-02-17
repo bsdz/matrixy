@@ -8,6 +8,10 @@
 
   * [http://www.gnu.org/software/octave/doc/interpreter/ Octave Documentation]
 
+== Useful Tests ==
+
+  * [http://hg.savannah.gnu.org/hgweb/octave/file/949708f930d0/test/ Octave Test Suite]
+
 == Articles ==
 
 Some interesting articles..
