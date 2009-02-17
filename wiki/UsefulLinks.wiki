@@ -1,11 +1,11 @@
 #summary A list of useful links for this project.
 
-= Links =
+== Links ==
 
   * [http://www.google.com/coop/cse?cx=000451457997241263125:jx8g3wcd_uk Parrot Search - A useful custom search engine.]
 
 
-= Articles =
+== Articles ==
 
 Some interesting articles..
    
