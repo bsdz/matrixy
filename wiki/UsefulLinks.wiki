@@ -1,0 +1,13 @@
+#summary A list of useful links for this project.
+
+= Links =
+
+  * [http://www.google.com/coop/cse?cx=000451457997241263125:jx8g3wcd_uk Parrot Search - A useful custom search engine.]
+
+
+= Articles =
+
+Some interesting articles..
+   
+  * [http://wknight8111.blogspot.com/2008/02/matlab-wishlist.html MatLab Wishlist]
+  * [http://wknight8111.blogspot.com/2008/05/matlab-wishlist-redux.html MatLab Wishlist Redux]
