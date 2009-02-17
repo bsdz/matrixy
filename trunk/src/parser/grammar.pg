@@ -1,0 +1,239 @@
+# $Id$
+
+=begin overview
+
+This is the grammar for Matrixy written as a sequence of Perl 6 rules.
+
+=end overview
+
+grammar Matrixy::Grammar is PCT::Grammar;
+
+rule TOP {
+    {*}                                      #= open
+    <stat_or_def>*
+    [ $ || <.panic: 'Syntax error'> ]
+    {*}                                      #= close
+}
+
+rule stat_or_def {
+    | <statement> {*}                        #= statement
+    | <func_def> {*}                         #= func_def
+}
+
+rule statement {
+    | <if_statement> {*}                     #= if_statement
+    | <while_statement> {*}                  #= while_statement
+    | <for_statement> {*}                    #= for_statement
+    | <try_statement> {*}                    #= try_statement
+    | <throw_statement> {*}                  #= throw_statement
+    | <return_statement> ';' {*}              #= return_statement
+    | <sub_call> ';' {*}                     #= sub_call
+    | <assignment> ';' {*}                   #= assignment
+#    | <anon_func_assignment> ';' {*}         #= anon_func_assignment
+#    | <variable_declaration> ';' {*}         #= variable_declaration
+    | <do_block> {*}                         #= do_block
+}
+
+rule if_statement {
+    'if' <expression> <block> ['else' <else=block>]? ['endif'|'end']>>
+    {*}
+}
+
+rule while_statement {
+    'while' <expression> 'do' <block> 'end'
+    {*}
+}
+
+rule for_statement {
+    'for' <for_init> ',' <expression> [',' <step=expression>]? 'do'
+    <statement>*
+    'end'
+    {*}
+}
+
+rule for_init {
+    'var' <identifier> '=' <expression>
+    {*}
+}
+
+rule try_statement {
+    'try' <try=block> 'catch' <exception> <catch=block> 'end'
+    {*}
+}
+
+rule exception {
+    <identifier>
+    {*}
+}
+
+rule throw_statement {
+    'throw' <expression>
+    {*}
+}
+
+rule return_statement {
+    'return' <expression>
+    {*}
+}
+
+rule block {
+    {*}                                #= open
+    <statement>*
+    {*}                                #= close
+}
+
+rule do_block {
+    ['do'|'zz'] <block> 'end'
+    {*}
+}
+
+rule assignment {
+    <primary> '=' <expression>
+    {*}
+}
+
+# rule anon_func_assignment {
+    # <primary> '=' <anon_func_expression>
+    # {*}
+# }
+
+
+# note: the order of endfunction|end are important here!
+#
+rule func_def {
+    <func_sig>
+    <statement>*
+    ['endfunction'|'end']>>
+    {*}
+}
+
+rule func_sig {
+    'function' [<return_identifier> '=']? <identifier> 
+        ['(' [ <identifier> [',' <identifier>]* ]? ')']?
+    {*}
+}
+
+token return_identifier {
+    <!keyword> <ident>
+    {*}
+}
+
+# rule anon_func_expression {
+    # '@' '(' [ <identifier> [',' <identifier>]* ]? ')' 
+    # <expression> 
+    # {*}
+# }
+
+rule variable_declaration {
+    <identifier> ['=' <expression>]?
+    {*}
+}
+
+rule sub_call {
+    <primary> <arguments>
+    {*}
+}
+
+rule arguments {
+    '(' [ <expression> [',' <expression>]* ]? ')'
+    {*}
+}
+
+rule primary {
+    <identifier> <postfix_expression>*
+    {*}
+}
+
+rule postfix_expression {
+    | <key> {*}                      #= key
+    | <member> {*}                   #= member
+    | <index> {*}                    #= index
+}
+
+rule key {
+    '{' <expression> '}'
+    {*}
+}
+
+rule member {
+    '.' <identifier>
+    {*}
+}
+
+rule index {
+    '[' <expression> ']'
+    {*}
+}
+
+rule term {
+   | <float_constant> {*}            #= float_constant
+   | <integer_constant> {*}          #= integer_constant
+   | <string_constant> {*}           #= string_constant
+   | <hash_constructor> {*}          #= hash_constructor
+   | <array_constructor> {*}         #= array_constructor
+   | <sub_call> {*}                  #= sub_call
+   | <primary> {*}                   #= primary
+   | '(' <expression> ')' {*}        #= expression
+}
+
+rule hash_constructor {
+    '{' [ <named_field> [',' <named_field>]* ]? '}'
+    {*}
+}
+
+rule named_field {
+    <string_constant> '=>' <expression>
+    {*}
+}
+
+rule array_constructor {
+    '[' [ <expression> [',' <expression>]* ]? ']'
+    {*}
+}
+
+token identifier {
+    <!keyword> <ident>
+    {*}
+}
+
+token integer_constant {
+    \d+
+    {*}
+}
+
+token float_constant {
+    [
+    | \d+ '.' \d*
+    | \d* '.' \d+
+    ]
+    {*}
+}
+
+token string_constant {
+    \" <string_literal: '"'> \"
+    {*}
+}
+
+token keyword {
+    ['function'|'endfunction'|'return'
+    |'global'|'persistent'
+    |'if'|'elseif'|'else'|'endif'
+    |'and'|'not'|'or'
+    |'try'|'catch'|'throw'
+    |'do'|'until'
+    |'while'|'endwhile'
+    |'for'|'endfor'
+    |'break'|'continue'
+    |'switch'|'case'|'otherwise'|'endswitch'
+    |'end']>>
+     
+}
+
+rule expression is optable { ... }
+
+##  this <ws> rule treats # as "comment to eol"
+##  you may want to replace it with something appropriate
+token ws {
+    <!ww>
+    [ '#' \N* \n? | \s+ ]*
+}
