@@ -1,21 +1,14 @@
-=head1 Octave on Parrot
+=head1 Matrixy
 
-=head2 Introduction
+=head2 INTRODUCTION
 
 This is a port of the MATLAB/Octave programming language to
 Parrot. See the ROADMAP file for more information on the 
 status of this project, and what else needs to be done.
 
-=head2 About
+=head2 ABOUT
 
-This project is the first of it's kind for me, I have never
-implemented a complete programming language compiler before.
-I have done some work with Parse::RecDescent before so I'm 
-not completely clueless, however. I am implementing this 
-compiler incrementally, in small baby steps. Again, see the
-ROADMAP file for my long-term goals for this. 
-
-I have two primary goals for this: 
+Primary goals are: 
 
 =over 4
 
@@ -28,7 +21,7 @@ programming languages which target Parrot.
 
 =back
 
-=head2 Implementation
+=head2 IMPLEMENTATION
 
 This project is broken into three primary components:
 
@@ -50,62 +43,31 @@ or Octave functions, since they will be available to the
 HLL. 
 
 =item* the final component is the set of various PMC classes
-that make up the data objects in Octave. The "master" super
-class is the "OctaveData" class. This class represents an 
-instatiation of a generic data object. From here, data can
+that make up the data objects in Matrixy. The "master" super
+class is the "MatrixyData" class. This class represents an 
+instantiation of a generic data object. From here, data can
 be subclassed into "Matrix", "Cell Array", or other types
 of values, as necessary.
 
 =back
 
-=head2 Building Octave
+=head2 BUILDING
 
-The Makefile doesn't contain an accurate dependency tree for
-this project. That means that if you make changes to the 
-builtins or the classes, you need to C<make clean> before 
-you can C<make>. I will fix this eventually, but it's not
-high on my todo list. 
+    perl Configure.pl
+    nmake test
 
-=head2 Testing Octave
+=head2 TODO
 
-I don't currently have a test suite of any kind for this. I
-will try to have one available eventually. If there are any
-people out there proficient in making test harnesses for
-something like this, let me know.
+    * Parser
+    * Standard Builtins
+    * Test against Octave Test Suite.
 
-=head2 To Do
+=head2 BUGS
 
-There are lots of things to do, and since I have a ROADMAP
-file already, I won't enumerate them all here. However, I 
-will openly admit that the syntax of this language, so far,
-does not properly match that of MATLAB/Octave, and many of
-the basic features of the language are missing. Again, I am 
-working on this incrementally, and I expect things to get
-better on a regular basis. 
+Lots!
 
-One thing that I know I need to do is improve the
-documentation for this project. I will work on that,
-although I am hesitant to document files which are changing 
-rapidly.
+=head2 CONTACT
 
-=head2 Bugs
-
-Nothing works, everything is a bug. Of this, I am aware. 
-What I should do is list, in this section, the few things 
-that I have done right.  I won't do that, mostly because I 
-am not sure that I've gotten anything right yet.
-
-At the moment, I do all my development and testing on a 
-WinXP platform. This is why I've chosen to name my files
-"ROADMAP.pod" and "README.pod" and so forth instead of the
-more-common "ROADMAP" and "README". I am not, generally,
-interested in changing this. 
-
-=head2 Contact Me
-
-Comments, questions, concerns? Have something you want to 
-say about this project, or (better yet) have something that 
-you want to contribute? Feel free to send me an email at
-wknight8111@gmail.com. 
+Contact Project Owners at http://code.google.com/p/matrixy/. 
 
 =end

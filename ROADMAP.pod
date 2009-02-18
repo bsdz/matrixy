@@ -1,6 +1,6 @@
-=head1 Roadmap
+=head1 ROADMAP
 
-=head2 Introduction
+=head2 INTRODUCTION
 
 There is a long way to go between the current implementation 
 and a final robust one. The final version should be able to
