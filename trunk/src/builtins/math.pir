@@ -1,7 +1,8 @@
+=head1 NAME
 
-=head1 Mathematical Builtins
+F<src/builtins/math.pir> - built-in math functions
 
-=head2 About
+=head1 DESCRIPTION
 
 The functions in this file, F<src/builtins/math.pir> are
 functions for performing basic mathematical computations. 
@@ -13,13 +14,15 @@ or should be written somewhere else and included later.
 Eventually, most of the functions here will be moved into 
 the appropriate class files (Matrix.pir, Scalar.pir, etc).
 
-=head2 Functions
+=head1 Functions
+
+=over 4
 
 =cut
 
-.namespace
+.namespace []
 
-=head3 sum(PMC args :slurpy)
+=item sum(PMC args :slurpy)
 
 this is a simple proof-of-concept function that returns
 the sum of a list of numbers. I don't think this is even
@@ -42,7 +45,7 @@ eventually.
     .return($N0)
 .end
 
-=head3 pi()
+=item pi()
 
 Returns the value of PI to as many decimal places as I can
 remember off the top of my head.
@@ -53,60 +56,3 @@ remember off the top of my head.
 	.return(3.1415926535898)
 .end
 
-.sub 'infix:+'
-.end
-
-.sub 'infix:-'
-.end
-
-.sub 'prefix:-'
-.end
-
-.sub 'infix:*'
-.end
-
-.sub 'infix:/'
-.end
-
-.sub 'infix:<'
-    .param pmc a
-    .param pmc b
-    islt $I0, a, b
-    .return ($I0)
-.end
-
-
-.sub 'infix:<='
-    .param pmc a
-    .param pmc b
-    isle $I0, a, b
-    .return ($I0)
-.end
-
-.sub 'infix:>'
-    .param pmc a
-    .param pmc b
-    isgt $I0, a, b
-    .return ($I0)
-.end
-
-.sub 'infix:>='
-    .param pmc a
-    .param pmc b
-    isge $I0, a, b
-    .return ($I0)
-.end
-
-.sub 'infix:=='
-    .param pmc a
-    .param pmc b
-    iseq $I0, a, b
-    .return ($I0)
-.end
-
-.sub 'infix:!='
-    .param pmc a
-    .param pmc b
-    isne $I0, a, b
-    .return ($I0)
-.end

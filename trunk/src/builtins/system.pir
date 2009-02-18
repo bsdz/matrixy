@@ -1,19 +1,22 @@
-# $Id$
+=head1 NAME
 
-=head1 System Functions
 
-=head2 About
+F<src/builtins/system.pir> - built-in system functions
+
+=head1 DESCRIPTION
 
 These functions interact with the system in some way, and
 do secret system stuff.
 
-=head2 Functions
+=head1 Functions
+
+=over 4
 
 =cut
 
-.namespace
+.namespace []
 
-=head3 _system_call
+=item _system_call
 
 This function handles the MATLAB/Octave behavior where
 prefixing a line with '!' passes that entire line to the
@@ -32,7 +35,7 @@ Will cause the word "hello" to be printed to the terminal.
     .return (1)
 .end
 
-=head3 feval(STRING name, PMC args :slurpy)
+=item feval(STRING name, PMC args :slurpy)
 
 Calls the function with name C<name> and arguments C<args>. 
 
@@ -50,36 +53,19 @@ It will, eventually.
 	.return $P0(args :flat)
 .end
 
-=head3 eval(STRING line)
 
-Evaluates the line of MATLAB/Octave code given by C<line>. 
-Will return the value of that statement or expression, if
-any. 
+=item quit()
 
-Currently, this function is unimplemented.
+Exits the program. 
 
 =cut
 
-.sub 'eval'
-	.param string eval_s
-	'error'("'eval' not implemented")
-	.return(1)
-.end
-
-=head3 end()
-
-quits the program. I don't think this is the right name for
-it.
-
-=cut
-
-.sub 'end'
+.sub 'quit'
 	end
 .end
 
-# Local Variables:
-#   mode: pir
-#   fill-column: 100
-# End:
-# vim: expandtab shiftwidth=4 ft=pir:
+.sub 'exit'
+	end
+.end
+
 
