@@ -1,4 +1,4 @@
-.namespace
+.namespace []
 
 .sub 'initlist' :anon :load :init
     subclass $P0, "ResizablePMCArray", "List"
@@ -16,7 +16,7 @@
     unshift self, obj
 .end
 
-.namespace
+.namespace []
 
 .sub '!array'
     .param pmc fields :slurpy

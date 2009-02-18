@@ -1,8 +1,8 @@
 
-.namespace ['OctaveData']
+.namespace ['MatrixyData']
 
 .sub 'onload' :anon :load :init
-	newclass $P0, "OctaveData"
+	newclass $P0, "MatrixyData"
 	addattribute $P0, 'name'
 	addattribute $P0, 'type'
 	addattribute $P0, 'data'

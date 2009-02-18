@@ -1,7 +1,7 @@
 .namespace ['Scalar']
 
 .sub 'onload' :anon :load :init
-	$P0 = subclass 'OctaveData', 'Matrix'
+	$P0 = subclass 'MatrixyData', 'Matrix'
 .end
 
 .sub 'new':vtable :method

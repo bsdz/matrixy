@@ -2,7 +2,7 @@
 .namespace ['Matrix']
 
 #Class hierarchy:
-#   OctaveData (Do I need this
+#   MatrixyData (Do I need this
 #       Array2D
 #           Numerical Matrix (strings are character vectors, and can be used in math)
 #           Cell (non-numerical matrix which contains pmcs and does not concatinate)
@@ -20,7 +20,7 @@
 #   Update matrices to use $N instead of $I for math
 
 .sub 'onload' :anon :load :init
-	$P0 = subclass 'OctaveData', 'Matrix'
+	$P0 = subclass 'MatrixyData', 'Matrix'
 	addattribute $P0, 'size_x'
 	addattribute $P0, 'size_y'
     addattribute $P0, 'numerical'
