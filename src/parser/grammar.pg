@@ -83,7 +83,7 @@ rule block {
 }
 
 rule do_block {
-    ['do'|'zz'] <block> 'end'
+    'do' <block> 'end'
     {*}
 }
 
@@ -210,7 +210,7 @@ token float_constant {
 }
 
 token string_constant {
-    \" <string_literal: '"'> \"
+    [\" <string_literal: '"'> \" | \' <string_literal: '\''> \']
     {*}
 }
 
@@ -235,5 +235,5 @@ rule expression is optable { ... }
 ##  you may want to replace it with something appropriate
 token ws {
     <!ww>
-    [ '#' \N* \n? | \s+ ]*
+    [ ['#'|'%'] \N* \n? | \s+ ]*
 }
