@@ -1,0 +1,97 @@
+=head1 Roadmap
+
+=head2 Introduction
+
+There is a long way to go between the current implementation 
+and a final robust one. The final version should be able to
+emulate the vast majority of MATLAB/Octave language syntax,
+and should also try to emulate some of the basic library 
+functions thereof. Notice that some "standard" features of
+MATLAB/Octave won't be available here, at least not 
+immediately: Plots and graphs, user interfaces, toolboxes,
+etc. These kinds of things might be hacked together later, 
+but probably not.
+
+=head2 Future Versions
+
+Version 1.0 will support most of the basic language syntax.
+Versions beyond that will try to implement some additional
+features. Some of these features will be the missing 
+"standard" features that I've already listed, and some will
+be features from my personal "wishlist" that I've been 
+wanting for a long time now. Here, abbreviated and horribly
+inaccurate, is my general roadmap for this project:
+
+Version 0.1: (current) We have basic support for single-
+value subroutines, basic control structures, basic scalar 
+variables. I also have some ideosyncratic features like 
+using ';' to suppress printing line results, using '!' to
+make a system call, etc. I've implemented basic functions
+like 'disp', 'error', 'exit', and 'feval', all for scalar
+arguments only.
+
+Version 0.2: Implement matrices. I have a lot of crazy ideas
+about how to do this. Along with matrices, I'll probably be 
+able to have functions with multiple return values. 
+Initially, matrices may use 'x[index]' format instead of the
+proper 'x(index)' one. 
+
+Version 0.3: Write some of the standard matrix manipulation
+functions, or basic versions thereof. Transpose,
+determinant, size, addition, multiplication, etc. 
+
+Version 0.4: Implement function/file look-up. If I am 
+searching for function "foo", look in file "foo.m", etc.
+
+Version 0.5: Implement cell arrays
+
+Version 0.6: Write more-advanced function features: nargin,
+nargout, varargin, varargout, return. Implement matrix-
+ready functions that iterate over matrix values
+
+Version 0.7: Implement matrix and cell array slicing:
+'x(1:)', and similar. implement matrix and cell array 
+concatination '[[1 2 3], [4 5 6]] = [1 2 3 4 5 6]'. Treat
+all scalars as matrices.
+
+Version 0.8: Implement basic MATLAB classes and data 
+structures. Implement a dedicated matrix PMC (probably in C)
+implement sparse matrices (may be part of the same pmc). 
+
+Version 0.9: Implement most of the standard library of 
+functions, including error-stubs for common functions which 
+cannot be implemented (graphics, etc). Implement file I/O,
+and possibly data export to graphic utilities (SVG, 
+Graphviz, etc). 
+
+Version 1.0: Everything should be working, test. Write a 
+test suite, if I haven't already. Ensure all syntax matches 
+MATLAB/Octave syntax as well as possible. Work on 
+presentation, formatting, console I/O, data file formats.
+
+=head2 Wishlist
+
+The roadmap above brings me up to Version 1.0, which is a 
+stable clone of MATLAB/Octave. From here, there are a number
+of wishlist features that I want to add. These features 
+might be made available through a command-line switch, an 
+in-code pragma or a separate executable. These features are,
+in no particular order:
+
+=over 4
+
+=item* Better, more robust support for OO, classes, 
+namespaces.
+
+=item* Multithreading
+
+=item* disambiguous matrix/function syntax. Use '[]' for 
+matrix indices, use '()' for function arguments.
+
+=item* Allow inlining code from other languages.
+
+=item* Implement a vectorized foreach loop. 
+
+=back
+
+=end
