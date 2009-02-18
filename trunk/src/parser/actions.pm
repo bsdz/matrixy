@@ -2,30 +2,35 @@
 
 =begin comments
 
-Actions file for the Octave Grammar
+Matrixy::Grammar::Actions - ast transformations for Matrixy
+
+This file contains the methods that are used by the parse grammar
+to build the PAST representation of an Matrixy program.
+Each method below corresponds to a rule in F<src/parser/grammar.pg>,
+and is invoked at the point where C<{*}> appears in the rule,
+with the current match object as the first argument.  If the
+line containing C<{*}> also has a C<#= key> comment, then the
+value of the comment is passed as the second argument to the method.
 
 =end comments
 
-=cut
-
-#TODO:
-#   they've updated the way scope blocks are handled, and how variables
-#   are scoped. Remove all references to @?BLOCK and $?BLOCK and $?INFUNC
-#   Remove stuff that doesn't belong
-#   Refactor things to be prettier
-#   Get matrices working
-
-class Octave::Grammar::Actions;
+class Matrixy::Grammar::Actions;
 
 method TOP($/, $key) {
-    our @?BLOCK;	#scope stack
-    our $?BLOCK;	#current scope pointer
+    our @?BLOCK;
+    our $?BLOCK;
 
     if $key eq 'open' {
+        ## create the top-level block here; any top-level variable
+        ## declarations are entered into this block's symbol table.
+        ## Note that TOP *must* deliver a PAST::Block with blocktype
+        ## "declaration".
         $?BLOCK := PAST::Block.new( :blocktype('declaration'), :node($/) );
+        $?BLOCK.symbol_defaults( :scope('package') );
         @?BLOCK.unshift($?BLOCK);
     }
     else {
+        ## retrieve the block created in the "if" section in this method.
         my $past := @?BLOCK.shift();
 
         for $<stat_or_def> {
@@ -39,74 +44,8 @@ method stat_or_def($/, $key) {
     make $( $/{$key} );
 }
 
-method system_call($/) {
-	my $string := PAST::Val.new( 
-		:value( ~$<bare_words> ), 
-		:returns('String'), 
-		:node($/) 
-	);
-	my $past := PAST::Op.new( 
-		:name("_system_call"),
-		:pasttype('call'),
-		:node($/)
-	);
-	$past.push($string);
-	make $past;
-}
-
-#TODO:
-#   All this needs to get fixed. To initialize, create a new  OctaveData
-#   object with name ~$<ident>.
-
-method identifier($/) {
-    our @?BLOCK;
-	our $?INFUNC;
-	
-    my $name  := ~$<ident>;
-    my $scope := 'package';
-	if $?INFUNC == 1 {
-		$scope := 'lexical';
-	}
-
-    for @?BLOCK {
-        if $_.symbol( $name ) {
-            $scope := 'lexical';
-        }
-    }
-
-    make PAST::Var.new( :name($name),
-                        :scope($scope),
-                        :viviself('OctaveData'),
-                        :node($/) );
-}
-
 method statement($/, $key) {
-    
-	#TODO: If it's an expression or a sub_call, I want to assign the 
-	#  result value to "ans", regardless of whether i terminate
-	#  the expression or not. I may need to declare ans as a global
-	
-	my $past;
-	if $key eq 'assignment' {
-		my $node := $( $<assignment> );
-		my $term := PAST::Val.new( :value(~$<statement_terminator>), :returns('String'));
-		$past := PAST::Op.new(:pasttype('inline'));
-		$past.inline("_print_result_a(%0, %1, %2)");
-		$past.unshift($term);
-		$past.unshift($node);
-		my $name := PAST::Val.new( :value( ~$node.name() ), :returns('String'));
-		$past.unshift($name);
-	} elsif $key eq 'expression' {
-		$past := PAST::Op.new(:pasttype('inline'));
-		my $term := PAST::Val.new( :value(~$<statement_terminator>), :returns('String'));
-		$past.inline("_print_result_e(%0, %1)");
-		$past.unshift($term);
-		$past.unshift($( $<expression> ));
-		#Assign the return value to global variable "ans"
-	} else {
-		$past := $( $/{$key} );
-	}
-	make $past;
+    make $( $/{$key} );
 }
 
 method if_statement($/) {
@@ -127,21 +66,44 @@ method while_statement($/) {
     make PAST::Op.new( $cond, $body, :pasttype('while'), :node($/) );
 }
 
-#TODO: 
-#   Fix FOR loops to use the right syntax, and to operate correctly.
-
+## for var <ident> = <expr1> , <expr2> do <block> end
+##
+## translates to:
+## do
+##   var <ident> = <expr1>
+##   while <ident> <= <expr2> do
+##     <block>
+##     <ident> = <ident> + 1
+##   end
+## end
+##
 method for_statement($/) {
     our $?BLOCK;
     our @?BLOCK;
 
     my $init := $( $<for_init> );
+
+    ## cache the name of the loop variable
     my $itername := $init.name();
+
+    ## create another PAST::Var node for the loop variable, this one is used
+    ## for the loop condition; the node in $init has a isdecl(1) flag and a
+    ## viviself object; $init represents the declaration of the loop var,
+    ## $iter represents the loop variable in normal usage.
     my $iter := PAST::Var.new( :name($itername), :scope('lexical'), :node($/) );
+
+    ## the body of the loop consists of the statements written by the user and
+    ## the increment instruction of the loop iterator.
+
     my $body := @?BLOCK.shift();
     $?BLOCK  := @?BLOCK[0];
     for $<statement> {
         $body.push($($_));
     }
+
+    ## if a step was specified, use that; otherwise, use the default of +1.
+    ## Note that a negative step will NOT work (unless YOU fix that :-) ).
+    ##
     my $step;
     if $<step> {
         my $stepsize := $( $<step>[0] );
@@ -151,53 +113,69 @@ method for_statement($/) {
         $step := PAST::Op.new( $iter, :pirop('inc'), :node($/) );
     }
     $body.push($step);
+
+    ## while loop iterator <= end-expression
     my $cond := PAST::Op.new( $iter, $( $<expression> ), :name('infix:<=') );
     my $loop := PAST::Op.new( $cond, $body, :pasttype('while'), :node($/) );
+
     make PAST::Stmts.new( $init, $loop, :node($/) );
 }
-
-#TODO: 
-#   This needs to be updated
 
 method for_init($/) {
     our $?BLOCK;
     our @?BLOCK;
-    
+
+    ## create a new scope here, so that we can add the loop variable
+    ## to this block here, which is convenient.
     $?BLOCK := PAST::Block.new( :blocktype('immediate'), :node($/) );
     @?BLOCK.unshift($?BLOCK);
+
     my $iter := $( $<identifier> );
+    ## set a flag that this identifier is being declared
     $iter.isdecl(1);
     $iter.scope('lexical');
+    ## the identifier is initialized with this expression
     $iter.viviself( $( $<expression> ) );
+
+    ## enter the loop variable as a local into the symbol table.
     $?BLOCK.symbol($iter.name(), :scope('lexical'));
+
     make $iter;
 }
 
 method try_statement($/) {
+    ## get the try block
     my $try := $( $<try> );
+
+    ## create a new PAST::Stmts node for the catch block;
+    ## note that no PAST::Block is created, as this currently
+    ## has problems with the exception object. For now this will do.
     my $catch := PAST::Stmts.new( :node($/) );
-    for $<statement> {
-        $catch.push($($_));
-    }
+    $catch.push( $( $<catch> ) );
+
+    ## get the exception identifier;
     my $exc := $( $<exception> );
     $exc.isdecl(1);
     $exc.scope('lexical');
-    my $pir := "    .get_results (%r, $S0)\n"
+    $exc.viviself( PAST::Val.new( :value(0) ) );
+
+    ## generate instruction to retrieve the exception objct (and the exception message,
+    ## that is passed automatically in PIR, this is stored into $S0 (but not used).
+    my $pir := "    .get_results (%r)\n"
              ~ "    store_lex '" ~ $exc.name() ~ "', %r";
 
     $catch.unshift( PAST::Op.new( :inline($pir), :node($/) ) );
+    ## do the declaration of the exception object as a lexical here:
     $catch.unshift( $exc );
 
     make PAST::Op.new( $try, $catch, :pasttype('try'), :node($/) );
 }
 
-#TODO:
-#   Redo to avoid using $?BLOCK and whatever. 
-#   Parrot exceptions have been redone recently, make sure this still works.
-
 method exception($/) {
     our $?BLOCK;
+
     my $exc := $( $<identifier> );
+    ## the exception identifier is local to the exception handler
     $?BLOCK.symbol($exc.name(), :scope('lexical'));
     make $exc;
 }
@@ -206,19 +184,17 @@ method throw_statement($/) {
     make PAST::Op.new( $( $<expression> ), :pirop('throw'), :node($/) );
 }
 
-#TODO: 
-#   I might not even need a "block" parser token type. Remove if not needed
-#   I don't think Octave has block-level scope
-
 method block($/, $key) {
-    our $?BLOCK; 
-    our @?BLOCK; 
+    our $?BLOCK; ## the current block
+    our @?BLOCK; ## the scope stack
 
     if $key eq 'open' {
         $?BLOCK := PAST::Block.new( :blocktype('immediate'), :node($/) );
         @?BLOCK.unshift($?BLOCK);
     }
     else {
+        ## retrieve the current block, remove it from the scope stack
+        ## and restore the "current" block.
         my $past := @?BLOCK.shift();
         $?BLOCK  := @?BLOCK[0];
 
@@ -229,9 +205,11 @@ method block($/, $key) {
     }
 }
 
-#TODO:
-#   Octave doesnt have do blocks or do-while blocks (that I know of)
-#   Remove this
+method return_statement($/) {
+    my $expr := $( $<expression> );
+    my $past := PAST::Op.new( $expr, :pasttype('return'), :node($/) );
+    make $past
+}
 
 method do_block($/) {
     make $( $<block> );
@@ -241,74 +219,156 @@ method assignment($/) {
     my $rhs := $( $<expression> );
     my $lhs := $( $<primary> );
     $lhs.lvalue(1);
-    make PAST::Op.new( $lhs, $rhs, :pasttype('bind'), :name($lhs.name()), :node($/) );
+    make PAST::Op.new( $lhs, $rhs, :pasttype('bind'), :node($/) );
 }
 
-#TODO:
-#   Redo this, remove @?BLOCK, $?BLOCK, and $?INFUNC
-#   Update return value type to use OctaveData class instead of being a scalar value
-#   Make sure parameters are OctaveData
-
-method sub_definition($/, $key) {
-    our @?BLOCK;
+method variable_declaration($/) {
     our $?BLOCK;
-	our $?INFUNC;
-	if $key eq 'open' {
-		$?INFUNC := 1;
-	} else {
-		
-		$?INFUNC := 0;
-		my $past := $( $<parameters> );
-		my $name := $( $<name> );
-		my $rnode := PAST::Op.new(:pasttype('pirop'), :pirop('return'));
-		for $<identifier> {
-			my $retval := PAST::Var.new( :name($($_).name()),
-										 :scope('lexical'),
-										 :viviself('Undef'),
-										 :isdecl(1),
-										 :lvalue(1)
-									   );
-			$past.push($retval);			
-			$past.symbol($retval.name(), :scope('lexical'));
-			my $ret := PAST::Var.new( :scope('lexical'), :name($retval.name()));
-			$rnode.push($ret);
-		}
-		$past.name( $name.name() );
-		for $<statement> {
-			$past.push($($_));
-		}
-		$past.push($rnode);
-		@?BLOCK.shift();
-		$?BLOCK := @?BLOCK[0];
-		make $past;
-	}
+
+    my $past := $( $<identifier> );
+    $past.isdecl(1);
+    $past.scope('lexical');
+
+    ## if there's an initialization value, use it to viviself the variable.
+    if $<expression> {
+        $past.viviself( $( $<expression>[0] ) );
+    }
+    else { ## otherwise initialize to undef.
+        $past.viviself( 'Undef' );
+    }
+
+    ## cache this identifier's name
+    my $name := $past.name();
+
+    ## if the symbol is already declared, emit an error. Otherwise,
+    ## enter it into the current block's symbol table.
+    if $?BLOCK.symbol($name) {
+        $/.panic("Error: symbol " ~ $name ~ " was already defined\n");
+    }
+    else {
+        $?BLOCK.symbol($name, :scope('lexical'));
+    }
+    make $past;
 }
 
-#TODO:
-#   Remove @?BLOCK and $?BLOCK
-#   Ensure parameters are OctaveData
 
-method parameters($/) {
+method func_def($/) {
+    our @?BLOCK;
+    our $?BLOCK;
+    
+    our @RETID;
+    
+    my $past := $( $<func_sig> );
+
+    for $<statement> {
+        $past.push($($_));
+    }
+    
+    # add a return statement if needed
+    #
+    if @RETID {
+        my $var := PAST::Var.new( :name(@RETID[0].name()), :viviself('Undef') );
+        my $retop := PAST::Op.new( $var, :pasttype('return') );
+        $past.push($retop);
+        @RETID.shift();
+    }
+
+    ## remove the block from the scope stack
+    ## and restore the "current" block
+    @?BLOCK.shift();
+    $?BLOCK := @?BLOCK[0];
+ 
+    $past.control('return_pir');
+    make $past;
+}
+
+method func_sig($/) {
     our $?BLOCK;
     our @?BLOCK;
+    
+    our @RETID;
 
+    my $name := $( $<identifier>[0] );
+    $<identifier>.shift();
+    
     my $past := PAST::Block.new( :blocktype('declaration'), :node($/) );
+    $past.name($name.name());
+    
     for $<identifier> {
         my $param := $( $_ );
         $param.scope('parameter');
         $past.push($param);
+
+        ## enter the parameter as a lexical into the block's symbol table
         $past.symbol($param.name(), :scope('lexical'));
     }
+    
+    if $<return_identifier> {
+        my $param := $( $<return_identifier>[0] );
+        $param.scope('parameter');
+        $past.push($param);
+        $past.symbol($param.name(), :scope('lexical'));
+        @RETID[0] := $param;
+    }
+
+    ## set this block as the current block, and store it on the scope stack
     $?BLOCK := $past;
     @?BLOCK.unshift($past);
 
     make $past;
 }
 
+method return_identifier($/) {
+    my $name  := ~$/;
+    ## instead of ~$/, you can also write ~$<ident>, as an identifier
+    ## uses the built-in <ident> rule to match identifiers.
+    make PAST::Var.new( :name($name), :viviself('Undef'), :node($/) );
+}
+
+=begin experimental
+
+method anon_func_assignment($/) {
+    my $lhs := $( $<primary> );
+    $lhs.lvalue(1);
+    
+    #printf("%s", $lhs);
+    
+    my $rhs := $( $<anon_func_expression> );
+    #my $rhs := PAST::Val( :value( $<anon_func_expression> ) );
+    
+    make PAST::Op.new( $lhs, $rhs, :pasttype('bind'), :node($/) );
+}
+
+
+method anon_func_expression($/) {
+
+    my $block := PAST::Block.new( :blocktype('declaration'), :node($/) );
+    #$past.name($name.name());
+    
+    for $<identifier> {
+        my $param := $( $_ );
+        $param.scope('parameter');
+        $block.push($param);
+
+        ## enter the parameter as a lexical into the block's symbol table
+        $block.symbol($param.name(), :scope('lexical'));
+    }
+
+
+    $block.push($<expression>);
+    $block.control('return_pir');
+
+    #my $past := PAST::Val( :value($block) );
+    
+    make $block;    
+}
+
+=end experimental
+
 method sub_call($/) {
-    my $invocant := $( $<identifier> );
+    my $invocant := $( $<primary> );
     my $past     := $( $<arguments> );
-	$invocant.scope('package');
+    ## set the invocant as the first child of the PAST::Op(:pasttype('call')) node
     $past.unshift( $invocant );
     make $past;
 }
@@ -325,8 +385,11 @@ method primary($/) {
     my $past := $( $<identifier> );
     for $<postfix_expression> {
         my $expr := $( $_ );
+        ## set the current $past as the first child of $expr;
+        ## $expr is either a key or an index; both are "keyed"
+        ## variable access, where the first child is assumed
+        ## to be the aggregate.
         $expr.unshift($past);
-		$expr.name($past.name());
         $past := $expr;
     }
     make $past;
@@ -338,30 +401,29 @@ method postfix_expression($/, $key) {
 
 method key($/) {
     my $key := $( $<expression> );
+
     make PAST::Var.new( $key, :scope('keyed'),
                               :vivibase('Hash'),
                               :viviself('Undef'),
                               :node($/) );
 
 }
-
-#TODO:
-#   In octave, I dont think x{'y'} exists, no hashes.
 
 method member($/) {
     my $member := $( $<identifier> );
+    ## x.y is syntactic sugar for x{"y"}, so stringify the identifier:
     my $key    := PAST::Val.new( :returns('String'), :value($member.name()), :node($/) );
+
+    ## the rest of this method is the same as method key() above.
     make PAST::Var.new( $key, :scope('keyed'),
                               :vivibase('Hash'),
                               :viviself('Undef'),
                               :node($/) );
 }
 
-#TODO:
-#   use OctaveData/Matrix instead of ResizablePMCArray
-
 method index($/) {
     my $index := $( $<expression> );
+
     make PAST::Var.new( $index, :scope('keyed'),
                                 :vivibase('ResizablePMCArray'),
                                 :viviself('Undef'),
@@ -371,15 +433,17 @@ method index($/) {
 method named_field($/) {
     my $past := $( $<expression> );
     my $name := $( $<string_constant> );
+    ## the passed expression is in fact a named argument,
+    ## use the named() accessor to set that name.
     $past.named($name);
     make $past;
 }
 
-#TODO: 
-#   Rename to "Matrix Constructor". Create a OctaveData/Matrix instead
-#   of an array.
-
 method array_constructor($/) {
+    ## use the parrot calling conventions to
+    ## create an array,
+    ## using the "anonymous" sub !array
+    ## (which is not a valid Squaak name)
     my $past := PAST::Op.new( :name('!array'), :pasttype('call'), :node($/) );
     for $<expression> {
         $past.push($($_));
@@ -387,12 +451,10 @@ method array_constructor($/) {
     make $past;
 }
 
-#TODO:
-#   Octave doesn't have hashes. Remove
-
 method hash_constructor($/) {
-    ## use the parrot calling conventions to create a hash, using the
-    ## "anonymous" sub !hash (which is not a valid Squaak name)
+    ## use the parrot calling conventions to
+    ## create a hash, using the "anonymous" sub
+    ## !hash (which is not a valid Squaak name)
     my $past := PAST::Op.new( :name('!hash'), :pasttype('call'), :node($/) );
     for $<named_field> {
         $past.push($($_));
@@ -404,9 +466,12 @@ method term($/, $key) {
     make $( $/{$key} );
 }
 
-#TODO:
-#   Create a new OctaveData Scalar object with the specified value
-#   Do this for integer_constant and float_constant
+method identifier($/) {
+    my $name  := ~$/;
+    ## instead of ~$/, you can also write ~$<ident>, as an identifier
+    ## uses the built-in <ident> rule to match identifiers.
+    make PAST::Var.new( :name($name), :viviself('Undef'), :node($/) );
+}
 
 method integer_constant($/) {
     make PAST::Val.new( :value( ~$/ ), :returns('Integer'), :node($/) );
@@ -420,7 +485,7 @@ method string_constant($/) {
     make PAST::Val.new( :value( $($<string_literal>) ), :returns('String'), :node($/) );
 }
 
-
+## Handle the operator precedence table.
 method expression($/, $key) {
     if ($key eq 'end') {
         make $($<expr>);
@@ -438,12 +503,3 @@ method expression($/, $key) {
         make $past;
     }
 }
-
-
-
-# Local Variables:
-#   mode: cperl
-#   cperl-indent-level: 4
-#   fill-column: 100
-# End:
-# vim: expandtab shiftwidth=4:
