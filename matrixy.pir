@@ -23,6 +23,8 @@ object.
 
 #.HLL 'matrixy'
 
+.include 'src/classes/all_classes.pir'
+
 .namespace [ 'Matrixy';'Compiler' ]
 
 .loadlib 'matrixy_group'
