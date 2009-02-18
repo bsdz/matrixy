@@ -1,4 +1,4 @@
-printf("1..5\n");
+printf("1..6\n");
 
 function bar
     printf("ok 1\n");
@@ -33,4 +33,26 @@ if myret == 5
     printf("ok 5\n");
 else
     printf("not ok 5\n");
+endif
+
+#
+
+function  c = circum(r)
+	c = double( pi() * r );
+end
+
+function d = double(x)
+	d = 2 * x;
+end
+
+function z = ten()
+	z = 10;
+end
+
+x = double(circum(ten() * 5));
+
+if x == 200 * pi()
+    printf("ok 6\n");
+else
+    printf("not ok 6\n");
 endif
