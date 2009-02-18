@@ -2,22 +2,32 @@
 
 =begin overview
 
-This is the grammar for Matrixy written as a sequence of Perl 6 rules.
+This is the grammar for Squaak written as a sequence of Perl 6 rules.
 
 =end overview
 
-grammar Matrixy::Grammar is PCT::Grammar;
+grammar Octave::Grammar is PCT::Grammar;
 
 rule TOP {
     {*}                                      #= open
     <stat_or_def>*
-    [ $ || <.panic: 'Syntax error'> ]
+    [ $ || <.panic: Syntax error> ]
     {*}                                      #= close
 }
 
 rule stat_or_def {
+	| <system_call> {*} 					 #= system_call
     | <statement> {*}                        #= statement
-    | <func_def> {*}                         #= func_def
+    | <sub_definition> {*}                   #= sub_definition
+	
+}
+
+rule system_call {
+	'!' <bare_words> {*}
+}
+
+token bare_words {
+	\N* \n?
 }
 
 rule statement {
@@ -26,16 +36,16 @@ rule statement {
     | <for_statement> {*}                    #= for_statement
     | <try_statement> {*}                    #= try_statement
     | <throw_statement> {*}                  #= throw_statement
-    | <return_statement> ';' {*}              #= return_statement
-    | <sub_call> ';' {*}                     #= sub_call
-    | <assignment> ';' {*}                   #= assignment
-#    | <anon_func_assignment> ';' {*}         #= anon_func_assignment
-#    | <variable_declaration> ';' {*}         #= variable_declaration
-    | <do_block> {*}                         #= do_block
+    | <assignment> <statement_terminator>? {*} #= assignment
+	| <expression> <statement_terminator>? {*} #= expression
+}
+
+token statement_terminator {
+	';'
 }
 
 rule if_statement {
-    'if' <expression> <block> ['else' <else=block>]? ['endif'|'end']>>
+    'if' <expression> 'then' <block> ['else' $<else>=<block>]? 'end'
     {*}
 }
 
@@ -45,7 +55,7 @@ rule while_statement {
 }
 
 rule for_statement {
-    'for' <for_init> ',' <expression> [',' <step=expression>]? 'do'
+    'for' <for_init> ',' <expression> [',' $<step>=<expression>]? 'do'
     <statement>*
     'end'
     {*}
@@ -57,7 +67,7 @@ rule for_init {
 }
 
 rule try_statement {
-    'try' <try=block> 'catch' <exception> <catch=block> 'end'
+    'try' $<try>=<block> 'catch' <exception> <statement>* 'end'
     {*}
 }
 
@@ -71,11 +81,6 @@ rule throw_statement {
     {*}
 }
 
-rule return_statement {
-    'return' <expression>
-    {*}
-}
-
 rule block {
     {*}                                #= open
     <statement>*
@@ -83,7 +88,7 @@ rule block {
 }
 
 rule do_block {
-    ['do'|'zz'] <block> 'end'
+    'do' <block> 'end'
     {*}
 }
 
@@ -92,45 +97,31 @@ rule assignment {
     {*}
 }
 
-# rule anon_func_assignment {
-    # <primary> '=' <anon_func_expression>
-    # {*}
-# }
-
-
-# note: the order of endfunction|end are important here!
-#
-rule func_def {
-    <func_sig>
+rule sub_definition {
+    'function' {*} #= open
+	[
+		| <identifier> '='
+		| '[' [<identifier> [',' <identifier>]*]? ']' '='
+	]? 
+	$<name>=<identifier> 
+	<parameters>
     <statement>*
-    ['endfunction'|'end']>>
-    {*}
+    'end'
+    {*} #= close
 }
 
-rule func_sig {
-    'function' [<return_identifier> '=']? <identifier> 
-        ['(' [ <identifier> [',' <identifier>]* ]? ')']?
+rule parameters {
+    '(' [ <identifier> [',' <identifier>]* ]? ')'
     {*}
 }
-
-token return_identifier {
-    <!keyword> <ident>
-    {*}
-}
-
-# rule anon_func_expression {
-    # '@' '(' [ <identifier> [',' <identifier>]* ]? ')' 
-    # <expression> 
-    # {*}
-# }
 
 rule variable_declaration {
-    <identifier> ['=' <expression>]?
+    'var' <identifier> ['=' <expression>]?
     {*}
 }
 
 rule sub_call {
-    <primary> <arguments>
+    <identifier> <arguments>
     {*}
 }
 
@@ -171,8 +162,9 @@ rule term {
    | <string_constant> {*}           #= string_constant
    | <hash_constructor> {*}          #= hash_constructor
    | <array_constructor> {*}         #= array_constructor
-   | <sub_call> {*}                  #= sub_call
+   | <sub_call> {*}					 #= sub_call
    | <primary> {*}                   #= primary
+   
    | '(' <expression> ')' {*}        #= expression
 }
 
@@ -210,30 +202,45 @@ token float_constant {
 }
 
 token string_constant {
-    \" <string_literal: '"'> \"
+    \' <string_literal: '> \'
     {*}
 }
 
 token keyword {
-    ['function'|'endfunction'|'return'
-    |'global'|'persistent'
-    |'if'|'elseif'|'else'|'endif'
-    |'and'|'not'|'or'
-    |'try'|'catch'|'throw'
-    |'do'|'until'
-    |'while'|'endwhile'
-    |'for'|'endfor'
-    |'break'|'continue'
-    |'switch'|'case'|'otherwise'|'endswitch'
-    |'end']>>
-     
+    ['and'|'catch'|'do'|'else'|'end'  |'for'|'function'
+	|'if'   |'not'|'or'|'sub' |'throw'|'try'|'var'|'while']>>
 }
 
 rule expression is optable { ... }
+
+proto 'infix:or'       is precedence('1')     is pasttype('unless') { ... }
+proto 'infix:and'      is tighter('infix:or') is pasttype('if')     { ... }
+
+proto 'infix:<'        is tighter('infix:and')                      { ... }
+proto 'infix:<='       is equiv('infix:<')                          { ... }
+proto 'infix:>'        is equiv('infix:<')                          { ... }
+proto 'infix:>='       is equiv('infix:<')                          { ... }
+proto 'infix:=='       is equiv('infix:<')                          { ... }
+proto 'infix:!='       is equiv('infix:<')                          { ... }
+
+proto 'infix:+'        is tighter('infix:<')  is pirop('n_add')     { ... }
+proto 'infix:-'        is equiv('infix:+')    is pirop('n_sub')     { ... }
+
+proto 'infix:..'       is equiv('infix:+')    is pirop('n_concat')  { ... }
+
+proto 'infix:*'        is tighter('infix:+')  is pirop('n_mul')     { ... }
+proto 'infix:%'        is equiv('infix:*')    is pirop('n_mod')     { ... }
+proto 'infix:/'        is equiv('infix:*')    is pirop('n_div')     { ... }
+
+proto 'prefix:not'     is tighter('infix:*')    is pirop('n_not')   { ... }
+proto 'prefix:-'       is tighter('prefix:not') is pirop('n_neg')   { ... }
+
+proto 'term:'          is tighter('prefix:-')  is parsed(&term)      { ... }
+
 
 ##  this <ws> rule treats # as "comment to eol"
 ##  you may want to replace it with something appropriate
 token ws {
     <!ww>
-    [ '#' \N* \n? | \s+ ]*
+    [ '%' \N* \n? | \s+ ]*
 }
