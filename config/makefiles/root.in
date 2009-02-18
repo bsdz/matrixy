@@ -44,6 +44,9 @@ BUILTINS_PIR = \
   src/builtins/operators.pir \
   src/builtins/clearscreen.pir \
   src/builtins/sprintf.pir \
+  src/builtins/math.pir \
+  src/builtins/stdio.pir \
+  src/builtins/system.pir \
 
 # PMCS = matrixy
 # PMC_SOURCES = $(PMC_DIR)/matrixy.pmc

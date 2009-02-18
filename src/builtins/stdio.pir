@@ -1,19 +1,22 @@
-# $Id$
+=head1 NAME
 
-=head1 Standard I/O
 
-=head2 About
+F<src/builtins/stdio.pir> - built-in stdio functions
+
+=head1 DESCRIPTION
 
 This file contains some of the basic functions for I/O on 
 the console and in files. 
 
-=head2 Functions
+=head1 Functions
+
+=over 4
 
 =cut
 
-.namespace 
+.namespace []
 
-=head3 disp(PMC msg)
+=item disp(PMC msg)
 
 prints a single string or value to the terminal. Eventually,
 this function will be able to print all the entries in a
@@ -36,7 +39,7 @@ row matrix as well.
     .return ()
 .end
 
-=head3 _disp_all(PMC args :slurpy)
+=item _disp_all(PMC args :slurpy)
 
 This is similar to the disp() function above, accept that
 it prints out a slurpy list of arguments to the terminal.
@@ -59,7 +62,7 @@ This is non-standard, so it begins with an underscore.
     .return (1)
 .end
 	
-=head3 error(STRING msg)
+=item error(STRING msg)
 
 raises an exception with the supplied message
 
@@ -75,7 +78,7 @@ raises an exception with the supplied message
     .return ()
 .end
 
-=head3 _error_all(PMC args :slurpy)
+=item _error_all(PMC args :slurpy)
 
 raises an exception with the message which is given 
 piecewise. The arguments are stringified and concatinated,
@@ -99,7 +102,7 @@ and the resulting message is used to raise an exception.
 	.return()
 .end
 
-=head3 _print_result_a(PMC name, PMC value, STRING term)
+=item _print_result_a(PMC name, PMC value, STRING term)
 
 Handles the MATLAB/Octave behavior where the value of an 
 assigment is printed to the terminal, unless the statement
@@ -116,7 +119,7 @@ semicolor will cause Octave to print:
 		
 
 
-=head3 _print_result_e(PMC value, STRING term)
+=item _print_result_e(PMC value, STRING term)
 
 Handles the MATLAB/Octave behavior where the value of an 
 expression is printed to the terminal unless the statement
