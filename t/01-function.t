@@ -37,8 +37,12 @@ endif
 
 #
 
+function pi2
+    return 3.14;
+end
+
 function  c = circum(r)
-	c = double( pi() * r );
+	c = double( pi2() * r );
 end
 
 function d = double(x)
@@ -51,7 +55,7 @@ end
 
 x = double(circum(ten() * 5));
 
-if x == 200 * pi()
+if x == 200 * pi2()
     printf("ok 6\n");
 else
     printf("not ok 6\n");
