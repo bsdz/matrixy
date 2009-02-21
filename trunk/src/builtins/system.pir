@@ -1,6 +1,5 @@
 =head1 NAME
 
-
 F<src/builtins/system.pir> - built-in system functions
 
 =head1 DESCRIPTION
@@ -22,50 +21,51 @@ This function handles the MATLAB/Octave behavior where
 prefixing a line with '!' passes that entire line to the
 system shell. For instance, on a Windows machine, typing:
 
-	!echo hello
-	
+  !echo hello
+
 Will cause the word "hello" to be printed to the terminal.
 
 =cut
 
 .sub '_system_call'
-	.param string cmd
-	.local int res
-	spawnw res, cmd
+    .param string cmd
+    .local int res
+    spawnw res, cmd
     .return (1)
 .end
 
 =item feval(STRING name, PMC args :slurpy)
 
-Calls the function with name C<name> and arguments C<args>. 
+Calls the function with name C<name> and arguments C<args>.
 
-If the function isn't loaded yet, it will be looked up. 
-Currently, however, this function does not do any lookups.
-It will, eventually. 
+If the function isn't loaded yet, it should be looked up. Does
+not currently perform any lookups however.
 
 =cut
 
 .sub 'feval'
-	.param string func
-	.param pmc args :slurpy
-	
-	$P0 = find_name func
-	.return $P0(args :flat)
+    .param string func
+    .param pmc args :slurpy
+    $P0 = find_name func
+    .return $P0(args :flat)
 .end
-
 
 =item quit()
 
-Exits the program. 
+Exits the program.
+
+=item exit()
+
+Same
 
 =cut
 
 .sub 'quit'
-	end
+    end
 .end
 
 .sub 'exit'
-	end
+    end
 .end
 
 
