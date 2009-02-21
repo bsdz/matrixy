@@ -47,7 +47,7 @@ not currently perform any lookups however.
     .param string func
     .param pmc args :slurpy
     $P0 = find_name func
-    .return $P0(args :flat)
+    .tailcall $P0(args :flat)
 .end
 
 =item quit()
