@@ -4,7 +4,9 @@ matrixy.pir - A Matrixy compiler.
 
 =head2 Description
 
-This is the base file for the Matrixy compiler.
+This is the base file for the Matrixy compiler. Matrixy
+is intended to be a clone of MATLAB/Octave for Parrot. See
+F<README.POD> for more information about this language.
 
 This file includes the parsing and grammar rules from
 the src/ directory, loads the relevant PGE libraries,
@@ -31,7 +33,7 @@ object.
 
 # .sub '' :anon :load :init
     # load_bytecode 'PCT.pbc'
-    
+
     # .local pmc parrotns, hllns, exports
     # parrotns = get_root_namespace ['parrot']
     # hllns = get_hll_namespace
@@ -50,9 +52,9 @@ object.
     $P1.'parsegrammar'($P0)
     $P0 = get_hll_namespace ['Matrixy';'Grammar';'Actions']
     $P1.'parseactions'($P0)
-    
+
     $P1.'commandline_prompt'('matrixy:1> ')
-    $P1.'commandline_banner'("Matrixy, version 0.1.\nCopyright (C) 2009 Blair Sutton.\n\n")
+    $P1.'commandline_banner'("Matrixy, version 0.1.\nCopyright (C) 2009 Blair Sutton and Andrew Whitworth.\n\n")
 .end
 
 =item main(args :slurpy)  :main
@@ -96,9 +98,4 @@ to the Matrixy compiler.
 
 =cut
 
-# Local Variables:
-#   mode: pir
-#   fill-column: 100
-# End:
-# vim: expandtab shiftwidth=4 ft=pir:
 
