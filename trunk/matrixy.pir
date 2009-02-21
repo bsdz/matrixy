@@ -25,7 +25,7 @@ object.
 
 #.HLL 'matrixy'
 
-.include 'src/classes/all_classes.pir'
+.include 'src/gen_classes.pir'
 
 .namespace [ 'Matrixy';'Compiler' ]
 
