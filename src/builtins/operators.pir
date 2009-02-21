@@ -42,7 +42,3 @@
     isne $I0, a, b
     .return ($I0)
 .end
-
-
-
-
