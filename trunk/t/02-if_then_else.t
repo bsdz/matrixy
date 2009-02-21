@@ -10,7 +10,7 @@ end
 
 if 1 == 2
     printf("not ok 3\n");
-else    
+else
     printf("ok 3\n");
 end
 
