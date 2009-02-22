@@ -1,15 +1,13 @@
 #summary A list of useful links for this project.
 
-== Links ==
+== Parrot ==
 
   * [http://www.google.com/coop/cse?cx=000451457997241263125:jx8g3wcd_uk Parrot Search - A useful custom search engine.]
+  * [https://trac.parrot.org/parrot/wiki Parrot Wiki]
 
-== Docs ==
+== Octave ==
 
   * [http://www.gnu.org/software/octave/doc/interpreter/ Octave Documentation]
-
-== Useful Tests ==
-
   * [http://hg.savannah.gnu.org/hgweb/octave/file/949708f930d0/test/ Octave Test Suite]
 
 == Articles ==
