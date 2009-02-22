@@ -29,7 +29,6 @@ rule statement {
     | <return_statement> ';' {*}              #= return_statement
     | <sub_call> ';' {*}                     #= sub_call
     | <assignment> ';' {*}                   #= assignment
-#    | <anon_func_assignment> ';' {*}         #= anon_func_assignment
 #    | <variable_declaration> ';' {*}         #= variable_declaration
     | <do_block> {*}                         #= do_block
 }
@@ -92,12 +91,6 @@ rule assignment {
     {*}
 }
 
-# rule anon_func_assignment {
-    # <primary> '=' <anon_func_expression>
-    # {*}
-# }
-
-
 # note: the order of endfunction|end are important here!
 #
 rule func_def {
@@ -117,12 +110,6 @@ token return_identifier {
     <!keyword> <ident>
     {*}
 }
-
-# rule anon_func_expression {
-    # '@' '(' [ <identifier> [',' <identifier>]* ]? ')' 
-    # <expression> 
-    # {*}
-# }
 
 rule variable_declaration {
     <identifier> ['=' <expression>]?
@@ -171,9 +158,16 @@ rule term {
    | <string_constant> {*}           #= string_constant
    | <hash_constructor> {*}          #= hash_constructor
    | <array_constructor> {*}         #= array_constructor
+   | <anon_func_constructor> {*}         #= anon_func_constructor
    | <sub_call> {*}                  #= sub_call
    | <primary> {*}                   #= primary
    | '(' <expression> ')' {*}        #= expression
+}
+
+rule anon_func_constructor {
+    '@' '(' [ <identifier> [',' <identifier>]* ]? ')' 
+    <expression> 
+    {*}
 }
 
 rule hash_constructor {

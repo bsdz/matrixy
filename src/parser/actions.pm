@@ -325,25 +325,8 @@ method return_identifier($/) {
     make PAST::Var.new( :name($name), :viviself('Undef'), :node($/) );
 }
 
-=begin experimental
-
-method anon_func_assignment($/) {
-    my $lhs := $( $<primary> );
-    $lhs.lvalue(1);
-    
-    #printf("%s", $lhs);
-    
-    my $rhs := $( $<anon_func_expression> );
-    #my $rhs := PAST::Val( :value( $<anon_func_expression> ) );
-    
-    make PAST::Op.new( $lhs, $rhs, :pasttype('bind'), :node($/) );
-}
-
-
-method anon_func_expression($/) {
-
+method anon_func_constructor($/) {
     my $block := PAST::Block.new( :blocktype('declaration'), :node($/) );
-    #$past.name($name.name());
     
     for $<identifier> {
         my $param := $( $_ );
@@ -354,16 +337,18 @@ method anon_func_expression($/) {
         $block.symbol($param.name(), :scope('lexical'));
     }
 
-
-    $block.push($<expression>);
-    $block.control('return_pir');
-
-    #my $past := PAST::Val( :value($block) );
+    my $var := PAST::Var.new( :viviself('Undef'), :node($/) );
+    # $var.lvalue(1);
     
+    my $op := PAST::Op.new( $var,  $($<expression>) , :pasttype('bind'), :node($/) );
+    $block.push($op);
+    
+    my $retop := PAST::Op.new( $var, :pasttype('return') );
+    $block.push($retop);
+    
+    $block.control('return_pir');
     make $block;    
 }
-
-=end experimental
 
 method sub_call($/) {
     my $invocant := $( $<primary> );
