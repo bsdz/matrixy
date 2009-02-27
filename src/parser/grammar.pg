@@ -17,6 +17,7 @@ rule TOP {
 
 rule stat_or_def {
     | <statement> {*}                        #= statement
+    | <system_command> {*}                   #= system_command
     | <func_def> {*}                         #= func_def
 }
 
@@ -31,6 +32,14 @@ rule statement {
     | <assignment> ';' {*}                   #= assignment
 #    | <variable_declaration> ';' {*}         #= variable_declaration
     | <do_block> {*}                         #= do_block
+}
+
+rule system_command {
+    '!' <whatever_string> {*}
+}
+
+token bare_words {
+    \N* \n?*
 }
 
 rule if_statement {
