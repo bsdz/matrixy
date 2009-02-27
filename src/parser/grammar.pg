@@ -35,7 +35,7 @@ rule statement {
 }
 
 rule system_command {
-    '!' <whatever_string> {*}
+    '!' <bare_words> {*}
 }
 
 token bare_words {
