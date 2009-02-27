@@ -39,7 +39,7 @@ rule system_command {
 }
 
 token bare_words {
-    \N* \n?*
+    \N* \n?
 }
 
 rule if_statement {
