@@ -1,6 +1,6 @@
 # $Id$
 
-=begin comments
+=head1 Comments
 
 Matrixy::Grammar::Actions - ast transformations for Matrixy
 
@@ -12,7 +12,7 @@ with the current match object as the first argument.  If the
 line containing C<{*}> also has a C<#= key> comment, then the
 value of the comment is passed as the second argument to the method.
 
-=end comments
+=cut
 
 class Matrixy::Grammar::Actions;
 
@@ -46,6 +46,21 @@ method stat_or_def($/, $key) {
 
 method statement($/, $key) {
     make $( $/{$key} );
+}
+
+method system_call($/) {
+    my $string := PAST::Val.new(
+        :value( ~$<bare_words> ),
+        :returns('String'),
+        :node($/)
+    );
+    my $past := PAST::Op.new(
+        :name("_system_call"),
+        :pasttype('call'),
+        :node($/)
+    );
+    $past.push($string);
+    make $past;
 }
 
 method if_statement($/) {
