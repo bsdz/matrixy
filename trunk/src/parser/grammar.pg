@@ -17,7 +17,7 @@ rule TOP {
 
 rule stat_or_def {
     | <statement> {*}                        #= statement
-    | <system_command> {*}                   #= system_command
+    | <system_call> {*}                      #= system_call
     | <func_def> {*}                         #= func_def
 }
 
@@ -34,7 +34,7 @@ rule statement {
     | <do_block> {*}                         #= do_block
 }
 
-rule system_command {
+rule system_call {
     '!' <bare_words> {*}
 }
 
