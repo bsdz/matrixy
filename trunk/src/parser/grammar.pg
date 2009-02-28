@@ -16,14 +16,14 @@ rule TOP {
 }
 
 rule stat_or_def {
-    | <statement> {*}                         #= statement
+    | <statement> {*}                        #= statement
     | <system_call> {*}                      #= system_call
     | <func_def> {*}                         #= func_def
 }
 
 rule statement {
     | <control_statement> {*}                #= control_statement
-    | <stmt_with_value> {*}                  #= stmt_with_value
+    | <stmt_with_value> <terminator> {*}     #= stmt_with_value
 }
 
 rule control_statement {
@@ -36,9 +36,13 @@ rule control_statement {
 }
 
 rule stmt_with_value {
-    | <return_statement> ';' {*}             #= return_statement
-    | <sub_call> ';' {*}                     #= sub_call
-    | <assignment> ';' {*}                   #= assignment
+    | <return_statement> {*}                 #= return_statement
+    | <sub_call> {*}                         #= sub_call
+    | <assignment> {*}                       #= assignment
+}
+
+token terminator {
+    \n | ';'
 }
 
 rule system_call {
