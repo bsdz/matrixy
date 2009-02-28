@@ -23,7 +23,7 @@ rule stat_or_def {
 
 rule statement {
     | <control_statement> {*}                #= control_statement
-    | <stmt_with_value> <terminator> {*}     #= stmt_with_value
+    | <stmt_with_value> {*}                  #= stmt_with_value
 }
 
 rule control_statement {
@@ -36,10 +36,10 @@ rule control_statement {
 }
 
 rule stmt_with_value {
-    | <return_statement> {*}                 #= return_statement
-    | <sub_call> {*}                         #= sub_call
-    | <assignment> {*}                       #= assignment
-    | <expression> {*}                       #= expression
+    | <return_statement> <terminator> {*}    #= return_statement
+    | <sub_call> <terminator> {*}            #= sub_call
+    | <assignment> <terminator> {*}          #= assignment
+    | <expression> <terminator> {*}          #= expression
 }
 
 token terminator {

@@ -49,7 +49,16 @@ method statement($/, $key) {
 }
 
 method stmt_with_value($/, $key) {
-    make $( $/{$key} );
+    if $key eq "expression" {
+        my $past := PAST::Op.new(:pasttype('inline'));
+        my $term := PAST::Val.new( :value(~$<terminator>), :returns('String'));
+        $past.inline("_print_result_e(%0, %1)");
+        $past.unshift($term);
+        $past.unshift($( $<expression> ));
+        make $past;
+    } else {
+        make $( $/{$key} );
+    }
 }
 
 method control_statement($/, $key) {
