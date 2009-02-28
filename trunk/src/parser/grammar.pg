@@ -26,6 +26,8 @@ rule statement {
     | <stmt_with_value> {*}                  #= stmt_with_value
 }
 
+# TODO: Make sure we support all these forms, and weed out any statement
+#       types that aren't in M
 rule control_statement {
     | <if_statement> {*}                     #= if_statement
     | <while_statement> {*}                  #= while_statement
@@ -54,16 +56,19 @@ token bare_words {
     \N* \n?
 }
 
+# TODO: Update this syntax to match that in M
 rule if_statement {
     'if' <expression> <block> ['else' <else=block>]? ['endif'|'end']>>
     {*}
 }
 
+# TODO: Update this syntax to match that in M
 rule while_statement {
     'while' <expression> 'do' <block> 'end'
     {*}
 }
 
+# TODO: Update this syntax to match that in M
 rule for_statement {
     'for' <for_init> ',' <expression> [',' <step=expression>]? 'do'
     <statement>*
@@ -76,6 +81,8 @@ rule for_init {
     {*}
 }
 
+# TODO: I don't remember how M handles exceptions. Update this to match
+#       if it doesn't
 rule try_statement {
     'try' <try=block> 'catch' <exception> <catch=block> 'end'
     {*}
@@ -91,6 +98,8 @@ rule throw_statement {
     {*}
 }
 
+# TODO: In M, return statements don't take an expression, because the return
+#       values are specified in the function definition. Update this.
 rule return_statement {
     'return' <expression>
     {*}
@@ -102,6 +111,7 @@ rule block {
     {*}                                #= close
 }
 
+# TODO: Does M have a do-block? If not, delete this.
 rule do_block {
     'do' <block> 'end'
     {*}
@@ -127,6 +137,8 @@ rule func_sig {
     {*}
 }
 
+# TODO: Expand this to allow mulitple return values in a () comma-separated
+#       list.
 token return_identifier {
     <!keyword> <ident>
     {*}
@@ -137,6 +149,9 @@ rule variable_declaration {
     {*}
 }
 
+# TODO: The <arguments> should be optional. Also, if parenthesis aren't
+#       supplied the entire line should be treated like a bare string and
+#       passed to the subroutine as a single argument.
 rule sub_call {
     <primary> <arguments>
     {*}
@@ -179,7 +194,7 @@ rule term {
    | <string_constant> {*}           #= string_constant
    | <hash_constructor> {*}          #= hash_constructor
    | <array_constructor> {*}         #= array_constructor
-   | <anon_func_constructor> {*}         #= anon_func_constructor
+   | <anon_func_constructor> {*}     #= anon_func_constructor
    | <sub_call> {*}                  #= sub_call
    | <primary> {*}                   #= primary
    | '(' <expression> ')' {*}        #= expression
@@ -229,6 +244,8 @@ token string_constant {
     {*}
 }
 
+# TODO: We should be able to get rid of this and all calls to <!keyword>
+#       once PCT implements Longest-token-matching
 token keyword {
     ['function'|'endfunction'|'return'
     |'global'|'persistent'
@@ -241,7 +258,6 @@ token keyword {
     |'break'|'continue'
     |'switch'|'case'|'otherwise'|'endswitch'
     |'end']>>
-     
 }
 
 rule expression is optable { ... }
