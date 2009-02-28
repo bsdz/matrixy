@@ -16,22 +16,29 @@ rule TOP {
 }
 
 rule stat_or_def {
-    | <statement> {*}                        #= statement
+    | <statement> {*}                         #= statement
     | <system_call> {*}                      #= system_call
     | <func_def> {*}                         #= func_def
 }
 
 rule statement {
+    | <control_statement> {*}                #= control_statement
+    | <stmt_with_value> {*}                  #= stmt_with_value
+}
+
+rule control_statement {
     | <if_statement> {*}                     #= if_statement
     | <while_statement> {*}                  #= while_statement
     | <for_statement> {*}                    #= for_statement
     | <try_statement> {*}                    #= try_statement
     | <throw_statement> {*}                  #= throw_statement
-    | <return_statement> ';' {*}              #= return_statement
+    | <do_block> {*}                         #= do_block
+}
+
+rule stmt_with_value {
+    | <return_statement> ';' {*}             #= return_statement
     | <sub_call> ';' {*}                     #= sub_call
     | <assignment> ';' {*}                   #= assignment
-#    | <variable_declaration> ';' {*}         #= variable_declaration
-    | <do_block> {*}                         #= do_block
 }
 
 rule system_call {
