@@ -48,6 +48,14 @@ method statement($/, $key) {
     make $( $/{$key} );
 }
 
+method stmt_with_value($/, $key) {
+    make $( $/{$key} );
+}
+
+method control_statement($/, $key) {
+    make $( $/{$key} );
+}
+
 method system_call($/) {
     my $string := PAST::Val.new(
         :value( ~$<bare_words> ),
