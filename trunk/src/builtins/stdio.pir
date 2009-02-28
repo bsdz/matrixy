@@ -160,6 +160,8 @@ In this way, Matrixy can be used as a sort of desk calculator.
     if $I0 goto print_value
     goto end_print_result
 
+    if term == ';' goto end_print_result
+
     #If the statement is terminated, don't print, but do
     # set "ans"
   print_value:
