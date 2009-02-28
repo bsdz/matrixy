@@ -16,6 +16,9 @@ value of the comment is passed as the second argument to the method.
 
 class Matrixy::Grammar::Actions;
 
+# TODO: I had heard that the stuf about @?BLOCK and manually handling scopes
+#       is not necessary anymore with the recent versions of PCT. If this is
+#       the case, update this.
 method TOP($/, $key) {
     our @?BLOCK;
     our $?BLOCK;
@@ -48,6 +51,9 @@ method statement($/, $key) {
     make $( $/{$key} );
 }
 
+# TODO: Update this to print the return values of other statement types too.
+#       Will require a way to propagate a statements "name" through the parse
+#       Tree. Work on that.
 method stmt_with_value($/, $key) {
     if $key eq "expression" {
         my $past := PAST::Op.new(:pasttype('inline'));
@@ -216,6 +222,9 @@ method throw_statement($/) {
     make PAST::Op.new( $( $<expression> ), :pirop('throw'), :node($/) );
 }
 
+
+# TODO: See the comment for "TOP" above. The $?BLOCK stuff might need to
+#       Disappear.
 method block($/, $key) {
     our $?BLOCK; ## the current block
     our @?BLOCK; ## the scope stack
@@ -237,6 +246,8 @@ method block($/, $key) {
     }
 }
 
+# TODO: I don't think return statements take values, because the function's
+#       return values are specified in the subroutine definition. Fix this.
 method return_statement($/) {
     my $expr := $( $<expression> );
     my $past := PAST::Op.new( $expr, :pasttype('return'), :node($/) );
@@ -247,6 +258,11 @@ method do_block($/) {
     make $( $<block> );
 }
 
+# TODO: When we do an assignment, there's a chance the stateent might not be
+#       terminated with a ;. Make sure we take the name of the primary here
+#       so we can print that out above if we need to. Also, we should probably
+#       do some basic testing somewhere to make sure a primary is a valid
+#       variable name and not a function name.
 method assignment($/) {
     my $rhs := $( $<expression> );
     my $lhs := $( $<primary> );
@@ -287,15 +303,15 @@ method variable_declaration($/) {
 method func_def($/) {
     our @?BLOCK;
     our $?BLOCK;
-    
+
     our @RETID;
-    
+
     my $past := $( $<func_sig> );
 
     for $<statement> {
         $past.push($($_));
     }
-    
+
     # add a return statement if needed
     #
     if @RETID {
@@ -309,7 +325,7 @@ method func_def($/) {
     ## and restore the "current" block
     @?BLOCK.shift();
     $?BLOCK := @?BLOCK[0];
- 
+
     $past.control('return_pir');
     make $past;
 }
@@ -317,15 +333,15 @@ method func_def($/) {
 method func_sig($/) {
     our $?BLOCK;
     our @?BLOCK;
-    
+
     our @RETID;
 
     my $name := $( $<identifier>[0] );
     $<identifier>.shift();
-    
+
     my $past := PAST::Block.new( :blocktype('declaration'), :node($/) );
     $past.name($name.name());
-    
+
     for $<identifier> {
         my $param := $( $_ );
         $param.scope('parameter');
@@ -334,7 +350,7 @@ method func_sig($/) {
         ## enter the parameter as a lexical into the block's symbol table
         $past.symbol($param.name(), :scope('lexical'));
     }
-    
+
     if $<return_identifier> {
         my $param := $( $<return_identifier>[0] );
         $param.scope('parameter');
@@ -359,7 +375,7 @@ method return_identifier($/) {
 
 method anon_func_constructor($/) {
     my $block := PAST::Block.new( :blocktype('declaration'), :node($/) );
-    
+
     for $<identifier> {
         my $param := $( $_ );
         $param.scope('parameter');
@@ -371,15 +387,15 @@ method anon_func_constructor($/) {
 
     my $var := PAST::Var.new( :viviself('Undef'), :node($/) );
     # $var.lvalue(1);
-    
+
     my $op := PAST::Op.new( $var,  $($<expression>) , :pasttype('bind'), :node($/) );
     $block.push($op);
-    
+
     my $retop := PAST::Op.new( $var, :pasttype('return') );
     $block.push($retop);
-    
+
     $block.control('return_pir');
-    make $block;    
+    make $block;
 }
 
 method sub_call($/) {
@@ -398,6 +414,10 @@ method arguments($/) {
     make $past;
 }
 
+# TODO: A primary could be either a function name or a variable name. Check the
+#       current scope for a variable of that name. If not, do a search for a
+#       function of that name. If neither exists, we can probably autovivify
+#       this as a variable. All that logic might need to exist elsewhere.
 method primary($/) {
     my $past := $( $<identifier> );
     for $<postfix_expression> {
