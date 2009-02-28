@@ -68,4 +68,40 @@ Same
     end
 .end
 
+=item getenv
 
+Returns underlying OS's enviroment for variable 'name'.
+
+=cut
+
+.sub 'getenv'
+    .param string name
+    .local pmc env
+
+    env = new 'Env'
+    
+    $S0 = env[name]
+    .return (  $S0 )
+.end
+
+=item setenv
+
+Sets underlying OS's enviroment for variable 'name' with value 'value'.
+
+=cut
+
+.sub 'setenv'
+    .param string name
+    .param string value :optional
+    .param int has_value :opt_flag
+    
+    .local pmc env
+   
+    if has_value goto setenv
+    value = ''
+    
+  setenv:
+    env = new 'Env'
+    env[name] = value
+
+.end
