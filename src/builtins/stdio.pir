@@ -22,19 +22,12 @@ prints a single string or value to the terminal. Eventually,
 this function will be able to print all the entries in a
 row matrix as well.
 
-=cut 
+=cut
 
 .sub 'disp'
     .param string msg
-    #$P0 = msg
-    #$I0 = defined $P0
-    #if $I0 goto print_value
-    #'error'("Undefined function or variable")
-    #goto disp_end
-  #print_value:
     print msg
     print "\n\n"
-  #disp_end:
     .return ()
 .end
 
