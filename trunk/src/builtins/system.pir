@@ -27,11 +27,18 @@ Will cause the word "hello" to be printed to the terminal.
 
 =cut
 
-.sub '_system_call'
+.sub 'system'
     .param string cmd
-    .local int res
-    spawnw res, cmd
-    .return (1)
+    .param int flags :optional
+    .param int has_flags :opt_flag
+
+    if has_flags goto capture_output
+
+    $I0 = spawnw cmd
+    .return ($I0)
+
+  capture_output:
+    'error'("Function 'system' does not support capturing output")
 .end
 
 =item feval(STRING name, PMC args :slurpy)
@@ -79,7 +86,7 @@ Returns underlying OS's enviroment for variable 'name'.
     .local pmc env
 
     env = new 'Env'
-    
+
     $S0 = env[name]
     .return (  $S0 )
 .end
@@ -94,12 +101,12 @@ Sets underlying OS's enviroment for variable 'name' with value 'value'.
     .param string name
     .param string value :optional
     .param int has_value :opt_flag
-    
+
     .local pmc env
-   
+
     if has_value goto setenv
     value = ''
-    
+
   setenv:
     env = new 'Env'
     env[name] = value
