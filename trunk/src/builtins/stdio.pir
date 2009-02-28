@@ -25,16 +25,16 @@ row matrix as well.
 =cut 
 
 .sub 'disp'
-    .param pmc msg
-    $P0 = msg
-    $I0 = defined $P0
-    if $I0 goto print_value
-    'error'("Undefined function or variable")
-    goto disp_end
-  print_value:
-    print $P0
+    .param string msg
+    #$P0 = msg
+    #$I0 = defined $P0
+    #if $I0 goto print_value
+    #'error'("Undefined function or variable")
+    #goto disp_end
+  #print_value:
+    print msg
     print "\n\n"
-  disp_end:
+  #disp_end:
     .return ()
 .end
 
@@ -72,7 +72,7 @@ raises an exception with the supplied message
     $S0 = msg . "\n\n"
     $S1 = "??? " . $S0 
     $P1 = new 'Exception'
-    $P1['_message'] = $S1
+    $P1['message'] = $S1
     throw  $P1
     .return ()
 .end
