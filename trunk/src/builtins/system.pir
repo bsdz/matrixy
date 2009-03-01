@@ -112,3 +112,22 @@ Sets underlying OS's enviroment for variable 'name' with value 'value'.
     env[name] = value
 
 .end
+
+=item pir
+
+Executes a subroutine in PIR from M code
+
+=cut
+
+.sub 'pir'
+    .param string code
+    .param pmc args :slurpy
+    $P0 = compreg 'PIR'
+    $P1 = $P0(code)
+    $P2 = $P1(args :flat)
+    .return($P2)
+.end
+
+=back
+
+=cut
