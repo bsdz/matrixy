@@ -15,14 +15,18 @@ If you have a development Parrot, one that you have downloaded with SVN and comp
 
 From the parrot repository root, build parrot:
 
+{{{
  perl Configure.pl
  make
+}}}
 
 Now, get matrixy:
 
+{{{
  cd languages
  make co-matrixy
  cd matrixy
  perl Configure.pl
  make
  make disttest
+}}}
