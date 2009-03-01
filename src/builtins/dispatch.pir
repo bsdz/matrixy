@@ -76,9 +76,10 @@ and can share names between them.
 # and display any documentation from that file.
 .sub 'help'
     .param string name
-    $P0 = '_search_for_function(name);
+    $P0 = '_search_for_function'(name)
     $I0 = defined $P0
-    
+    .return()
+.end
 
 =head1 set_nargin/set_nargout
 
