@@ -48,6 +48,7 @@ BUILTINS_PIR = \
   src/builtins/math.pir \
   src/builtins/stdio.pir \
   src/builtins/system.pir \
+  src/builtins/dispatch.pir \
   
 CLASSES_PIR = \
   src/classes/List.pir \
