@@ -46,9 +46,9 @@ and can share names between them.
 
     # determine which namespace we have to look this up in
     # also determine whether we need to find_global or find_lex here.
-    $P0 = find_global name
-    $I0 = defined $P0
-    if $I0 goto _dispatch_found
+    #$P0 = find_global name
+    #$I0 = defined $P0
+    #if $I0 goto _dispatch_found
 
     # Here, we haven't found an entry in the local symbol table, so
     # we need to search for it.
@@ -58,8 +58,8 @@ and can share names between them.
   _dispatch_found:
     # We have a value, it should be a MatrixData value, so we can test whether
     # it's a subroutine or a variable.
-    $S0 = typeof $P0
-    if $S0 = 'Sub' goto
+    #$S0 = typeof $P0
+    #if $S0 = 'Sub' goto
     .return(1)
 .end
 
