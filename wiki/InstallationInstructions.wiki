@@ -12,3 +12,17 @@ If you have an installed Parrot, such as a parrot where you've downloaded the so
 = With a Development Parrot =
 
 If you have a development Parrot, one that you have downloaded with SVN and compiled yourself, here is what you can do to get matrixy working:
+
+From the parrot repository root, build parrot:
+
+ perl Configure.pl
+ make
+
+Now, get matrixy:
+
+ cd languages
+ make co-matrixy
+ cd matrixy
+ perl Configure.pl
+ make
+ make disttest
