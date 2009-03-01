@@ -389,14 +389,34 @@ method anon_func_constructor($/) {
     make $block;
 }
 
-method sub_call($/) {
+
+# TODO: A bare word can be either a function or a subroutine call. This is
+#       complicated by the fact that both array indexing and function arguments
+#       are specified with (). When we see a subcall like this, we have to
+#       first check to see if a variable with that name exists. If we have a
+#       variable, always use that. If not, look for a subroutine. We probably
+#       need to always call a generic "_dispatch" function here to handle the
+#       runtime logic without creating a huge mess of PAST nodes.
+method sub_call($/, $key) {
     my $invocant := $( $<primary> );
-    my $past     := $( $<arguments> );
-    ## set the invocant as the first child of the PAST::Op(:pasttype('call')) node
-    $past.unshift( $invocant );
-    make $past;
+    if $key eq "bare_words" {
+        make PAST::Op.new( :pasttype('call'), :node($/),
+            $invocant,
+            PAST::Val.new( :value( ~$<bare_words> ), :returns('String'), :node($/))
+        );
+    }
+    elsif $key eq "arguments" {
+        my $past     := $( $<arguments> );
+        ## the rule "arguments" creates a call node already.
+        ## set the invocant as the first child of the PAST::Op(:pasttype('call')) node
+        $past.unshift( $invocant );
+        make $past;
+    }
 }
 
+# TODO: Don't create the call node here, because it might be an array index
+#       not a sub call. Do the differentiation and create the necessary nodes
+#       in the sub_call rule.
 method arguments($/) {
     my $past := PAST::Op.new( :pasttype('call'), :node($/) );
     for $<expression> {

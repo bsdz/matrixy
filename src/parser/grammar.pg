@@ -152,9 +152,15 @@ rule variable_declaration {
 # TODO: The <arguments> should be optional. Also, if parenthesis aren't
 #       supplied the entire line should be treated like a bare string and
 #       passed to the subroutine as a single argument.
+# TODO: A bare identifier should be treated as a function call UNLESS it's
+#       a previously-defined variable in the current scope. So calling "quit"
+#       should exit the program unless we proceed that with "quit = 5", in which
+#       case it is treated as a variable.
+# TODO: Matlab supports the bare_word form, Octave does not appear to. Some sort
+#       of flag could be set to determine which types we are allowed to use.
 rule sub_call {
-    <primary> <arguments>
-    {*}
+    | <primary> <arguments> {*}          #= arguments
+    #| <primary> <bare_words> {*}         #= bare_words
 }
 
 rule arguments {
