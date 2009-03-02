@@ -80,6 +80,9 @@ to the Matrixy compiler.
 .sub 'initlist' :anon :load :init
     $P0 = new 'ResizablePMCArray'
     set_hll_global ['Matrixy';'Grammar';'Actions'], '@?BLOCK', $P0
+
+    $P1 = new 'Hash'
+    set_hll_global ['Matrixy';'Grammar';'Actions'], '%?FUNCTIONS', $P1
 .end
 
 .namespace []
