@@ -60,13 +60,13 @@ and can share names between them.
   _loop_top:
     unless filehandle goto _get_out
     $S0 = readline filehandle
-    $S1 = substr $S0, 0, 3
-    if $S1 == "%% " goto _have_comment
+    $S1 = substr $S0, 0, 2
+    if $S1 == "%%" goto _have_comment
     if indocs != 0 goto _loop_end
     goto _loop_top
 
   _have_comment:
-    $S2 = substr $S0, 3
+    $S2 = substr $S0, 2
     print " - "
     print $S2
     goto _loop_top
