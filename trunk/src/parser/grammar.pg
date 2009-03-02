@@ -39,7 +39,7 @@ rule control_statement {
 
 rule stmt_with_value {
     | <return_statement> <terminator> {*}    #= return_statement
-    | <sub_call> <terminator> {*}            #= sub_call
+    | <sub_or_var> <terminator> {*}          #= sub_or_var
     | <assignment> <terminator> {*}          #= assignment
     | <expression> <terminator> {*}          #= expression
 }
@@ -158,7 +158,7 @@ rule variable_declaration {
 #       case it is treated as a variable.
 # TODO: Matlab supports the bare_word form, Octave does not appear to. Some sort
 #       of flag could be set to determine which types we are allowed to use.
-rule sub_call {
+rule sub_or_var {
     | <primary> <arguments> {*}          #= arguments
     #| <primary> <bare_words> {*}         #= bare_words
 }
@@ -201,7 +201,7 @@ rule term {
    | <hash_constructor> {*}          #= hash_constructor
    | <array_constructor> {*}         #= array_constructor
    | <anon_func_constructor> {*}     #= anon_func_constructor
-   | <sub_call> {*}                  #= sub_call
+   | <sub_or_var> {*}                #= sub_or_var
    | <primary> {*}                   #= primary
    | '(' <expression> ')' {*}        #= expression
 }

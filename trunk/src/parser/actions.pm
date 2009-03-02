@@ -397,7 +397,7 @@ method anon_func_constructor($/) {
 #       variable, always use that. If not, look for a subroutine. We probably
 #       need to always call a generic "_dispatch" function here to handle the
 #       runtime logic without creating a huge mess of PAST nodes.
-method sub_call($/, $key) {
+method sub_or_var($/, $key) {
     my $invocant := $( $<primary> );
     if $key eq "bare_words" {
         make PAST::Op.new( :pasttype('call'), :node($/),
@@ -416,7 +416,7 @@ method sub_call($/, $key) {
 
 # TODO: Don't create the call node here, because it might be an array index
 #       not a sub call. Do the differentiation and create the necessary nodes
-#       in the sub_call rule.
+#       in the sub_or_var rule.
 method arguments($/) {
     my $past := PAST::Op.new( :pasttype('call'), :node($/) );
     for $<expression> {
