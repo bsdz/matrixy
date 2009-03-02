@@ -173,6 +173,7 @@ rule primary {
     {*}
 }
 
+# TODO: Combine this into sub_or_var. We can do all the logic there.
 rule postfix_expression {
     | <key> {*}                      #= key
     | <member> {*}                   #= member
