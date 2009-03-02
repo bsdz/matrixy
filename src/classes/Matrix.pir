@@ -1,5 +1,5 @@
 
-.namespace ['Matrix']
+.namespace ['MatrixyMatrix']
 
 =head1 ABOUT
 
@@ -35,7 +35,7 @@ anonymous function run at load time to establish the matrix class
 =cut
 
 .sub 'onload' :anon :load :init
-    $P0 = subclass 'MatrixyData', 'Matrix'
+    $P0 = subclass 'MatrixyData', 'MatrixyMatrix'
     addattribute $P0, 'size_x'
     addattribute $P0, 'size_y'
     addattribute $P0, 'numerical'
@@ -51,6 +51,15 @@ size parameters (which would need to be passed to a separate function).
 
 =cut
 
+.sub 'init' :vtable
+    $P0 = box 'MatrixyMatrix'
+    setattribute self, 'type', $P0
+    $P0 = box 1
+    setattribute self, 'size_x', $P0
+    setattribute self, 'size_y', $P0
+    setattribute self, 'numerical', $P0
+.end
+
 .sub 'create' :method
     .param string name
     .param int sizex :optional
@@ -65,8 +74,6 @@ size parameters (which would need to be passed to a separate function).
     # Create a matrix with given width and length
 
     $P0 = new 'String'
-    $P0 = 'Matrix'
-    setattribute self, 'type', $P0
     $P0 = name
     setattribute self, 'name', $P0
 
@@ -335,15 +342,20 @@ prints the matrix in stringified form. Here's an example:
 .end
 
 .sub 'print_string' :method
-    .local int ptrx
-    .local int ptry
-
     $S0 = self.'name'()
     $S1 = self.'get_size_string'()
     '_disp_all'($S0 , ' (' , $S1 , '):')
     print "\n"
-    $P0 = self.'data'()
+    $S0 = self
+    say $S0
+.end
 
+.sub 'get_string' :method :vtable
+    .local int ptrx
+    .local int ptry
+    .local string s
+
+    s = ""
     ($I0, $I1) = self.'get_size'()
 
     ptrx = 0
@@ -353,19 +365,19 @@ prints the matrix in stringified form. Here's an example:
     $I2 = ptrx + 1
     $I3 = ptry + 1
     $P2 = self.'get_element'($I2, $I3)
-    print "\t"
-    print $P2
+    s .= "\t"
+    s .= $P2
     ptry = ptry + 1
     if ptry >= $I1 goto y_loop_end
     goto y_loop_top
   y_loop_end:
     ptrx = ptrx + 1
-    print "\n"
+    s .= "\n"
     if ptrx >= $I0 goto x_loop_end
     goto x_loop_top
   x_loop_end:
-    print "\n"
-    .return(1)
+    s .= "\n"
+    .return(s)
 .end
 
 =item is_row_vector()
@@ -417,24 +429,22 @@ If this is a scalar, sets it's value. Otherwise, throws an error.
 
 =cut
 
-.sub 'get_scalar_value' :method
+.sub 'get_scalar_value' :method :vtable('get_number')
     $I0 = self.'is_scalar'()
     if $I0 != 1 goto not_scalar
-    $I1 = self.'get_element'(1, 1)
-    .return($I1)
+    $N1 = self.'get_element'(1, 1)
+    .return($N1)
   not_scalar:
     'error'('not a scalar value')
 .end
 
-.sub 'set_scalar_value' :method
+.sub 'set_scalar_value' :method :vtable('set_integer_native') :vtable('set_number_native')
     .param pmc value
-    $I0 = self.'is_scalar'()
-    '_disp_all'('value: ', $I0)
-    if $I0 != 1 goto not_scalar
-    self.'set_element'(1, 1, value)
-    .return()
-  not_scalar:
-    'error'('not a scalar value')
+    self.'size_x'(1)
+    self.'size_y'(1)
+    $N0 = value
+    $P0 = box $N0
+    self.'data'($P0)
 .end
 
 =item is_equal(PMC a)
@@ -492,7 +502,7 @@ Adds two matrices together, if they are the same size
 
 =cut
 
-.sub 'add' :method
+.sub 'add' :method :vtable
     .param pmc a
     .local pmc b
     .local pmc c
@@ -616,7 +626,7 @@ Subtract C<a> from self, if the two are the same size.
 
 =cut
 
-.sub 'subtract' :method
+.sub 'subtract' :method :vtable
     .param pmc b
     .local pmc a
     a = self
@@ -731,7 +741,7 @@ Matrix multiply self by C<b>.
 
 =cut
 
-.sub 'multiply' :method
+.sub 'multiply' :method :vtable
     .param pmc b
     .local pmc a
     .local pmc c
