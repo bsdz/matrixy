@@ -24,11 +24,12 @@ This is a basic superclass for all values in Matrixy.
 
 =cut
 
-.sub 'new' :method
+.sub 'new' :method :vtable("init")
     $P1 = new 'Undef'
     setattribute self, 'data', $P1
-    setattribute self, 'type', $P1
     setattribute self, 'name', $P1
+    $P1 = box "Data"
+    setattribute self, 'type', $P1
 .end
 
 =item data()
@@ -56,7 +57,7 @@ This is a basic superclass for all values in Matrixy.
     if has_t goto set_t
     $P0 = getattribute self, 'type'
     .return($P0)
-  set_t: 
+  set_t:
     $P0 = new 'String'
     $P0 = t
     setattribute self, 'type', $P0
@@ -78,6 +79,19 @@ This is a basic superclass for all values in Matrixy.
     $P0 = name
     setattribute self, 'name', $P0
     .return()
+.end
+
+=item assign()
+
+=cut
+
+.sub 'assign' :method :vtable
+    .param pmc x
+    $S0 = typeof x
+    if $S0 == 'String' goto _convert_string
+    if $S0 == 'Integer' goto _convert_int
+    if $S0 == 'Float' goto _convert_float
+    if $S0 == 'Sub' goto _convert_sub
 .end
 
 =back

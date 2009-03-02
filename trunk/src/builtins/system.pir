@@ -35,14 +35,18 @@ Will cause the word "hello" to be printed to the terminal.
 =cut
 
 .sub 'system'
-    .param string cmd
-    .param int flags :optional
+    .param pmc cmd
+    .param pmc flags :optional
     .param int has_flags :opt_flag
 
     if has_flags goto capture_output
 
-    $I0 = spawnw cmd
-    .return ($I0)
+    $S0 = cmd
+    $I0 = spawnw $S0
+    #$P0 = new 'MatrixyMatrix'
+    #$P0 = $I0
+    #.return ($P0)
+    .return($I0)
 
   capture_output:
     'error'("Function 'system' does not support capturing output")
