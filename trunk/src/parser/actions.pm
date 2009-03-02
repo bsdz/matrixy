@@ -398,19 +398,43 @@ method anon_func_constructor($/) {
 #       need to always call a generic "_dispatch" function here to handle the
 #       runtime logic without creating a huge mess of PAST nodes.
 method sub_or_var($/, $key) {
+    our @?BLOCK;
     my $invocant := $( $<primary> );
-    if $key eq "bare_words" {
-        make PAST::Op.new( :pasttype('call'), :node($/),
-            $invocant,
-            PAST::Val.new( :value( ~$<bare_words> ), :returns('String'), :node($/))
-        );
+    my $symbol := @?BLOCK[0].symbol( ~$invocant.name() );
+    if $symbol {
+        if $key eq "bare_words" {
+            # TODO: We can end up here with a bare symbol name on a line,
+            #       so check to see that we actually have any words before
+            #       we freak out.
+            $/.panic("Illegal bare words following a variable name");
+        }
+        elsif $key eq "arguments" {
+            my $args := $( $<arguments> );
+            my $past := PAST::Var.new(:scope('keyed'),
+                                      :vivibase('ResizablePMCArray'),
+                                      :viviself('Undef'),
+                                      :node($/));
+            for $args {
+                my $temp := $args.pop();
+                $past.unshift($temp);
+            }
+            $past.unshift($invocant);
+            make $past;
+        }
     }
-    elsif $key eq "arguments" {
-        my $past     := $( $<arguments> );
-        ## the rule "arguments" creates a call node already.
-        ## set the invocant as the first child of the PAST::Op(:pasttype('call')) node
-        $past.unshift( $invocant );
-        make $past;
+    else {
+        if $key eq "bare_words" {
+            make PAST::Op.new( :pasttype('call'), :node($/),
+                $invocant,
+                PAST::Val.new( :value( ~$<bare_words> ), :returns('String'), :node($/))
+            );
+        }
+        elsif $key eq "arguments" {
+            my $past := $( $<arguments> );
+            $past.name("_dispatch");
+            $past.unshift(PAST::Val.new( :value($invocant.name()), :returns('String'), :node($/)));
+            make $past;
+        }
     }
 }
 
