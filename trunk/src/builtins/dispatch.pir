@@ -41,6 +41,47 @@ and can share names between them.
 
 =cut
 
+.namespace ["_Matrixy";"builtins"]
+
+.sub 'help'
+    .param string name :optional
+    .param int has_name :opt_flag
+
+    unless has_name goto _print_basic_documentation
+
+    .local pmc filehandle
+    .local int indocs
+    indocs = 0
+    $P0 = get_hll_global '_find_file_in_path'
+    filehandle = $P0(name)
+    $I0 = defined $P0
+    unless $I0 goto _get_out
+
+  _loop_top:
+    unless filehandle goto _get_out
+    $S0 = readline filehandle
+    $S1 = substr $S0, 0, 3
+    if $S1 == "%% " goto _have_comment
+    if indocs != 0 goto _loop_end
+    goto _loop_top
+
+  _have_comment:
+    $S2 = substr $S0, 3
+    print " - "
+    print $S2
+    goto _loop_top
+
+  _loop_end:
+    close filehandle
+  _get_out:
+    .return()
+
+  _print_basic_documentation:
+    say "Matrixy, a Parrot-based compiler for M script."
+    say "Type help('<NAME>') to get help about function <NAME>"
+    .return()
+.end
+
 .namespace []
 
 .sub '_dispatch'
@@ -67,10 +108,19 @@ and can share names between them.
     if $I0 goto _dispatch_found_sub
 
     # Fourth, search for the file "name".m in the /lib
-    sub_obj = '_find_file_in_path'(name)
+    .local pmc filehandle
+    filehandle = '_find_file_in_path'(name)
+    $I0 = defined filehandle
+    if $I0 goto _dispatch_found_file
+    goto _dispatch_not_found
+
+  _dispatch_found_file:
+    sub_obj = '_get_sub_from_code_file'(filehandle, name)
+    close filehandle
     $I0 = defined sub_obj
     if $I0 goto _dispatch_found_sub
 
+  _dispatch_not_found:
     # At this point, if we can't find anything, bork
     '_error_all'(name, " undefined")
     $P0 = null
@@ -78,15 +128,6 @@ and can share names between them.
 
   _dispatch_found_sub:
     $P0 = sub_obj(args :flat)
-    .return($P0)
-  _dispatch_found_var:
-    .tailcall _variable_indexed_arg(var_obj, args)
-.end
-
-.sub '_variable_indexed_arg'
-    .param pmc obj
-    .param pmc args
-    $P0 = obj.'get_element'(args :flat)
     .return($P0)
 .end
 
@@ -120,6 +161,12 @@ and can share names between them.
     .return($P0)
 
   _find_found_file:
+    .return(filehandle)
+.end
+
+.sub '_get_sub_from_code_file'
+    .param pmc filehandle
+    .param string name
     .local pmc code
     .local pmc func_list
     .local pmc sub_obj

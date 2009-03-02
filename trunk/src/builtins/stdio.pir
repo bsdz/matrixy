@@ -205,7 +205,7 @@ if the result of the variable x, or the subroutine call x() returns the value
     print value
     print "\n\n"
   end_p_r_s:
-    set_hll_global ['Octave';'Grammar';'Actions'], "ans", value
+    set_hll_global "ans", value
   end_print_result:
     .return()
 .end
