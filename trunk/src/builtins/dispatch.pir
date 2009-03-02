@@ -41,6 +41,8 @@ and can share names between them.
 
 =cut
 
+.namespace []
+
 .sub '_dispatch'
     .param string name
     .param pmc args :slurpy
@@ -104,15 +106,6 @@ and can share names between them.
     .param pmc args
     $P0 = obj.'get_element'(args :flat)
     .return($P0)
-.end
-
-# A built-in function. Search for the file where the builtin is implemented,
-# and display any documentation from that file.
-.sub 'help'
-    .param string name
-    $P0 = '_search_for_function'(name)
-    $I0 = defined $P0
-    .return()
 .end
 
 =head1 set_nargin/set_nargout

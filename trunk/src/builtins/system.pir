@@ -13,9 +13,16 @@ do secret system stuff.
 
 =cut
 
-.namespace []
+.sub '_system'
+    .param pmc args :slurpy
 
-=item _system_call
+    $P0 = get_hll_global ["_Matrixy";"builtins"], 'system'
+    $P0(args :flat)
+.end
+
+.namespace ["_Matrixy";"builtins"]
+
+=item system
 
 This function handles the MATLAB/Octave behavior where
 prefixing a line with '!' passes that entire line to the

@@ -14,7 +14,7 @@ the console and in files.
 
 =cut
 
-.namespace []
+.namespace ["_Matrixy";"builtins"]
 
 =item disp(PMC msg)
 
@@ -30,6 +30,24 @@ row matrix as well.
     print "\n\n"
     .return ()
 .end
+
+=item error(STRING msg)
+
+raises an exception with the supplied message
+
+=cut
+
+.sub 'error'
+    .param string msg
+    $S0 = msg . "\n\n"
+    $S1 = "??? " . $S0 
+    $P1 = new 'Exception'
+    $P1['message'] = $S1
+    throw  $P1
+    .return ()
+.end
+
+.namespace []
 
 =item _disp_all(PMC args :slurpy)
 
@@ -54,21 +72,6 @@ This is non-standard, so it begins with an underscore.
     .return (1)
 .end
 
-=item error(STRING msg)
-
-raises an exception with the supplied message
-
-=cut
-
-.sub 'error'
-    .param string msg
-    $S0 = msg . "\n\n"
-    $S1 = "??? " . $S0 
-    $P1 = new 'Exception'
-    $P1['message'] = $S1
-    throw  $P1
-    .return ()
-.end
 
 =item _error_all(PMC args :slurpy)
 
@@ -187,10 +190,3 @@ In this way, Matrixy can be used as a sort of desk calculator.
   end_print_result:
     .return()
 .end
-
-# Local Variables:
-#   mode: pir
-#   fill-column: 100
-# End:
-# vim: expandtab shiftwidth=4 ft=pir:
-
