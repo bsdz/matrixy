@@ -42,15 +42,15 @@ function pi2
 end
 
 function  c = circum(r)
-	c = double( pi2() * r );
+    c = double( pi2() * r );
 end
 
 function d = double(x)
-	d = 2 * x;
+    d = 2 * x;
 end
 
 function z = ten()
-	z = 10;
+    z = 10;
 end
 
 x = double(circum(ten() * 5));
