@@ -56,12 +56,11 @@ method statement($/, $key) {
 #       Tree. Work on that.
 method stmt_with_value($/, $key) {
     if $key eq "expression" {
-        my $past := PAST::Op.new(:pasttype('inline'));
-        my $term := PAST::Val.new( :value(~$<terminator>), :returns('String'));
-        $past.inline("_print_result_e(%0, %1)");
-        $past.unshift($term);
-        $past.unshift($( $<expression> ));
-        make $past;
+        make PAST::Op.new(:pasttype('inline'), :node($/),
+            :inline("_print_result_e(%0, %1)"),
+            $( $<expression> ),
+            PAST::Val.new( :value(~$<terminator>), :returns('String'))
+        )
     } elsif $key eq "assignment" {
         my $assignment := $( $<assignment> );
         my $past := PAST::Stmts.new( :node($/),
@@ -72,13 +71,16 @@ method stmt_with_value($/, $key) {
                 PAST::Val.new( :value( ~$<terminator> ), :returns('String'))
             )
         );
-        #our @?BLOCK;
-        #unless @?BLOCK[0].symbol( $assignment.name() ) {
-        #    $past.unshift(PAST::Var.new( :name($assignment.name()), :scope("lexical"),
-        #        #:viviself('OctaveData'),
-        #        :node($/)
-        #    ));
-        #}
+        make $past;
+    } elsif $key eq "sub_or_var" {
+        my $stmt := $( $<sub_or_var> );
+        my $past := PAST::Stmts.new( :node($/),
+            PAST::Op.new( :pasttype('inline'), :node($/),
+                :inline('_print_result_s(%0, %1)'),
+                $stmt,
+                PAST::Val.new( :value( ~$<terminator> ), :returns('String'))
+            )
+        );
         make $past;
     } else {
         make $( $/{$key} );

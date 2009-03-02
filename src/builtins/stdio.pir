@@ -133,6 +133,21 @@ semicolon will cause Octave to print
 
 In this way, Matrixy can be used as a sort of desk calculator.
 
+=item _print_result_a(PMC value, STRING term)
+
+Prints the value of a bare variable or subroutine call name. So writing
+
+  x(5)
+
+Will print out
+
+  ans =
+  
+      9
+
+if the result of the variable x, or the subroutine call x() returns the value
+"9" with argument "5".
+
 =cut
 
 .sub '_print_result_a'
