@@ -20,7 +20,7 @@ the appropriate class files (Matrix.pir, Scalar.pir, etc).
 
 =cut
 
-.namespace []
+.namespace ["_Matrixy";"builtins"]
 
 =item sum(PMC args :slurpy)
 
@@ -56,3 +56,4 @@ remember off the top of my head.
     .return(3.1415926535898)
 .end
 
+.namespace []

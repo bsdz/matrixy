@@ -1,4 +1,4 @@
-.namespace []
+.namespace ["_Matrixy";"builtins"]
 
 .sub 'read'
     $P0 = getstdin
@@ -6,8 +6,5 @@
     .return ($S0)
 .end
 
-
-
-
-
+.namespace []
 

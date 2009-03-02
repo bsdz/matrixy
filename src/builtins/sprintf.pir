@@ -1,4 +1,4 @@
-.namespace []
+.namespace ["_Matrixy";"builtins"]
 
 .sub 'sprintf'
     .param pmc fmt
@@ -8,3 +8,4 @@
     .return ($P0)
 .end
 
+.namespace[]

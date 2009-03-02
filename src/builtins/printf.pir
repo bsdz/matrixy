@@ -1,4 +1,4 @@
-.namespace []
+.namespace ["_Matrixy";"builtins"]
 
 .sub 'printf' 
     .param pmc fmt

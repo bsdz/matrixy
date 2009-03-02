@@ -72,7 +72,7 @@ method control_statement($/, $key) {
 }
 
 method system_call($/) {
-    make PAST::Op.new( :name("system"), :pasttype('call'), :node($/),
+    make PAST::Op.new( :name("_system"), :pasttype('call'), :node($/),
         PAST::Val.new( :value( ~$<bare_words> ), :returns('String'), :node($/) )
     );
 }
