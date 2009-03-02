@@ -1,4 +1,4 @@
-disp("1..4")
+disp("1..5")
 
 % Defined in lib/test1.m
 test1()
@@ -11,3 +11,7 @@ test3(1, 2);
 
 % Defined in lib/test4.m
 disp(test4());
+
+% Defined in t/test5.m
+path("t/")
+test5()
