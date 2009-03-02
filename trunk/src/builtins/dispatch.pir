@@ -67,32 +67,14 @@ and can share names between them.
     if $I0 goto _dispatch_found_sub
 
     # Fourth, search for the file "name".m in the /lib
-    .local string filename
-    .local pmc filehandle
-    filename = "lib/"
-    filename .= name
-    filename .= ".m"
-    push_eh _dispatch_no_file
-    filehandle = open filename, "r"
-    $I0 = defined filehandle
-    if $I0 goto _dispatch_found_file
-
-  _dispatch_no_file:
-    pop_eh
+    sub_obj = '_find_file_in_path'(name)
+    $I0 = defined sub_obj
+    if $I0 goto _dispatch_found_sub
 
     # At this point, if we can't find anything, bork
     '_error_all'(name, " undefined")
     $P0 = null
     .return($P0)
-
-  _dispatch_found_file:
-    .local pmc code
-    code = filehandle.'readall'()
-    $P0 = compreg "matrixy"
-    $P1 = $P0.'compile'(code)
-    # Add this to the loaded function hash
-    sub_obj = $P1[1]
-    func_list[name] = sub_obj
 
   _dispatch_found_sub:
     $P0 = sub_obj(args :flat)
@@ -106,6 +88,49 @@ and can share names between them.
     .param pmc args
     $P0 = obj.'get_element'(args :flat)
     .return($P0)
+.end
+
+.sub '_find_file_in_path'
+    .param string name
+    .local string filename
+    .local pmc path
+    .local pmc myiter
+    .local pmc filehandle
+    path = get_hll_global ["Matrixy";"Grammar";"Actions"], "@?PATH"
+
+    filename = name . ".m"
+    myiter = iter path
+
+  _loop_top:
+    unless myiter goto _loop_not_found
+    $P0 = shift myiter
+    $S0 = $P0
+    $S0 .= filename
+
+    push_eh _find_no_file
+    filehandle = open $S0, "r"
+    goto _find_found_file
+
+  _find_no_file:
+    pop_eh
+    goto _loop_top
+
+  _loop_not_found:
+    $P0 = null
+    .return($P0)
+
+  _find_found_file:
+    .local pmc code
+    .local pmc func_list
+    .local pmc sub_obj
+    code = filehandle.'readall'()
+    $P0 = compreg "matrixy"
+    $P1 = $P0.'compile'(code)
+    # Add this to the loaded function hash
+    sub_obj = $P1[1]
+    func_list = get_hll_global ['Matrixy';'Grammar';'Actions'], '%?FUNCTIONS'
+    func_list[name] = sub_obj
+    .return(sub_obj)
 .end
 
 =head1 set_nargin/set_nargout
