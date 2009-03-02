@@ -173,11 +173,10 @@ rule primary {
     {*}
 }
 
-# TODO: Combine this into sub_or_var. We can do all the logic there.
 rule postfix_expression {
     | <key> {*}                      #= key
-    | <member> {*}                   #= member
     | <index> {*}                    #= index
+    | <member> {*}                   #= member
 }
 
 rule key {
@@ -190,6 +189,8 @@ rule member {
     {*}
 }
 
+# TODO: This isn't really valid M syntax. We're keeping this as a "feature"
+#       to help disambiguate variable and subroutine calls.
 rule index {
     '[' <expression> ']'
     {*}

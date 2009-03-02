@@ -15,7 +15,8 @@ Rules:
 =item*
 
 Look up the name in the list of local variables. If we find it, dispatch
-the request to the variable as a table lookup.
+the request to the variable as a table lookup. This should already be done
+in the grammar.
 
 =item*
 
@@ -46,17 +47,17 @@ and can share names between them.
     .local pmc sub_obj
     .local pmc var_obj
 
-    # First, check the local symbol table to see if we have a variable with name
-    var_obj = get_hll_global ["Matrixy"], name
-    $I0 = defined var_obj
-    if $I0 goto _dispatch_found_var
-
-    # Second, look for a builtin function.
+    # First, look for a builtin function.
     sub_obj = get_hll_global ["_Matrixy";"builtins"], name
     $I0 = defined sub_obj
     if $I0 goto _dispatch_found_sub
 
-    # Third, look for a list of already-loaded functions
+    # Second, look for a locally-defined function
+    sub_obj = find_name name
+    $I0 = defined sub_obj
+    if $I0 goto _dispatch_found_sub
+
+    # Third, look for a list of already-loaded external functions
     .local pmc func_list
     func_list = get_hll_global ['Matrixy';'Grammar';'Actions'], '%?FUNCTIONS'
     sub_obj = func_list[name]
