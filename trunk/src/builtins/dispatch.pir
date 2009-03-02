@@ -42,34 +42,67 @@ and can share names between them.
 
 .sub '_dispatch'
     .param string name
-    .param pmc args
+    .param pmc args :slurpy
+    .local pmc sub_obj
+    .local pmc var_obj
 
-    # determine which namespace we have to look this up in
-    # also determine whether we need to find_global or find_lex here.
-    #$P0 = find_global name
-    #$I0 = defined $P0
-    #if $I0 goto _dispatch_found
+    # First, check the local symbol table to see if we have a variable with name
+    var_obj = get_hll_global ["Matrixy"], name
+    $I0 = defined var_obj
+    if $I0 goto _dispatch_found_var
 
-    # Here, we haven't found an entry in the local symbol table, so
-    # we need to search for it.
-    '_error_all'(name, " is undefined and search is not implemented")
-    .return(0)
+    # Second, look for a builtin function.
+    sub_obj = get_hll_global ["_Matrixy";"builtins"], name
+    $I0 = defined sub_obj
+    if $I0 goto _dispatch_found_sub
 
-  _dispatch_found:
-    # We have a value, it should be a MatrixData value, so we can test whether
-    # it's a subroutine or a variable.
-    #$S0 = typeof $P0
-    #if $S0 = 'Sub' goto
-    .return(1)
+    # Third, look for a list of already-loaded functions
+    .local pmc func_list
+    func_list = get_hll_global ['Matrixy';'Grammar';'Actions'], '%?FUNCTIONS'
+    sub_obj = func_list[name]
+    $I0 = defined sub_obj
+    if $I0 goto _dispatch_found_sub
+
+    # Fourth, search for the file "name".m in the /lib
+    .local string filename
+    .local pmc filehandle
+    filename = "lib/"
+    filename .= name
+    filename .= ".m"
+    push_eh _dispatch_no_file
+    filehandle = open filename, "r"
+    $I0 = defined filehandle
+    if $I0 goto _dispatch_found_file
+
+  _dispatch_no_file:
+    pop_eh
+
+    # At this point, if we can't find anything, bork
+    '_error_all'(name, " undefined")
+    $P0 = null
+    .return($P0)
+
+  _dispatch_found_file:
+    .local pmc code
+    code = filehandle.'readall'()
+    $P0 = compreg "matrixy"
+    $P1 = $P0.'compile'(code)
+    # Add this to the loaded function hash
+    sub_obj = $P1[1]
+    func_list[name] = sub_obj
+
+  _dispatch_found_sub:
+    $P0 = sub_obj(args :flat)
+    .return($P0)
+  _dispatch_found_var:
+    .tailcall _variable_indexed_arg(var_obj, args)
 .end
 
-# Search for the function in the library. Load the file and return a handle
-# to it if found. Return undef otherwise.
-.sub '_search_for_function'
-    .param string name
-    .local pmc subroutine
-    subroutine = null
-    .return(subroutine)
+.sub '_variable_indexed_arg'
+    .param pmc obj
+    .param pmc args
+    $P0 = obj.'get_element'(args :flat)
+    .return($P0)
 .end
 
 # A built-in function. Search for the file where the builtin is implemented,
