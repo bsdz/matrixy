@@ -62,6 +62,24 @@ method stmt_with_value($/, $key) {
         $past.unshift($term);
         $past.unshift($( $<expression> ));
         make $past;
+    } elsif $key eq "assignment" {
+        my $assignment := $( $<assignment> );
+        my $past := PAST::Stmts.new( :node($/),
+            PAST::Op.new( :pasttype('inline'), :node($/),
+                :inline('_print_result_a(%0, %1, %2)'),
+                PAST::Val.new( :value( $assignment.name() ), :returns('String')),
+                $assignment,
+                PAST::Val.new( :value( ~$<terminator> ), :returns('String'))
+            )
+        );
+        #our @?BLOCK;
+        #unless @?BLOCK[0].symbol( $assignment.name() ) {
+        #    $past.unshift(PAST::Var.new( :name($assignment.name()), :scope("lexical"),
+        #        #:viviself('OctaveData'),
+        #        :node($/)
+        #    ));
+        #}
+        make $past;
     } else {
         make $( $/{$key} );
     }
@@ -258,7 +276,7 @@ method assignment($/) {
     my $rhs := $( $<expression> );
     my $lhs := $( $<primary> );
     $lhs.lvalue(1);
-    make PAST::Op.new( $lhs, $rhs, :pasttype('bind'), :node($/) );
+    make PAST::Op.new( $lhs, $rhs, :pasttype('bind'), :name( $lhs.name() ), :node($/) );
 }
 
 method variable_declaration($/) {
