@@ -35,10 +35,10 @@ rule control_statement {
     | <try_statement> {*}                    #= try_statement
     | <throw_statement> {*}                  #= throw_statement
     | <do_block> {*}                         #= do_block
+    | <return_statement> <terminator> {*}    #= return_statement
 }
 
 rule stmt_with_value {
-    | <return_statement> <terminator> {*}    #= return_statement
     | <sub_or_var> <terminator> {*}          #= sub_or_var
     | <assignment> <terminator> {*}          #= assignment
     | <expression> <terminator> {*}          #= expression
