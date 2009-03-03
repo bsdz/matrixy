@@ -75,6 +75,9 @@ to the Matrixy compiler.
 .include 'src/gen_grammar.pir'
 .include 'src/gen_actions.pir'
 
+.include 'src/classes/Data.pir'
+.include 'src/classes/Matrix.pir'
+
 .namespace []
 
 .sub 'initlist' :anon :load :init
