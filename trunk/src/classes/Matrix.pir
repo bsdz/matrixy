@@ -1,5 +1,5 @@
 
-.namespace ['MatrixyMatrix']
+.namespace ['Matrixy';'Classes']
 
 =head1 ABOUT
 
@@ -35,7 +35,7 @@ anonymous function run at load time to establish the matrix class
 =cut
 
 .sub 'onload' :anon :load :init
-    $P0 = subclass 'MatrixyData', 'MatrixyMatrix'
+    $P0 = subclass '_Data', '_Matrix'
     addattribute $P0, 'size_x'
     addattribute $P0, 'size_y'
     addattribute $P0, 'numerical'
@@ -52,7 +52,7 @@ size parameters (which would need to be passed to a separate function).
 =cut
 
 .sub 'init' :vtable
-    $P0 = box 'MatrixyMatrix'
+    $P0 = box '_Matrix'
     setattribute self, 'type', $P0
     $P0 = box 1
     setattribute self, 'size_x', $P0
@@ -366,7 +366,8 @@ prints the matrix in stringified form. Here's an example:
     $I3 = ptry + 1
     $P2 = self.'get_element'($I2, $I3)
     s .= "\t"
-    s .= $P2
+    #s .= $P2
+    concat $P2, s
     ptry = ptry + 1
     if ptry >= $I1 goto y_loop_end
     goto y_loop_top
@@ -939,7 +940,3 @@ Return the integer determinant of self
 .sub 'determinant' :method
     #calculate the determinant of the matrix, using cofactor expansion
 .end
-
-=back
-
-=cut 

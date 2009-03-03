@@ -1,4 +1,4 @@
-.namespace ['MatrixyData']
+.namespace ['Matrixy';'Classes']
 
 =head1 ABOUT
 
@@ -13,7 +13,7 @@ This is a basic superclass for all values in Matrixy.
 =cut
 
 .sub 'onload' :anon :load :init
-    newclass $P0, "MatrixyData"
+    newclass $P0, '_Data'
     addattribute $P0, 'name'
     addattribute $P0, 'type'
     addattribute $P0, 'data'
@@ -81,19 +81,15 @@ This is a basic superclass for all values in Matrixy.
     .return()
 .end
 
-=item assign()
+# =item assign()
 
-=cut
+# =cut
 
-.sub 'assign' :method :vtable
-    .param pmc x
-    $S0 = typeof x
-    if $S0 == 'String' goto _convert_string
-    if $S0 == 'Integer' goto _convert_int
-    if $S0 == 'Float' goto _convert_float
-    if $S0 == 'Sub' goto _convert_sub
-.end
-
-=back
-
-=cut
+# .sub 'assign' :method :vtable
+    # .param pmc x
+    # $S0 = typeof x
+    # if $S0 == 'String' goto _convert_string
+    # if $S0 == 'Integer' goto _convert_int
+    # if $S0 == 'Float' goto _convert_float
+    # if $S0 == 'Sub' goto _convert_sub
+# .end
