@@ -87,9 +87,9 @@ to the Matrixy compiler.
     $P1 = new 'Hash'
     set_hll_global ['Matrixy';'Grammar';'Actions'], '%?FUNCTIONS', $P1
 
+    # default path is set to current directory
     $P2 = new 'ResizablePMCArray'
-    $P2[0] = ""
-    $P2[1] = "lib/"
+    $P2[0] = "."
     set_hll_global ['Matrixy';'Grammar';'Actions'], '@?PATH', $P2
 .end
 
