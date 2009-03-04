@@ -206,36 +206,4 @@ arguments that the caller is expecting
 .sub 'get_nargout'
 .end
 
-=head1 path
-
-If no argument is provided, print the path. If an argument is provided, add
-it to the end of the path list
-
-=cut
-
-.namespace ["_Matrixy";"builtins"]
-
-.sub 'path'
-    .param pmc addpath :optional
-    .param int has_addpath :opt_flag
-    .local pmc path
-    path = get_hll_global ["Matrixy";"Grammar";"Actions"], "@?PATH"
-
-    if has_addpath goto _add_to_path
-    .local pmc myiter
-    myiter = iter path
-  _iter_loop:
-    unless myiter goto _iter_end
-    $S0 = shift myiter
-    say $S0
-    goto _iter_loop
-  _iter_end:
-    .return()
-
-  _add_to_path:
-    push path, addpath
-    set_hll_global ["Matrixy";"Grammar";"Actions"], "@?PATH", path
-    .return()
-.end
-
 .namespace []
