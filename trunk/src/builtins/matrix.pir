@@ -46,6 +46,10 @@ Return the sizes of the matrix along each dimension
     $S0 = m
     .return($S0)
 
+    # TODO: This is all a bit of a hack. Clean this all up, and maybe delegate
+    #       some of the logic to recursive sub-functions to make all the evil
+    #       go away. Plus, this only handles Vectors and 2-D matrices, so that
+    #       needs to be generalized.
   _its_a_matrix:
     .local pmc itera
     .local pmc iterb
@@ -83,6 +87,10 @@ Return the sizes of the matrix along each dimension
     .local pmc myiter
     .local pmc sizes
     .local int max
+
+    # TODO: This function ONLY handles 2-D matrices right now, it doesn't work
+    #       for 1xN vectors yet. Fix that, and maybe generalize it so it will
+    #       work for N-D vectors
 
     # We're only handling square matrices right now.
     $I0 = elements m
@@ -122,7 +130,7 @@ Return the sizes of the matrix along each dimension
   _loop_bottomb:
 
     # Okay, the matrix should be square now. At least, I hope so. Return
-    .return(1)
+    .return(m)
 .end
 
 .sub '_get_matrix_dimensions'
@@ -131,6 +139,8 @@ Return the sizes of the matrix along each dimension
     if $S0 == 'ResizablePMCArray' goto _its_a_matrix
     .return(1)
 
+    # This function should be sufficiently generalized for matrices of any
+    # dimension, assuming we keep with the strategy of nesting RPAs
   _its_a_matrix:
     .local int dims
     dims = 1
@@ -148,6 +158,9 @@ Return the sizes of the matrix along each dimension
 
 .sub '_get_matrix_sizes'
     .param pmc m
+
+    # TODO: This needs to be tested. I don't use it (because it probably
+    #       doesn't work.
     .local pmc sizes
     sizes = new 'ResizableIntegerArray'
     $S0 = typeof m
