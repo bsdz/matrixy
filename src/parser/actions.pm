@@ -276,7 +276,7 @@ method do_block($/) {
 #       variable name and not a function name.
 method assignment($/) {
     my $rhs := $( $<expression> );
-    my $lhs := $( $<primary> );
+    my $lhs := $( $<variable> );
     $lhs.lvalue(1);
     make PAST::Op.new( $lhs, $rhs, :pasttype('bind'), :name( $lhs.name() ), :node($/) );
 }
@@ -481,6 +481,19 @@ method primary($/) {
         ## $expr is either a key or an index; both are "keyed"
         ## variable access, where the first child is assumed
         ## to be the aggregate.
+        $expr.unshift($past);
+        $past := $expr;
+    }
+    make $past;
+}
+
+# A variable is exactly like a primary except we can deduce from the grammar
+# that it's definitely a variable and not a function call. Few opportunities
+# to do this.
+method variable($/) {
+    my $past:= $( $<identifier> );
+    for $<postfix_expression> {
+        my $expr := $( $_ );
         $expr.unshift($past);
         $past := $expr;
     }
