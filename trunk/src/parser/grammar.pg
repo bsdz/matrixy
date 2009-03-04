@@ -39,8 +39,8 @@ rule statement {
 # Statement types that would display a value if not terminated with an ';'
 rule stmt_with_value {
     | <assignment> <terminator> {*}          #= assignment
-    | <sub_or_var> <terminator> {*}          #= sub_or_var
     | <expression> <terminator> {*}          #= expression
+    | <sub_or_var> <terminator> {*}          #= sub_or_var
 }
 
 token terminator {
@@ -56,7 +56,7 @@ token bare_words {
 }
 
 rule assignment {
-    <primary> '=' <expression>
+    <variable> '=' <expression>
     {*}
 }
 
@@ -83,7 +83,15 @@ rule arguments {
     {*}
 }
 
+# An ambiguous primary element, could be a subroutine call or a variable
+# reference, depending on context
 rule primary {
+    <identifier> <postfix_expression>*
+    {*}
+}
+
+# An unambiguous variable reference, based on context
+rule variable {
     <identifier> <postfix_expression>*
     {*}
 }
