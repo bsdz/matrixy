@@ -15,32 +15,31 @@ rule TOP {
     {*}                                      #= close
 }
 
+################################################################################
+# STATEMENTS AND BLOCKS
+################################################################################
+
+rule block {
+    {*}                                #= open
+    <statement>*
+    {*}                                #= close
+}
+
 rule stat_or_def {
-    | <statement> {*}                        #= statement
-    | <system_call> {*}                      #= system_call
+    | <statement> {*}                         #= statement
     | <func_def> {*}                         #= func_def
 }
 
 rule statement {
     | <control_statement> {*}                #= control_statement
     | <stmt_with_value> {*}                  #= stmt_with_value
+    | <system_call> {*}                      #= system_call
 }
 
-# TODO: Make sure we support all these forms, and weed out any statement
-#       types that aren't in M
-rule control_statement {
-    | <if_statement> {*}                     #= if_statement
-    | <while_statement> {*}                  #= while_statement
-    | <for_statement> {*}                    #= for_statement
-    | <try_statement> {*}                    #= try_statement
-    | <throw_statement> {*}                  #= throw_statement
-    | <do_block> {*}                         #= do_block
-    | <return_statement> <terminator> {*}    #= return_statement
-}
-
+# Statement types that would display a value if not terminated with an ';'
 rule stmt_with_value {
-    | <sub_or_var> <terminator> {*}          #= sub_or_var
     | <assignment> <terminator> {*}          #= assignment
+    | <sub_or_var> <terminator> {*}          #= sub_or_var
     | <expression> <terminator> {*}          #= expression
 }
 
@@ -56,98 +55,14 @@ token bare_words {
     \N* \n?
 }
 
-# TODO: Update this syntax to match that in M
-rule if_statement {
-    'if' <expression> <block> ['else' <else=block>]? ['endif'|'end']>>
-    {*}
-}
-
-# TODO: Update this syntax to match that in M
-rule while_statement {
-    'while' <expression> 'do' <block> 'end'
-    {*}
-}
-
-# TODO: Update this syntax to match that in M
-rule for_statement {
-    'for' <for_init> ',' <expression> [',' <step=expression>]? 'do'
-    <statement>*
-    'end'
-    {*}
-}
-
-rule for_init {
-    'var' <identifier> '=' <expression>
-    {*}
-}
-
-# TODO: I don't remember how M handles exceptions. Update this to match
-#       if it doesn't
-rule try_statement {
-    'try' <try=block> 'catch' <exception> <catch=block> 'end'
-    {*}
-}
-
-rule exception {
-    <identifier>
-    {*}
-}
-
-rule throw_statement {
-    'throw' <expression>
-    {*}
-}
-
-# TODO: In M, return statements don't take an expression, because the return
-#       values are specified in the function definition. Update this.
-rule return_statement {
-    'return' <expression>
-    {*}
-}
-
-rule block {
-    {*}                                #= open
-    <statement>*
-    {*}                                #= close
-}
-
-# TODO: Does M have a do-block? If not, delete this.
-rule do_block {
-    'do' <block> 'end'
-    {*}
-}
-
 rule assignment {
     <primary> '=' <expression>
     {*}
 }
 
-# note: the order of endfunction|end are important here!
-#
-rule func_def {
-    <func_sig>
-    <statement>*
-    ['endfunction'|'end']>>
-    {*}
-}
-
-rule func_sig {
-    'function' [<return_identifier> '=']? <identifier> 
-        ['(' [ <identifier> [',' <identifier>]* ]? ')']?
-    {*}
-}
-
-# TODO: Expand this to allow mulitple return values in a () comma-separated
-#       list.
-token return_identifier {
-    <!keyword> <ident>
-    {*}
-}
-
-rule variable_declaration {
-    <identifier> ['=' <expression>]?
-    {*}
-}
+################################################################################
+# FUNCTIONS AND VARIABLES
+################################################################################
 
 # TODO: The <arguments> should be optional. Also, if parenthesis aren't
 #       supplied the entire line should be treated like a bare string and
@@ -208,12 +123,116 @@ rule term {
    | '(' <expression> ')' {*}        #= expression
 }
 
+
+################################################################################
+# CONTROL STATEMENTS
+################################################################################
+
+# TODO: Make sure we support all these forms, and weed out any statement
+#       types that aren't in M
+rule control_statement {
+    | <if_statement> {*}                     #= if_statement
+    | <while_statement> {*}                  #= while_statement
+    | <for_statement> {*}                    #= for_statement
+    | <try_statement> {*}                    #= try_statement
+    | <throw_statement> {*}                  #= throw_statement
+    | <do_block> {*}                         #= do_block
+    | <return_statement> <terminator> {*}    #= return_statement
+}
+
+# TODO: Update this syntax to match that in M
+rule if_statement {
+    'if' <expression> <block> ['else' <else=block>]? ['endif'|'end']>>
+    {*}
+}
+
+# TODO: Update this syntax to match that in M
+rule while_statement {
+    'while' <expression> 'do' <block> 'end'
+    {*}
+}
+
+# TODO: Update this syntax to match that in M
+rule for_statement {
+    'for' <for_init> ',' <expression> [',' <step=expression>]? 'do'
+    <statement>*
+    'end'
+    {*}
+}
+
+rule for_init {
+    'var' <identifier> '=' <expression>
+    {*}
+}
+
+# TODO: I don't remember how M handles exceptions. Update this to match
+#       if it doesn't
+rule try_statement {
+    'try' <try=block> 'catch' <exception> <catch=block> 'end'
+    {*}
+}
+
+rule exception {
+    <identifier>
+    {*}
+}
+
+rule throw_statement {
+    'throw' <expression>
+    {*}
+}
+
+# TODO: In M, return statements don't take an expression, because the return
+#       values are specified in the function definition. Update this.
+rule return_statement {
+    'return' <expression>
+    {*}
+}
+
+# TODO: Does M have a do-block? If not, delete this.
+rule do_block {
+    'do' <block> 'end'
+    {*}
+}
+
+################################################################################
+# FUNCTION DEFINITIONS
+################################################################################
+
+# note: the order of endfunction|end are important here!
+#
+rule func_def {
+    <func_sig>
+    <statement>*
+    ['endfunction'|'end']>>
+    {*}
+}
+
+rule func_sig {
+    'function' [<return_identifier> '=']? <identifier> 
+        ['(' [ <identifier> [',' <identifier>]* ]? ')']?
+    {*}
+}
+
+# TODO: Expand this to allow mulitple return values in a () comma-separated
+#       list.
+token return_identifier {
+    <!keyword> <ident>
+    {*}
+}
+
+################################################################################
+# CONSTRUCTORS AND CONSTANTS
+################################################################################
+
 rule anon_func_constructor {
     '@' '(' [ <identifier> [',' <identifier>]* ]? ')' 
     <expression> 
     {*}
 }
 
+# TODO: Does M have things like this, or not? Do we want to keep hashes as a
+#       feature?
 rule hash_constructor {
     '{' [ <named_field> [',' <named_field>]* ]? '}'
     {*}
@@ -224,6 +243,7 @@ rule named_field {
     {*}
 }
 
+# TODO: Should probably be renamed "matrix_constructor", but that's nitpickery
 rule array_constructor {
     #'[' [ <expression> [',' <expression>]* ]? ']'
     '[' [ <array_row> [';' <array_row>]* ]? ']'
@@ -253,6 +273,8 @@ token float_constant {
     {*}
 }
 
+# TODO: M only supports 'single-quote' string literals, not "double-quote".
+#       Do we keep them as a feature, or give them a special meaning, or what?
 token string_constant {
     [\" <string_literal: '"'> \" | \' <string_literal: '\''> \']
     {*}
