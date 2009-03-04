@@ -225,7 +225,13 @@ rule named_field {
 }
 
 rule array_constructor {
-    '[' [ <expression> [',' <expression>]* ]? ']'
+    #'[' [ <expression> [',' <expression>]* ]? ']'
+    '[' [ <array_row> [';' <array_row>]* ]? ']'
+    {*}
+}
+
+rule array_row {
+    <expression> [','? <expression>]*
     {*}
 }
 

@@ -532,10 +532,17 @@ method named_field($/) {
 }
 
 method array_constructor($/) {
-    ## use the parrot calling conventions to
-    ## create an array,
-    ## using the "anonymous" sub !array
-    ## (which is not a valid Squaak name)
+    # Create an array of array_rows, which are going to be arrays themselves.
+    # All matrices are going to be two dimensional, sometimes that just won't
+    # be obvious.
+    my $past := PAST::Op.new( :name('!array'), :pasttype('call'), :node($/) );
+    for $<array_row> {
+        $past.push($($_));
+    }
+    make $past;
+}
+
+method array_row($/) {
     my $past := PAST::Op.new( :name('!array'), :pasttype('call'), :node($/) );
     for $<expression> {
         $past.push($($_));
