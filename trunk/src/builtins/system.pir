@@ -62,14 +62,12 @@ not currently perform any lookups however.
     .param pmc args :slurpy
 
     $S0 = '!get_first_string'(func)
-    $P0 = find_name $S0
-    $S1 = typeof $P0
-    if $S1 != 'Sub' goto no_sub_error
-    .tailcall $P0(args :flat)
-  no_sub_error:
-    _error_all('Function ', $S0, ' not found')
+    .tailcall '_dispatch'($S0, args :flat)
 .end
 
+=item eval(STRING try, STRING catch)
+
+Compile and execute the M code in C<try>. If there are any problems
 =item quit()
 
 Exits the program.
