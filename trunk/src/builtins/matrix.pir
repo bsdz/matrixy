@@ -1,6 +1,4 @@
 
-.namespace []
-
 =head1 ABOUT
 
 This file implements some basic routines for working with multidimensional
@@ -10,7 +8,56 @@ matrix objects. These are, at least at first, nested ResizablePMCArray objects.
 
 At the moment, only covers matrices with a dimension of 1 or 2. No 3-D matrices.
 
-=head1 FUNCTIONS
+=head1 BUILTIN FUNCTIONS
+
+=over 4
+
+=cut
+
+.namespace ["_Matrixy";"builtins"]
+
+.sub 'size'
+    .param pmc x
+    $S0 = typeof x
+    if $S0 == 'ResizablePMCArray' goto _its_an_array
+    .return(1)
+  _its_an_array:
+    $P0 = find_name '!get_matrix_sizes'
+    $P1 = $P0(x)
+    $P0 = find_name '!array_row'
+    $P2 = $P0($P1 :flat)
+    $P0 = find_name '!array_col'
+    .tailcall $P0($P2)
+.end
+
+.sub 'rows'
+    .param pmc x
+    $S0 = typeof x
+    if $S0 == 'ResizablePMCArray' goto _its_an_array
+    .return(1)
+  _its_an_array:
+    $P0 = find_name '!get_matrix_sizes'
+    $P1 = $P0(x)
+    $I0 = $P1[0]
+    .return($I0)
+.end
+
+.sub 'columns'
+    .param pmc x
+    $S0 = typeof x
+    if $S0 == 'ResizablePMCArray' goto _its_an_array
+    .return(1)
+  _its_an_array:
+    $P0 = find_name '!get_matrix_sizes'
+    $P1 = $P0(x)
+    $I0 = $P1[1]
+    .return($I0)
+.end
+
+
+=back
+
+=head1 INTERNAL FUNCTIONS
 
 =over 4
 
@@ -18,26 +65,9 @@ At the moment, only covers matrices with a dimension of 1 or 2. No 3-D matrices.
 
 Gets a string that represents the contents of the variable m.
 
-=item !get_first_string(PMC x)
-
-Returns a string from the argument. If x is a String PMC, return that. If it
-is an array or matrix PMC, return the first element as a string. Otherwise,
-throw an error that no strings are found.
-
-=item _verify_matrix(m)
-
-Verify that the matrix is square (or cube, or whatever). Zero pad it out
-otherwise.
-
-=item _get_matrix_dimensions
-
-Return the dimensions of the matrix
-
-=item _get_matrix_size
-
-Return the sizes of the matrix along each dimension
-
 =cut
+
+.namespace []
 
 .sub '!get_matrix_string'
     .param pmc col
@@ -89,6 +119,14 @@ Return the sizes of the matrix along each dimension
    .return(s)
 .end
 
+=item !get_first_string(PMC x)
+
+Returns a string from the argument. If x is a String PMC, return that. If it
+is an array or matrix PMC, return the first element as a string. Otherwise,
+throw an error that no strings are found.
+
+=cut
+
 .sub '!get_first_string'
     .param pmc x
     $S0 = typeof x
@@ -103,6 +141,15 @@ Return the sizes of the matrix along each dimension
     $P0 = x[0]
     .tailcall '!get_first_string'($P0)
 .end
+
+=item _verify_matrix(m)
+
+Verify that the matrix is square (or cube, or whatever). Zero pad it out
+otherwise.
+
+TODO: Unused and untested
+
+=cut
 
 .sub '_verify_matrix'
     .param pmc m
@@ -155,54 +202,44 @@ Return the sizes of the matrix along each dimension
     .return(m)
 .end
 
-.sub '_get_matrix_dimensions'
+=item _get_matrix_dimensions
+
+Return the number of dimensions of the matrix. Probably 1 or 2
+
+=cut
+
+.sub '!get_matrix_dimensions'
     .param pmc m
     $S0 = typeof m
     if $S0 == 'ResizablePMCArray' goto _its_a_matrix
     .return(1)
-
-    # This function should be sufficiently generalized for matrices of any
-    # dimension, assuming we keep with the strategy of nesting RPAs
   _its_a_matrix:
-    .local int dims
-    dims = 1
-    m = '_verify_matrix'(m)
     $P0 = m[0]
-
-  _loop_top:
-    $S0 = typeof $P0
-    if $S0 == 'ResizablePMCArray' goto _another_dim
-    .return(dims)
-  _another_dim:
-    dims = dims + 1
-    goto _loop_top
+    $I0 = '!get_matrix_dimensions'($P0)
+    $I0 = $I0 + 1
+    .return($I0)
 .end
 
-.sub '_get_matrix_sizes'
+=item _get_matrix_size
+
+Return the sizes of the matrix along each dimension, in an RIA.
+
+=cut
+
+.sub '!get_matrix_sizes'
     .param pmc m
 
-    # TODO: This needs to be tested. I don't use it (because it probably
-    #       doesn't work.
-    .local pmc sizes
-    sizes = new 'ResizableIntegerArray'
     $S0 = typeof m
     if $S0 == 'ResizablePMCArray' goto _its_a_matrix
-    sizes[0] = 1
-    .return(sizes)
+    $P0 = new 'ResizableIntegerArray'
+    .return($P0)
 
   _its_a_matrix:
-    .local int dims
-    dims = '_get_matrix_dimensions'(m)
-    $P0 = m
-
-  _loop_top:
-    if dims == 0 goto _loop_bottom
-    $I0 = $P0
-    sizes[dims] = $I0
-    dims = dims - 1
-    goto _loop_top
-  _loop_bottom:
-    .return(sizes)
+    $P0 = m[0]
+    $P1 = '!get_matrix_sizes'($P0)
+    $I0 = m
+    unshift $P1, $I0
+    .return($P1)
 .end
 
 =item !array_row(PMC fields :slurpy)
@@ -442,8 +479,8 @@ Can only dispatch over an internal function, not a builtin or a library routine.
     .param pmc op
 
     # Check that we have operands of the same size.
-    $P0 = '_get_matrix_sizes'(a)
-    $P1 = '_get_matrix_sizes'(b)
+    $P0 = '!get_matrix_sizes'(a)
+    $P1 = '!get_matrix_sizes'(b)
     if $P0 != $P1 goto bad_operand_sizes
 
     .local pmc sub
