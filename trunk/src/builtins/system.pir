@@ -38,14 +38,10 @@ Will cause the word "hello" to be printed to the terminal.
     .param pmc cmd
     .param pmc flags :optional
     .param int has_flags :opt_flag
-
     if has_flags goto capture_output
 
-    $S0 = cmd
+    $S0 = '!get_first_string'(cmd)
     $I0 = spawnw $S0
-    #$P0 = new 'MatrixyMatrix'
-    #$P0 = $I0
-    #.return ($P0)
     .return($I0)
 
   capture_output:
@@ -62,10 +58,16 @@ not currently perform any lookups however.
 =cut
 
 .sub 'feval'
-    .param string func
+    .param pmc func
     .param pmc args :slurpy
-    $P0 = find_name func
+
+    $S0 = '!get_first_string'(func)
+    $P0 = find_name $S0
+    $S1 = typeof $P0
+    if $S1 != 'Sub' goto no_sub_error
     .tailcall $P0(args :flat)
+  no_sub_error:
+    _error_all('Function ', $S0, ' not found')
 .end
 
 =item quit()

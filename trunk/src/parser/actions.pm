@@ -563,6 +563,14 @@ method array_row($/) {
     make $past;
 }
 
+method range_constructor($/, $key) {
+    my $past := PAST::Op.new( :name('!range_constructor_' ~ $key), :pasttype('call'), :node($/));
+    for $<integer_constant> {
+        $past.push($($_));
+    }
+    make $past;
+}
+
 method hash_constructor($/) {
     ## use the parrot calling conventions to
     ## create a hash, using the "anonymous" sub

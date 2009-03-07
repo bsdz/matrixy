@@ -63,7 +63,6 @@ rule assignment {
 ################################################################################
 # FUNCTIONS AND VARIABLES
 ################################################################################
-
 # TODO: The <arguments> should be optional. Also, if parenthesis aren't
 #       supplied the entire line should be treated like a bare string and
 #       passed to the subroutine as a single argument.
@@ -120,6 +119,7 @@ rule index {
 }
 
 rule term {
+   #| <range_constructor> {*}         #= range_constructor
    | <float_constant> {*}            #= float_constant
    | <integer_constant> {*}          #= integer_constant
    | <string_constant> {*}           #= string_constant
@@ -261,6 +261,11 @@ rule array_row {
     <expression> [','? <expression>]*
     {*}
 }
+
+#rule range_constructor {
+#    | <expression> ':' <expression> ':' <expression> {*} #= three
+#    | <expression> ':' <expression> {*}                        #= two
+#}
 
 token identifier {
     <!keyword> <ident>
