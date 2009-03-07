@@ -1,10 +1,10 @@
-disp("1..12")
+disp("1..13")
 
 % Basic sanity test. We've probably done this elsewhere, but do it here again
-disp("ok 1")
+disp(["ok 1"])
 
-% display a string in a matrix
-disp(["ok 2"])
+% Strings in the same row of a matrix are concatinated
+disp(["ok " "2"])
 
 % matrices with strings convert numbers to their ASCII character equivalents
 disp(["ok ", 51])
@@ -22,3 +22,6 @@ disp([111, 107, 32, 49, 48; "ok 11"])
 % fractional parts are always rounded down to become integers, then converted
 % to ASCII
 disp(["ok ", 49.2, 50.7])
+
+% expressions (with whitespace) inside a string matrix
+disp(["ok ", 48 + 1, 48 + 3])
