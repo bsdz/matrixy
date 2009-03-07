@@ -45,15 +45,4 @@ eventually.
     .return($N0)
 .end
 
-=item pi()
-
-Returns the value of PI to as many decimal places as I can
-remember off the top of my head.
-
-=cut
-
-.sub 'pi'
-    .return(3.1415926535898)
-.end
-
 .namespace []
