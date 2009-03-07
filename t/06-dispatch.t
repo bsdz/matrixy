@@ -1,4 +1,4 @@
-disp("1..7")
+disp("1..9")
 
 % Defined in t/lib/test1.m
 addpath('t/lib/')
@@ -15,8 +15,10 @@ disp(test4());
 
 % Defined in t/test5.m
 addpath("t/")
-test5()
+test5();
 
 % feval with a builtin function
-feval('disp', 'ok 6')
-feval('disp', ['ok ', '7'])
+feval('disp', 'ok 6');
+feval('disp', ['ok ', '7']);
+feval('feval', 'disp', 'ok 8');
+feval(['disp'], 'ok 9');
