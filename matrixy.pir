@@ -90,6 +90,7 @@ to the Matrixy compiler.
     # default path is set to current directory
     $P2 = new 'ResizablePMCArray'
     $P2[0] = "."
+    $P2[1] = "toolbox/"
     set_hll_global ['Matrixy';'Grammar';'Actions'], '@?PATH', $P2
 .end
 
