@@ -26,7 +26,7 @@ row matrix as well.
 
 .sub 'disp'
     .param pmc msg
-    $S0 = '_get_matrix_string'(msg)
+    $S0 = '!get_matrix_string'(msg)
     say $S0
     .return()
 .end
@@ -72,7 +72,7 @@ This is non-standard, so it begins with an underscore.
 
 .sub '_disp_all'
     .param pmc args :slurpy
-    # TODO: Update this to call '_get_matrix_string'
+    # TODO: Update this to call '!get_matrix_string'
     .local pmc iter
     iter = new 'Iterator', args
   iter_loop:
@@ -97,7 +97,7 @@ and the resulting message is used to raise an exception.
 .sub '_error_all'
     .param pmc args :slurpy
     .local pmc iter
-    # TODO: Update this to call '_get_matrix_string'
+    # TODO: Update this to call '!get_matrix_string'
     iter = new 'Iterator', args
     $S0 = ''
   iter_loop:
@@ -171,7 +171,7 @@ if the result of the variable x, or the subroutine call x() returns the value
     if $I0 goto end_p_r_a
     print name
     say " = "
-    $S0 = '_get_matrix_string'(value)
+    $S0 = '!get_matrix_string'(value)
     say $S0
   end_p_r_a:
     .return()
@@ -195,7 +195,7 @@ if the result of the variable x, or the subroutine call x() returns the value
     if term goto end_p_r_e
 
     print "ans = "
-    $S0 = '_get_matrix_string'(value)
+    $S0 = '!get_matrix_string'(value)
     say $S0
 
   end_p_r_e:
@@ -214,7 +214,7 @@ if the result of the variable x, or the subroutine call x() returns the value
     iseq $I0, term, ';'
     if $I0 goto end_p_r_s
     print "ans = "
-    $S0 = '_get_matrix_string'(value)
+    $S0 = '!get_matrix_string'(value)
     say $S0
   end_p_r_s:
     set_hll_global "ans", value
