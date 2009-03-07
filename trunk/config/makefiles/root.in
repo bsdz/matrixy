@@ -1,7 +1,7 @@
 ## $Id$
 
 ## arguments we want to run parrot with
-PARROT_ARGS =
+PARROT_ARGS = 
 
 ## configuration settings
 BUILD_DIR     = @build_dir@
@@ -51,6 +51,9 @@ BUILTINS_PIR = \
   src/builtins/dispatch.pir \
   src/builtins/path.pir \
   src/builtins/matrix.pir \
+  src/builtins/clapack_helpers.pir \
+  src/builtins/clapack.pir \
+  src/builtins/blas.pir \
   
 CLASSES_PIR = \
   src/classes/List.pir \
@@ -61,7 +64,7 @@ CLASSES_PIR = \
 # PMC_SOURCES = $(PMC_DIR)/matrixy.pmc
 
 # the default target
-matrixy.pbc: $(PARROT) $(SOURCES)
+matrixy.pbc: $(PARROT) $(SOURCES) extern/pbc/clapack.pbc extern/pbc/blas.pbc
 	$(PARROT) $(PARROT_ARGS) -o matrixy.pbc matrixy.pir
 
 src/gen_grammar.pir: $(PERL6GRAMMAR) src/parser/grammar.pg src/parser/grammar-oper.pg
@@ -85,6 +88,20 @@ $(MATRIXY_GROUP): $(PARROT) $(PMC_SOURCES)
 	cd $(PMC_DIR) && $(BUILD_DYNPMC) compile $(PMCS)
 	cd $(PMC_DIR) && $(BUILD_DYNPMC) linklibs $(PMCS)
 	cd $(PMC_DIR) && $(BUILD_DYNPMC) copy --destination=$(PARROT_DYNEXT) $(PMCS)
+
+extern/pir/clapack.pir: extern/include/clapack.h
+	$(PERL) tools/nci/h_to_pir.pl --name clapack --headerfile ./extern/include/clapack.h \
+	    --outputpir ./extern/pir/clapack.pir --outputnci ./extern/pir/clapack.nci
+
+extern/pbc/clapack.pbc: extern/pir/clapack.pir 
+	$(PARROT) $(PARROT_ARGS) -o extern/pbc/clapack.pbc extern/pir/clapack.pir
+
+extern/pir/blas.pir: extern/include/fblaswr.h
+	$(PERL) tools/nci/h_to_pir.pl --name blas --headerfile ./extern/include/fblaswr.h \
+	    --outputpir ./extern/pir/blas.pir --outputnci ./extern/pir/blas.nci --libsymformat "f2c_%%s" 
+
+extern/pbc/blas.pbc: extern/pir/blas.pir 
+	$(PARROT) $(PARROT_ARGS) -o extern/pbc/blas.pbc extern/pir/blas.pir
 
 # regenerate the Makefile
 Makefile: config/makefiles/root.in
@@ -118,7 +135,14 @@ testclean:
 
 CLEANUPS = \
   matrixy.pbc \
-  "src/gen_*.pir"
+  "src/gen_*.pir" \
+  extern/pir/clapack.pir \
+  extern/pir/clapack.nci \
+  extern/pbc/clapack.pbc \
+  extern/pir/blas.pir \
+  extern/pir/blas.nci \
+  extern/pbc/blas.pbc 
+
 
 PMC_CLEANUPS = \
   "$(PMC_DIR)/*.h" \
