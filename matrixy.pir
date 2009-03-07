@@ -53,7 +53,7 @@ object.
     $P0 = get_hll_namespace ['Matrixy';'Grammar';'Actions']
     $P1.'parseactions'($P0)
 
-    $P1.'commandline_prompt'('matrixy:1> ')
+    $P1.'commandline_prompt'("\nmatrixy:1> ")
     $P1.'commandline_banner'("Matrixy, version 0.1.\nCopyright (C) 2009 Blair Sutton and Andrew Whitworth.\n\n")
 .end
 
@@ -123,8 +123,8 @@ to the Matrixy compiler.
 
     # fall through. If any row is a string, the whole matrix is treated as
     # an array of strings. each row has to be converted now.
-  just_exit:
     .tailcall '!array_col_force_strings'(fields)
+  just_exit:
     .return (fields)
 .end
 

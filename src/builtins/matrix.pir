@@ -44,7 +44,8 @@ Return the sizes of the matrix along each dimension
     # differentiate between other types, but right now we'll just do things
     # the easy way.
     $S0 = col
-    .return($S0)
+    $S1 = "\t" . $S0
+    .return($S1)
 
     # TODO: This is all a bit of a hack. Clean this all up, and maybe delegate
     #       some of the logic to recursive sub-functions to make all the evil
@@ -62,8 +63,8 @@ Return the sizes of the matrix along each dimension
     $S0 = typeof $P0
     if $S0 == 'ResizablePMCArray' goto _its_two_d
     $S0 = $P0
-    s .= "\n"
     s .= $S0
+    s .= "\n"
     goto _outer_loop_top
 
   _its_two_d:

@@ -26,10 +26,15 @@ row matrix as well.
 
 .sub 'disp'
     .param pmc msg
-    
-    print msg
-    print "\n\n"
+    $S0 = typeof msg
+    unless $S0 == 'String' goto _its_a_matrix
+    say msg
     .return ()
+
+  _its_a_matrix:
+    $S0 = '_get_matrix_string'(msg)
+    say $S0
+    .return()
 .end
 
 =item error(STRING msg)
@@ -171,12 +176,10 @@ if the result of the variable x, or the subroutine call x() returns the value
     .param string term
     iseq $I0, term, ';'
     if $I0 goto end_p_r_a
-    print "\n"
     print name
-    print " =\n\n"
+    say " = "
     $S0 = '_get_matrix_string'(value)
-    print $S0
-    print "\n\n"
+    say $S0
   end_p_r_a:
     .return()
 .end
@@ -198,10 +201,9 @@ if the result of the variable x, or the subroutine call x() returns the value
   print_value:
     if term goto end_p_r_e
 
-    print "\nans =\n\n"
+    print "ans = "
     $S0 = '_get_matrix_string'(value)
-    print $S0
-    print "\n\n"
+    say $S0
 
   end_p_r_e:
     set_hll_global "ans", value
@@ -218,10 +220,9 @@ if the result of the variable x, or the subroutine call x() returns the value
   print_value:
     iseq $I0, term, ';'
     if $I0 goto end_p_r_s
-    print "\nans =\n\n"
+    print "ans = "
     $S0 = '_get_matrix_string'(value)
-    print $S0
-    print "\n\n"
+    say $S0
   end_p_r_s:
     set_hll_global "ans", value
   end_print_result:
