@@ -184,6 +184,120 @@ Return the sizes of the matrix along each dimension
     .return(sizes)
 .end
 
+=item !array_row(PMC fields :slurpy)
+
+Construct an array row from the variadic argument list. If the row contains
+any strings, compress the whole thing into a single String PMC. Otherwise,
+create a ResizablePMCArray for the row.
+
+=cut
+
+.sub '!array_row'
+    .param pmc fields :slurpy
+    .local pmc myiter
+    myiter = iter fields
+  loop_top:
+    unless myiter goto loop_bottom
+    $P0 = shift myiter
+    $S0 = typeof $P0
+    unless $S0 == "String" goto loop_top
+    .tailcall '!array_compress_strings'(fields)
+  loop_bottom:
+    .return (fields)
+.end
+
+=item !array_col(PMC fields :slurpy)
+
+Create a new array column from a variadic argument list. If any of the rows
+are String PMCs, converts all rows in the matrix to string PMCs and returns
+the list of them. Otherwise, builds a simple array of the row PMCs.
+
+=cut
+
+.sub '!array_col'
+    .param pmc fields :slurpy
+    .local pmc myiter
+    myiter = iter fields
+  loop_top:
+    unless myiter goto just_exit
+    $P0 = shift myiter
+    $S0 = typeof $P0
+    unless $S0 == "String" goto loop_top
+
+    # fall through. If any row is a string, the whole matrix is treated as
+    # an array of strings. each row has to be converted now.
+    .tailcall '!array_col_force_strings'(fields)
+  just_exit:
+    .return (fields)
+.end
+
+=item !array_col_force_strings(PMC m)
+
+Force all rows in matrix m to become String PMCs
+
+=cut
+
+.sub '!array_col_force_strings'
+    .param pmc m
+    .local pmc myiter
+    .local pmc newarray
+    newarray = new 'ResizablePMCArray'
+    myiter = iter m
+  loop_top:
+    unless myiter goto loop_bottom
+    $P0 = shift myiter
+    $S0 = typeof $P0
+    if $S0 == 'String' goto push_string_pmc
+    $S0 = '!array_compress_strings'($P0)
+    $P0 = box $S0
+  push_string_pmc:
+    push newarray, $P0
+    goto loop_top
+  loop_bottom:
+    .return(newarray)
+.end
+
+=item !aray_compress_strings(PMC m)
+
+String array constructor. Strings and numbers cannot really coexist in a
+single matrix. If strings are present, all numbers are converted to their
+ASCII character representations. All strings or characters in a given row
+are concatenated together into a single string. If a Num is passed instead
+of an Int, it is rounded down and the integer value is used to look up the
+character.
+
+=cut
+
+.sub '!array_compress_strings'
+    .param pmc fields
+    .local pmc myiter
+    .local string s
+    myiter = iter fields
+    s = ""
+
+    # Iterate over the input array
+  loop_top:
+    unless myiter goto loop_bottom
+    $P0 = shift myiter
+    $S0 = typeof $P0
+
+    # If it's a string, add it to the running concatination.
+    # Otherwise, get the ASCII character representation and add that
+    if $S0 == 'String' goto have_string_pmc
+    $I0 = $P0
+    $S1 = chr $I0
+    s .= $S1
+    goto loop_top
+  have_string_pmc:
+    $S1 = $P0
+    s .= $S1
+    goto loop_top
+
+  loop_bottom:
+    .return(s)
+.end
+
+
 =back
 
 =cut
