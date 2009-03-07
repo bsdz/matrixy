@@ -548,7 +548,7 @@ method array_constructor($/) {
     # Create an array of array_rows, which are going to be arrays themselves.
     # All matrices are going to be two dimensional, sometimes that just won't
     # be obvious.
-    my $past := PAST::Op.new( :name('!array'), :pasttype('call'), :node($/) );
+    my $past := PAST::Op.new( :name('!array_col'), :pasttype('call'), :node($/) );
     for $<array_row> {
         $past.push($($_));
     }
@@ -556,7 +556,7 @@ method array_constructor($/) {
 }
 
 method array_row($/) {
-    my $past := PAST::Op.new( :name('!array'), :pasttype('call'), :node($/) );
+    my $past := PAST::Op.new( :name('!array_row'), :pasttype('call'), :node($/) );
     for $<expression> {
         $past.push($($_));
     }

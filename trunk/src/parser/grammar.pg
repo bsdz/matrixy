@@ -253,7 +253,6 @@ rule named_field {
 
 # TODO: Should probably be renamed "matrix_constructor", but that's nitpickery
 rule array_constructor {
-    #'[' [ <expression> [',' <expression>]* ]? ']'
     '[' [ <array_row> [';' <array_row>]* ]? ']'
     {*}
 }

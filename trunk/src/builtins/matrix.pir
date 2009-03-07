@@ -34,16 +34,16 @@ Return the sizes of the matrix along each dimension
 =cut
 
 .sub '_get_matrix_string'
-    .param pmc m
+    .param pmc col
     .local string s
     s = ""
-    $S0 = typeof m
+    $S0 = typeof col
     if $S0 == 'ResizablePMCArray' goto _its_a_matrix
 
     # Here, we don't have a matrix, it's something else. We should probably
     # differentiate between other types, but right now we'll just do things
     # the easy way.
-    $S0 = m
+    $S0 = col
     .return($S0)
 
     # TODO: This is all a bit of a hack. Clean this all up, and maybe delegate
@@ -51,26 +51,26 @@ Return the sizes of the matrix along each dimension
     #       go away. Plus, this only handles Vectors and 2-D matrices, so that
     #       needs to be generalized.
   _its_a_matrix:
-    .local pmc itera
-    .local pmc iterb
-    #m = '_verify_matrix'(m)
-    itera = iter m
+    .local pmc iter_col
+    .local pmc iter_row
+    #col = '_verify_matrix'(col)
+    iter_col = iter col
   _outer_loop_top:
-    unless itera goto _outer_loop_bottom
-    $P0 = shift itera
+    unless iter_col goto _outer_loop_bottom
+    $P0 = shift iter_col
 
     $S0 = typeof $P0
-    if $S0 == 'ResizablePMCArray' goto _its_rectangular
+    if $S0 == 'ResizablePMCArray' goto _its_two_d
     $S0 = $P0
-    s .= "\t"
+    s .= "\n"
     s .= $S0
     goto _outer_loop_top
 
-  _its_rectangular:
-    iterb = iter $P0
+  _its_two_d:
+    iter_row = iter $P0
   _inner_loop_top:
-    unless iterb goto _inner_loop_bottom
-    $P1 = shift iterb
+    unless iter_row goto _inner_loop_bottom
+    $P1 = shift iter_row
     $S0 = $P1
     s .= "\t"
     s .= $S0
