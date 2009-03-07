@@ -1,0 +1,10 @@
+=head1 DESCRIPTION
+
+Parrot must be recompiled with signatures produced in files in extern/pir/*.nci. These
+need to be appended to <parrot source>\config\gen\call_list, then Parrot needs to be 
+recompiled.
+
+The relevant dynamic library for a platform must be dropped into extern/lib/. The Windows
+DLLs should be already there. (I will produce a Linux binary shortly - BS). 
+
+=cut
