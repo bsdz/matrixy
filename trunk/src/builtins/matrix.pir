@@ -14,7 +14,7 @@ At the moment, only covers matrices with a dimension of 1 or 2. No 3-D matrices.
 
 =over 4
 
-=item _get_matrix_string(m)
+=item !get_matrix_string(m)
 
 Gets a string that represents the contents of the variable m.
 
@@ -39,7 +39,7 @@ Return the sizes of the matrix along each dimension
 
 =cut
 
-.sub '_get_matrix_string'
+.sub '!get_matrix_string'
     .param pmc col
     .local string s
     s = ""
