@@ -18,6 +18,12 @@ At the moment, only covers matrices with a dimension of 1 or 2. No 3-D matrices.
 
 Gets a string that represents the contents of the variable m.
 
+=item !get_first_string(PMC x)
+
+Returns a string from the argument. If x is a String PMC, return that. If it
+is an array or matrix PMC, return the first element as a string. Otherwise,
+throw an error that no strings are found.
+
 =item _verify_matrix(m)
 
 Verify that the matrix is square (or cube, or whatever). Zero pad it out
@@ -81,6 +87,21 @@ Return the sizes of the matrix along each dimension
     goto _outer_loop_top
   _outer_loop_bottom:
    .return(s)
+.end
+
+.sub '!get_first_string'
+    .param pmc x
+    $S0 = typeof x
+    if $S0 == 'String' goto arg_string
+    if $S0 == 'ResizablePMCArray' goto arg_array
+    'error'("Expected string argument not found")
+
+  arg_string:
+    $S0 = x
+    .return($S0)
+  arg_array:
+    $P0 = x[0]
+    .tailcall '!get_first_string'($P0)
 .end
 
 .sub '_verify_matrix'
@@ -218,8 +239,9 @@ the list of them. Otherwise, builds a simple array of the row PMCs.
     .param pmc fields :slurpy
     .local pmc myiter
     myiter = iter fields
+    unless myiter goto just_exit  # empty array
   loop_top:
-    unless myiter goto just_exit
+    unless myiter goto number_array
     $P0 = shift myiter
     $S0 = typeof $P0
     unless $S0 == "String" goto loop_top
@@ -227,8 +249,30 @@ the list of them. Otherwise, builds a simple array of the row PMCs.
     # fall through. If any row is a string, the whole matrix is treated as
     # an array of strings. each row has to be converted now.
     .tailcall '!array_col_force_strings'(fields)
+  number_array:
+    myiter = iter fields
+    $P0 = shift myiter
+    $I0 = '!get_array_row_length'($P0)
+  number_loop_top:
+    unless myiter goto just_exit
+    $P0 = shift myiter
+    $I1 = '!get_array_row_length'($P0)
+    if $I1 != $I0 goto error_bad_rows
+    goto number_loop_top
+  error_bad_rows:
+    _error_all("number of columns must match (", $I0, " != ", $I1, ")")
   just_exit:
     .return (fields)
+.end
+
+.sub '!get_array_row_length'
+    .param pmc x
+    $S0 = typeof x
+    if $S0 == 'ResizablePMCArray' goto is_array
+    .return(1)
+  is_array:
+    $I0 = x
+    .return(x)
 .end
 
 =item !array_col_force_strings(PMC m)
@@ -297,6 +341,168 @@ character.
     .return(s)
 .end
 
+=item !range_constructor_two
+
+Construct an array from a range of the form a:b
+
+=item !range_constructor_three
+
+Construct an array from a range of the form a:b:c
+
+=cut
+
+.sub '!range_constructor_two'
+    .param pmc start
+    .param pmc stop
+    $N0 = start
+    $N1 = stop
+    if $N1 < $N0 goto negative_constructor
+    .tailcall '!range_constructor_three'(start, 1, stop)
+  negative_constructor:
+    .tailcall '!range_constructor_three'(start, -1, stop)
+.end
+
+.sub '!range_constructor_three'
+    .param pmc start
+    .param pmc step
+    .param pmc stop
+    $N0 = start
+    $N1 = stop
+    $N2 = step
+    if $N2 == 0 goto null_step_panic
+    if $N0 == $N1 goto null_constructor
+    if $N0 > $N1 goto expect_negative_step
+    if $N2 < 0 goto bad_step_panic
+
+    .tailcall '!range_constructor_three_positive'(start, step, stop)
+  expect_negative_step:
+    if $N2 > 0 goto bad_step_panic
+    .tailcall '!range_constructor_three_negative'(start, step, stop)
+  null_constructor:
+    $P0 = '!array_row'(1)
+    .tailcall '!array_col'($P0)
+  null_step_panic:
+    _error_all("Cannot have a stepsize of 0")
+  bad_step_panic:
+    _error_all("Step sign does not match range direction")
+.end
+
+.sub '!range_constructor_three_positive'
+    .param pmc start
+    .param pmc step
+    .param pmc stop
+    .local pmc range
+    range = new 'ResizablePMCArray'
+    $N0 = start
+    $N1 = step
+    $N2 = stop
+  loop_top:
+    if $N0 > $N2 goto just_exit
+    $P0 = box $N0
+    push range, $P0
+    $N0 += $N1
+    goto loop_top
+  just_exit:
+    .tailcall '!array_col'(range)
+.end
+
+.sub '!range_constructor_three_negative'
+    .param pmc start
+    .param pmc step
+    .param pmc stop
+    .local pmc range
+    range = new 'ResizablePMCArray'
+    $N0 = start
+    $N1 = step
+    $N2 = stop
+  loop_top:
+    if $N0 < $N2 goto just_exit
+    $P0 = box $N0
+    push range, $P0
+    $N0 += $N1
+    goto loop_top
+  just_exit:
+    .tailcall '!array_col'(range)
+.end
+
+=item !distribute_matrix_op(PMC a, PMC b, PMC op)
+
+Distributes operator op over each element of the two arrays a and b. Returns
+a matrix that is the same size as a and b. This is used to implement most
+normal operators. op can be either the String name of the operation, or a Sub
+PMC.
+
+Can only dispatch over an internal function, not a builtin or a library routine.
+
+=cut
+
+.sub '!distribute_matrix_op'
+    .param pmc a
+    .param pmc b
+    .param pmc op
+
+    # Check that we have operands of the same size.
+    $P0 = '_get_matrix_sizes'(a)
+    $P1 = '_get_matrix_sizes'(b)
+    if $P0 != $P1 goto bad_operand_sizes
+
+    .local pmc sub
+    $S0 = typeof op
+
+    # If it's a sub, we're done. If it's a string, look it up. Otherwise, error
+    if $S0 == "Sub" goto has_sub
+    unless $S0 == 'String' goto bad_op_type
+    $S0 = op
+    sub = find_name $S0
+
+    # If the result is undefined, error. If it's not a Sub, error
+    $I0 = defined sub
+    unless $I0 goto bad_op_name
+    $S0 = typeof sub
+    unless $S0 == 'Sub' goto bad_op_type
+    op = sub
+
+    # At this point, op should contain a Sub PMC.
+  has_sub:
+    .tailcall '!distribute_sub_foreach_row'(a, b, op)
+  bad_operand_sizes:
+    _error_all("operands a and b are different sizes")
+  bad_op_name:
+    _error_all("Can't find sub named ", op)
+  bad_op_type:
+    _error_all("Unknown op type: ", $S0)
+.end
+
+.sub '!distribute_sub_foreach_row'
+    .param pmc a
+    .param pmc b
+    .param pmc sub
+    .local pmc iter_a
+    .local pmc iter_b
+    .local pmc results
+    results = new 'ResizablePMCArray'
+    iter_a = iter a
+    iter_b = iter b
+  loop_top:
+    unless iter_a goto loop_bottom
+    $P0 = shift iter_a
+    $P1 = shift iter_b
+    $P2 = '!distribute_sub_foreach_elem'($P0, $P1, sub)
+    push results, $P2
+    goto loop_top
+  loop_bottom:
+    .return(results)
+.end
+
+.sub '!distribute_sub_foreach_elem'
+    .param pmc a
+    .param pmc b
+    .param pmc sub
+    .local pmc iter_a
+    .local pmc iter_b
+    .local pmc results
+    # TODO: Implement this.
+.end
 
 =back
 

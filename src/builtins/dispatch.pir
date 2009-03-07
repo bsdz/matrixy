@@ -164,6 +164,10 @@ and can share names between them.
     .return(filehandle)
 .end
 
+# TODO: We need to be able to handle two types of files: Function files
+#       and bare scripts. The former is $P1[1], the later will be $P1[0].
+#       Also, the later will not take any args (so throw an error if any
+#       are passed).
 .sub '_get_sub_from_code_file'
     .param pmc filehandle
     .param string name
