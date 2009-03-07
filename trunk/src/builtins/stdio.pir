@@ -26,12 +26,6 @@ row matrix as well.
 
 .sub 'disp'
     .param pmc msg
-    $S0 = typeof msg
-    unless $S0 == 'String' goto _its_a_matrix
-    say msg
-    .return ()
-
-  _its_a_matrix:
     $S0 = '_get_matrix_string'(msg)
     say $S0
     .return()
@@ -44,10 +38,9 @@ raises an exception with the supplied message
 =cut
 
 .sub 'error'
-    .param string msg
-    # TODO: Update this to call '_get_matrix_string'
-    $S0 = msg . "\n\n"
-    $S1 = "??? " . $S0 
+    .param pmc msg
+    $S0 = '!get_first_string'(msg)
+    $S1 = "error: " . $S0
     $P1 = new 'Exception'
     $P1['message'] = $S1
     throw  $P1
@@ -228,3 +221,7 @@ if the result of the variable x, or the subroutine call x() returns the value
   end_print_result:
     .return()
 .end
+
+=back
+
+=cut
