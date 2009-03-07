@@ -25,8 +25,8 @@ row matrix as well.
 =cut
 
 .sub 'disp'
-    .param string msg
-    # TODO: Update this to call '_get_matrix_string'
+    .param pmc msg
+    
     print msg
     print "\n\n"
     .return ()
@@ -47,6 +47,18 @@ raises an exception with the supplied message
     $P1['message'] = $S1
     throw  $P1
     .return ()
+.end
+
+=item parrot_typeof(PMC a)
+
+Return a string representing the Parrot type of the parameter a
+
+=cut
+
+.sub 'parrot_typeof'
+    .param pmc a
+    $S0 = typeof a
+    .return($S0)
 .end
 
 .namespace []
