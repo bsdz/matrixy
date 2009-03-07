@@ -50,7 +50,7 @@ Return the sizes of the matrix along each dimension
     # differentiate between other types, but right now we'll just do things
     # the easy way.
     $S0 = col
-    $S1 = "\t" . $S0
+    $S1 = $S0
     .return($S1)
 
     # TODO: This is all a bit of a hack. Clean this all up, and maybe delegate
