@@ -336,6 +336,26 @@ method func_def($/) {
 
     my $past := $( $<func_sig> );
 
+    if $?BLOCK.symbol("varargin") {
+        $past.push(
+            PAST::Op.new(
+                :pasttype('bind'),
+                PAST::Var.new(
+                    :name('varargin'),
+                    :scope('lexical'),
+                    :lvalue(1)
+                ),
+                PAST::Op.new(
+                    :pasttype('call'),
+                    :name('!array_col'),
+                    PAST::Var.new(
+                        :name('varargin'),
+                        :scope('lexical')
+                    )
+                )
+            )
+        );
+    }
     for $<statement> {
         $past.push($($_));
     }
@@ -386,10 +406,15 @@ method func_sig($/) {
     $past.symbol("nargout", :scope('lexical'));
     $past.symbol("nargin", :scope('lexical'));
 
+    my $hasvarargin := 0;
     for $<identifier> {
+        if $hasvarargin {
+            $/.panic('varargin must be the last parameter');
+        }
         my $param := $( $_ );
         $param.scope('parameter');
         if $param.name() eq "varargin" {
+            $hasvarargin := 1;
             $param.slurpy(1);
         }
         $past.push($param);
@@ -399,7 +424,6 @@ method func_sig($/) {
     }
 
     if $<return_identifier> {
-        # TODO: Why is this listed as a parameter instead of a lexical?
         my $param := $( $<return_identifier>[0] );
         $param.scope('lexical');
         $param.isdecl(1);
@@ -407,6 +431,7 @@ method func_sig($/) {
         $past.symbol($param.name(), :scope('lexical'));
         @RETID[0] := $param;
     }
+
     ## set this block as the current block, and store it on the scope stack
     $?BLOCK := $past;
     @?BLOCK.unshift($past);
