@@ -69,18 +69,6 @@ method stmt_with_value($/, $key) {
             )
         );
         make $past;
-    } elsif $key eq "sub_or_var" {
-        my $stmt := $( $<sub_or_var> );
-        my $past := PAST::Stmts.new( :node($/),
-            PAST::Op.new( :pasttype('inline'), :node($/),
-                :inline('_print_result_s(%0, %1)'),
-                $stmt,
-                PAST::Val.new( :value( ~$<terminator> ), :returns('String'))
-            )
-        );
-        make $past;
-    } else {
-        make $( $/{$key} );
     }
 }
 
@@ -94,7 +82,7 @@ method system_call($/) {
         :pasttype('call'),
         :node($/),
         PAST::Val.new(
-            :value( ~$<bare_words> ),
+            :value( ~$<sys_bare_words> ),
             :returns('String'),
             :node($/)
         )
@@ -509,9 +497,13 @@ method sub_or_var($/, $key) {
     our $?NARGOUT;
     my $invocant := $( $<primary> );
     my $name := $invocant.name();
-    if @?BLOCK[0].symbol($name) {
+    #if @?BLOCK[0].symbol($name) {
+    if $key eq "bare_words" {
         #_disp_all("found var ", $name);
-        if $key eq "bare_words" {
+        if $key eq "bare_words" && $<bare_words> {
+            $/.panic("illegal bare words after a variable name");
+        }
+        elsif $key eq "bare_words" {
             make $invocant;
         }
         elsif $key eq "arguments" {
