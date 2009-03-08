@@ -135,6 +135,19 @@ and can share names between them.
     .return($P0)
 .end
 
+.sub '!dispatch_var'
+    .param pmc var
+    .param int nargout
+    .param int nargin
+    .param pmc args :slurpy
+
+    $S0 = typeof var
+    unless $S0 == 'Sub' goto just_a_var
+    .tailcall var(nargout, nargin, args :flat)
+
+  just_a_var:
+    .return(var)
+.end
 .sub '_find_file_in_path'
     .param string name
     .local string filename

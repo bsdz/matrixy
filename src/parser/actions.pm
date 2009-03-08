@@ -51,9 +51,6 @@ method statement($/, $key) {
     make $( $/{$key} );
 }
 
-# TODO: Update this to print the return values of other statement types too.
-#       Will require a way to propagate a statements "name" through the parse
-#       Tree. Work on that.
 method stmt_with_value($/, $key) {
     if $key eq "expression" {
         make PAST::Op.new(:pasttype('inline'), :node($/),
@@ -280,15 +277,21 @@ method do_block($/) {
     make $( $<block> );
 }
 
-# TODO: When we do an assignment, there's a chance the stateent might not be
-#       terminated with a ;. Make sure we take the name of the primary here
-#       so we can print that out above if we need to. Also, we should probably
-#       do some basic testing somewhere to make sure a primary is a valid
-#       variable name and not a function name.
 method assignment($/) {
+    our $?BLOCK;
     my $rhs := $( $<expression> );
     my $lhs := $( $<variable> );
     $lhs.lvalue(1);
+    my $name := $lhs.name();
+    # TODO: Enabling all these statements "works", but kills variable
+    #       persistence in interactive mode. This is a known issue with PCT.
+    #       Until we get this resolved, we can't both have a unified dispatcher
+    #       and a working interactive mode.
+    unless $?BLOCK.symbol( $name ) {
+        #$lhs.isdecl(1);
+        #$lhs.scope("lexical");
+        #$?BLOCK.symbol( $name, :scope('lexical') );
+    }
     make PAST::Op.new(
         $lhs,
         $rhs,
@@ -502,44 +505,46 @@ method anon_func_constructor($/) {
 #       runtime logic without creating a huge mess of PAST nodes.
 method sub_or_var($/, $key) {
     our @?BLOCK;
+    our $?NARGIN;
+    our $?NARGOUT;
     my $invocant := $( $<primary> );
-    # TODO: Figure out how to populate $is_var. We need to determine if a
-    #       variable of this name has already been defined in the current
-    #       lexical scope. If one is defined, $is_var = 1. Otherwise,
-    #       $is_var = 0. At the moment, it's always 0 because I can't figure
-    #       out how to tell if a variable has been defined.
-    my $is_var := 0;
-    if $is_var {
+    my $name := $invocant.name();
+    if @?BLOCK[0].symbol($name) {
+        #_disp_all("found var ", $name);
         if $key eq "bare_words" {
-            # TODO: We can end up here with a bare symbol name on a line,
-            #       so check to see that we actually have any words before
-            #       we freak out.
-            $/.panic("Illegal bare words following a variable name");
+            make $invocant;
         }
         elsif $key eq "arguments" {
-            my $args := $( $<arguments> );
-            my $past := PAST::Var.new(
-                :scope('keyed'),
-                :vivibase('ResizablePMCArray'),
-                :viviself('Undef'),
-                :node($/)
+            my $past := $( $<arguments> );
+            $past.name("!dispatch_var");
+            $past.unshift(
+                PAST::Val.new(
+                    :value($?NARGIN),
+                    :returns('Integer')
+                )
             );
-            for $args {
-                my $temp := $args.pop();
-                $past.unshift($temp);
-            }
-            $past.unshift($invocant);
+            $past.unshift(
+                PAST::Val.new(
+                    :value($?NARGOUT),
+                    :returns('Integer')
+                )
+            );
+            $past.unshift(
+                PAST::Var.new(
+                    :name($name)
+                    #:scope('lexical')
+                )
+            );
             make $past;
         }
     }
     else {
+        #_disp_all("Found Sub ", $name);
         # TODO: This isn't enabled yet because we can't yet faithfully
         #       differentiate between a variable and a sub, so all bare_words
         #       calls are treated like vars, and all ()-indexed calls are
         #       treated like subroutines. Fix this all.
         if $key eq "bare_words" {
-            our $?NARGIN;
-            $?NARGIN := 0;
             if $<bare_words> {
                 $?NARGIN := 1;
             }
@@ -564,8 +569,6 @@ method sub_or_var($/, $key) {
             make $past
         }
         elsif $key eq "arguments" {
-            our $?NARGIN;
-            our $?NARGOUT;
             my $past := $( $<arguments> );
             $past.name("!dispatch");
             $past.unshift(
@@ -592,9 +595,6 @@ method sub_or_var($/, $key) {
     }
 }
 
-# TODO: Don't create the call node here, because it might be an array index
-#       not a sub call. Do the differentiation and create the necessary nodes
-#       in the sub_or_var rule.
 method arguments($/) {
     my $past := PAST::Op.new( :pasttype('call'), :node($/) );
     our $?NARGIN := 0;
@@ -605,10 +605,6 @@ method arguments($/) {
     make $past;
 }
 
-# TODO: A primary could be either a function name or a variable name. Check the
-#       current scope for a variable of that name. If not, do a search for a
-#       function of that name. If neither exists, we can probably autovivify
-#       this as a variable. All that logic might need to exist elsewhere.
 method primary($/) {
     my $past := $( $<identifier> );
     for $<postfix_expression> {
@@ -627,7 +623,9 @@ method primary($/) {
 # that it's definitely a variable and not a function call. Few opportunities
 # to do this.
 method variable($/) {
-    my $past:= $( $<identifier> );
+    our $?BLOCK;
+    my $past := $( $<identifier> );
+    my $name := $past.name();
     for $<postfix_expression> {
         my $expr := $( $_ );
         $expr.unshift($past);
