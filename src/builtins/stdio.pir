@@ -25,6 +25,8 @@ row matrix as well.
 =cut
 
 .sub 'disp'
+    .param int nargout
+    .param int nargin
     .param pmc msg
     $S0 = '!get_matrix_string'(msg)
     say $S0
@@ -38,6 +40,8 @@ raises an exception with the supplied message
 =cut
 
 .sub 'error'
+    .param int nargout
+    .param int nargin
     .param pmc msg
     $S0 = '!get_first_string'(msg)
     $S1 = "error: " . $S0
@@ -54,6 +58,8 @@ Return a string representing the Parrot type of the parameter a
 =cut
 
 .sub 'parrot_typeof'
+    .param int nargout
+    .param int nargin
     .param pmc a
     $S0 = typeof a
     .return($S0)

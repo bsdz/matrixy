@@ -17,6 +17,8 @@ At the moment, only covers matrices with a dimension of 1 or 2. No 3-D matrices.
 .namespace ["_Matrixy";"builtins"]
 
 .sub 'size'
+    .param int nargout
+    .param int nargin
     .param pmc x
     $S0 = typeof x
     if $S0 == 'ResizablePMCArray' goto _its_an_array
@@ -31,6 +33,8 @@ At the moment, only covers matrices with a dimension of 1 or 2. No 3-D matrices.
 .end
 
 .sub 'rows'
+    .param int nargout
+    .param int nargin
     .param pmc x
     $S0 = typeof x
     if $S0 == 'ResizablePMCArray' goto _its_an_array
@@ -43,6 +47,8 @@ At the moment, only covers matrices with a dimension of 1 or 2. No 3-D matrices.
 .end
 
 .sub 'columns'
+    .param int nargout
+    .param int nargin
     .param pmc x
     $S0 = typeof x
     if $S0 == 'ResizablePMCArray' goto _its_an_array

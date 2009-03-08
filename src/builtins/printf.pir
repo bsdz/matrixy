@@ -1,6 +1,8 @@
 .namespace ["_Matrixy";"builtins"]
 
-.sub 'printf' 
+.sub 'printf'
+    .param int nargout
+    .param int nargin
     .param pmc fmt
     .param pmc args     :slurpy
 

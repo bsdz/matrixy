@@ -44,6 +44,8 @@ and can share names between them.
 .namespace ["_Matrixy";"builtins"]
 
 .sub 'help'
+    .param int nargout
+    .param int nargin
     .param string name :optional
     .param int has_name :opt_flag
 
@@ -84,11 +86,21 @@ and can share names between them.
 
 .namespace []
 
-.sub '_dispatch'
+.sub '!dispatch'
     .param string name
+    .param int nargout
+    .param int nargin
     .param pmc args :slurpy
     .local pmc sub_obj
     .local pmc var_obj
+
+    # Set the number of input arguments:
+    $I0 = args
+    print name
+    print ") dispatch signature: "
+    print nargin
+    print "->"
+    say nargout
 
     # First, look for a builtin function.
     sub_obj = get_hll_global ["_Matrixy";"builtins"], name
@@ -127,7 +139,7 @@ and can share names between them.
     .return($P0)
 
   _dispatch_found_sub:
-    $P0 = sub_obj(args :flat)
+    $P0 = sub_obj(nargout, nargin, args :flat)
     .return($P0)
 .end
 
@@ -141,6 +153,10 @@ and can share names between them.
 
     filename = name . ".m"
     myiter = iter path
+    $P0 = shift myiter  # get rid of "."
+    push_eh _find_no_file
+    filehandle = open filename, "r"
+    goto _find_found_file
 
   _loop_top:
     unless myiter goto _loop_not_found
@@ -182,32 +198,6 @@ and can share names between them.
     func_list = get_hll_global ['Matrixy';'Grammar';'Actions'], '%?FUNCTIONS'
     func_list[name] = sub_obj
     .return(sub_obj)
-.end
-
-=head1 set_nargin/set_nargout
-
-These functions are called by the caller to set the number of input and
-output arguments it's using in the subroutine call.
-
-=cut
-
-.sub 'set_nargin'
-.end
-
-.sub 'set_nargout'
-.end
-
-=head1 get_nargin/get_nargout
-
-These functions are called by the callee to get the number of input and output
-arguments that the caller is expecting
-
-=cut
-
-.sub 'get_nargin'
-.end
-
-.sub 'get_nargout'
 .end
 
 .namespace []

@@ -353,9 +353,34 @@ method func_sig($/) {
     my $past := PAST::Block.new( :blocktype('declaration'), :node($/) );
     $past.name($name.name());
 
+    # We're going to declare nargin and nargout to be the first two hidden
+    # parameters to every function.
+    $past.push(
+        PAST::Var.new(
+            :name('nargout'),
+            :scope('parameter'),
+            :viviself('Undef'),
+            :node($/)
+        )
+    );
+    $past.symbol("nargout", :scope('lexical'));
+    $past.push(
+        PAST::Var.new(
+            :name('nargin'),
+            :scope('parameter'),
+            :viviself('Undef'),
+            :node($/)
+        )
+    );
+    $past.symbol("nargin", :scope('lexical'));
+
     for $<identifier> {
         my $param := $( $_ );
         $param.scope('parameter');
+        if $param.name() eq "varargin" {
+            _disp_all($name.name(), " has varargin");
+            $param.slurpy(1);
+        }
         $past.push($param);
 
         ## enter the parameter as a lexical into the block's symbol table
@@ -369,7 +394,6 @@ method func_sig($/) {
         $past.symbol($param.name(), :scope('lexical'));
         @RETID[0] := $param;
     }
-
     ## set this block as the current block, and store it on the scope stack
     $?BLOCK := $past;
     @?BLOCK.unshift($past);
@@ -387,6 +411,24 @@ method return_identifier($/) {
 method anon_func_constructor($/) {
     my $block := PAST::Block.new( :blocktype('declaration'), :node($/) );
 
+    $block.push(
+        PAST::Var.new(
+            :name('nargout'),
+            :scope('parameter'),
+            :viviself('Undef'),
+            :node($/)
+        )
+    );
+    $block.symbol("nargout", :scope('lexical'));
+    $block.push(
+        PAST::Var.new(
+            :name('nargin'),
+            :scope('parameter'),
+            :viviself('Undef'),
+            :node($/)
+        )
+    );
+    $block.symbol("nargin", :scope('lexical'));
     for $<identifier> {
         my $param := $( $_ );
         $param.scope('parameter');
@@ -444,15 +486,36 @@ method sub_or_var($/, $key) {
     }
     else {
         if $key eq "bare_words" {
+            # TODO: Update this to call !dispatch
             make PAST::Op.new( :pasttype('call'), :node($/),
                 $invocant,
                 PAST::Val.new( :value( ~$<bare_words> ), :returns('String'), :node($/))
             );
         }
         elsif $key eq "arguments" {
+            our $?NARGIN;
+            our $?NARGOUT;
             my $past := $( $<arguments> );
-            $past.name("_dispatch");
-            $past.unshift(PAST::Val.new( :value($invocant.name()), :returns('String'), :node($/)));
+            $past.name("!dispatch");
+            $past.unshift(
+                PAST::Val.new(
+                    :value($?NARGIN),
+                    :returns('Integer')
+                )
+            );
+            $past.unshift(
+                PAST::Val.new(
+                    :value($?NARGOUT),
+                    :returns('Integer')
+                )
+            );
+            $past.unshift(
+                PAST::Val.new(
+                    :value($invocant.name()),
+                    :returns('String'),
+                    :node($/)
+                )
+            );
             make $past;
         }
     }
@@ -463,8 +526,10 @@ method sub_or_var($/, $key) {
 #       in the sub_or_var rule.
 method arguments($/) {
     my $past := PAST::Op.new( :pasttype('call'), :node($/) );
+    our $?NARGIN := 0;
     for $<expression> {
         $past.push($($_));
+        $?NARGIN++;
     }
     make $past;
 }

@@ -21,9 +21,10 @@ Returns path or sets path by splitting on ';'. (TODO use pathsep)
 =cut
 
 .sub 'path'
+    .param int nargout
+    .param int nargin
     .param string pathlist :optional
     .param int has_pathlist :opt_flag
-
 
     unless has_pathlist goto end
 
@@ -35,7 +36,7 @@ Returns path or sets path by splitting on ';'. (TODO use pathsep)
     .local pmc searchpath
     searchpath = get_hll_global ["Matrixy";"Grammar";"Actions"], "@?PATH"
     $S1 = join ';', searchpath
-    
+
     .return($S1)
 
 .end
@@ -47,6 +48,8 @@ Adds path. For now only handles a single path.
 =cut
 
 .sub 'addpath'
+    .param int nargout
+    .param int nargin
     .param string path
     .param pmc args :slurpy
 
@@ -73,6 +76,8 @@ Removes path(s).
 =cut
 
 .sub 'rmpath'
+    .param int nargout
+    .param int nargin
     .param string path
     .param pmc args :slurpy
 
@@ -85,7 +90,7 @@ Removes path(s).
     push $P0, path
 
     $P1 = iter $P0
-    
+
     $P2 = new ['ResizablePMCArray'] # stores new searchpath
 
 
@@ -125,7 +130,7 @@ Removes path(s).
 
   end:
     set_hll_global ["Matrixy";"Grammar";"Actions"], "@?PATH", $P2
-    
+
     .return()
 .end
 
