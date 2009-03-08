@@ -344,8 +344,7 @@ method func_def($/) {
     #
     if @RETID {
         my $var := PAST::Var.new(
-            :name(@RETID[0].name()),
-            :viviself('Undef')
+            :name(@RETID[0].name())
         );
         my $retop := PAST::Op.new( $var, :pasttype('return') );
         $past.push($retop);
@@ -376,13 +375,11 @@ method func_sig($/) {
         PAST::Var.new(
             :name('nargout'),
             :scope('parameter'),
-            :viviself('Undef'),
             :node($/)
         ),
         PAST::Var.new(
             :name('nargin'),
             :scope('parameter'),
-            :viviself('Undef'),
             :node($/)
         )
     );
@@ -393,7 +390,6 @@ method func_sig($/) {
         my $param := $( $_ );
         $param.scope('parameter');
         if $param.name() eq "varargin" {
-            _disp_all($name.name(), " has varargin");
             $param.slurpy(1);
         }
         $past.push($param);
@@ -405,7 +401,8 @@ method func_sig($/) {
     if $<return_identifier> {
         # TODO: Why is this listed as a parameter instead of a lexical?
         my $param := $( $<return_identifier>[0] );
-        $param.scope('parameter');
+        $param.scope('lexical');
+        $param.isdecl(1);
         $past.push($param);
         $past.symbol($param.name(), :scope('lexical'));
         @RETID[0] := $param;
@@ -421,7 +418,7 @@ method return_identifier($/) {
     my $name  := ~$/;
     ## instead of ~$/, you can also write ~$<ident>, as an identifier
     ## uses the built-in <ident> rule to match identifiers.
-    make PAST::Var.new( :name($name), :viviself('Undef'), :node($/) );
+    make PAST::Var.new( :name($name), :node($/) );
 }
 
 method anon_func_constructor($/) {
@@ -431,7 +428,6 @@ method anon_func_constructor($/) {
         PAST::Var.new(
             :name('nargout'),
             :scope('parameter'),
-            :viviself('Undef'),
             :node($/)
         )
     );
@@ -440,7 +436,6 @@ method anon_func_constructor($/) {
         PAST::Var.new(
             :name('nargin'),
             :scope('parameter'),
-            :viviself('Undef'),
             :node($/)
         )
     );
@@ -454,7 +449,7 @@ method anon_func_constructor($/) {
         $block.symbol($param.name(), :scope('lexical'));
     }
 
-    my $var := PAST::Var.new( :viviself('Undef'), :node($/) );
+    my $var := PAST::Var.new(:node($/) );
     # $var.lvalue(1);
 
     my $op := PAST::Op.new(
@@ -734,7 +729,7 @@ method identifier($/) {
     my $name  := ~$/;
     ## instead of ~$/, you can also write ~$<ident>, as an identifier
     ## uses the built-in <ident> rule to match identifiers.
-    make PAST::Var.new( :name($name), :viviself('Undef'), :node($/) );
+    make PAST::Var.new( :name($name), :node($/) );
 }
 
 method integer_constant($/) {

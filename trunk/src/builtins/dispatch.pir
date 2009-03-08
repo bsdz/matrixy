@@ -94,14 +94,6 @@ and can share names between them.
     .local pmc sub_obj
     .local pmc var_obj
 
-    # Set the number of input arguments:
-    $I0 = args
-    print name
-    print ") dispatch signature: "
-    print nargin
-    print "->"
-    say nargout
-
     # First, look for a builtin function.
     sub_obj = get_hll_global ["_Matrixy";"builtins"], name
     $I0 = defined sub_obj
