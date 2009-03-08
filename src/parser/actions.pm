@@ -364,27 +364,21 @@ method func_def($/) {
 method func_sig($/) {
     our $?BLOCK;
     our @?BLOCK;
-
     our @RETID;
 
     my $name := $( $<identifier>[0] );
     $<identifier>.shift();
 
-    my $past := PAST::Block.new( :blocktype('declaration'), :node($/) );
-    $past.name($name.name());
-
-    # We're going to declare nargin and nargout to be the first two hidden
-    # parameters to every function.
-    $past.push(
+    my $past := PAST::Block.new(
+        :blocktype('declaration'),
+        :node($/),
+        :name($name.name()),
         PAST::Var.new(
             :name('nargout'),
             :scope('parameter'),
             :viviself('Undef'),
             :node($/)
-        )
-    );
-    $past.symbol("nargout", :scope('lexical'));
-    $past.push(
+        ),
         PAST::Var.new(
             :name('nargin'),
             :scope('parameter'),
@@ -392,6 +386,7 @@ method func_sig($/) {
             :node($/)
         )
     );
+    $past.symbol("nargout", :scope('lexical'));
     $past.symbol("nargin", :scope('lexical'));
 
     for $<identifier> {
