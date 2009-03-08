@@ -5,6 +5,8 @@
 .include 'library/dumper.pir'
 
 .sub 'dgesvd'
+    .param int nargout
+    .param int nargin
     .param pmc jobu
     .param pmc jobvt
     .param pmc m

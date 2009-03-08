@@ -32,6 +32,8 @@ eventually.
 =cut
 
 .sub 'sum'
+    .param int nargout
+    .param int nargin
     .param pmc args :slurpy
     .local pmc iter
     iter = new 'Iterator', args

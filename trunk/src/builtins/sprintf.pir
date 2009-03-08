@@ -1,6 +1,8 @@
 .namespace ["_Matrixy";"builtins"]
 
 .sub 'sprintf'
+    .param int nargout
+    .param int nargin
     .param pmc fmt
     .param pmc args     :slurpy
     $P0 = new 'String'

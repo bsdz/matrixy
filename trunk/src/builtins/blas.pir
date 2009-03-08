@@ -6,6 +6,8 @@
 .include 'library/dumper.pir'
 
 .sub 'dgemm'
+    .param int nargout
+    .param int nargin
   .param pmc transA
   .param pmc transB
   .param pmc M
@@ -48,6 +50,8 @@
 .end
 
 .sub 'transpose'
+    .param int nargout
+    .param int nargin
     .local pmc A
 
     load_bytecode 'extern/pbc/blas.pbc'

@@ -17,7 +17,7 @@ do secret system stuff.
     .param pmc args :slurpy
 
     $P0 = get_hll_global ["_Matrixy";"builtins"], 'system'
-    $P0(args :flat)
+    $P0(0, 1, args :flat)
 .end
 
 .namespace ["_Matrixy";"builtins"]
@@ -35,6 +35,8 @@ Will cause the word "hello" to be printed to the terminal.
 =cut
 
 .sub 'system'
+    .param int nargout
+    .param int nargin
     .param pmc cmd
     .param pmc flags :optional
     .param int has_flags :opt_flag
@@ -58,16 +60,19 @@ not currently perform any lookups however.
 =cut
 
 .sub 'feval'
+    .param int nargout
+    .param int nargin
     .param pmc func
     .param pmc args :slurpy
 
     $S0 = '!get_first_string'(func)
-    .tailcall '_dispatch'($S0, args :flat)
+    .tailcall '!dispatch'($S0, nargout, nargin, args :flat)
 .end
 
 =item eval(STRING try, STRING catch)
 
 Compile and execute the M code in C<try>. If there are any problems
+
 =item quit()
 
 Exits the program.
@@ -79,10 +84,14 @@ Same
 =cut
 
 .sub 'quit'
+    .param int nargout
+    .param int nargin
     end
 .end
 
 .sub 'exit'
+    .param int nargout
+    .param int nargin
     end
 .end
 
@@ -93,6 +102,8 @@ Returns underlying OS's enviroment for variable 'name'.
 =cut
 
 .sub 'getenv'
+    .param int nargout
+    .param int nargin
     .param string name
     .local pmc env
 
@@ -109,6 +120,8 @@ Sets underlying OS's enviroment for variable 'name' with value 'value'.
 =cut
 
 .sub 'setenv'
+    .param int nargout
+    .param int nargin
     .param string name
     .param string value :optional
     .param int has_value :opt_flag
@@ -131,6 +144,8 @@ Executes a subroutine in PIR from M code
 =cut
 
 .sub 'pir'
+    .param int nargout
+    .param int nargin
     .param string code
     .param pmc args :slurpy
     $P0 = compreg 'PIR'
