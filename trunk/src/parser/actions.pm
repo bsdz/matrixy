@@ -92,8 +92,15 @@ method control_statement($/, $key) {
 }
 
 method system_call($/) {
-    make PAST::Op.new( :name("_system"), :pasttype('call'), :node($/),
-        PAST::Val.new( :value( ~$<bare_words> ), :returns('String'), :node($/) )
+    make PAST::Op.new(
+        :name("_system"),
+        :pasttype('call'),
+        :node($/),
+        PAST::Val.new(
+            :value( ~$<bare_words> ),
+            :returns('String'),
+            :node($/)
+        )
     );
 }
 
@@ -139,7 +146,11 @@ method for_statement($/) {
     ## for the loop condition; the node in $init has a isdecl(1) flag and a
     ## viviself object; $init represents the declaration of the loop var,
     ## $iter represents the loop variable in normal usage.
-    my $iter := PAST::Var.new( :name($itername), :scope('lexical'), :node($/) );
+    my $iter := PAST::Var.new(
+        :name($itername),
+        :scope('lexical'),
+        :node($/)
+    );
 
     ## the body of the loop consists of the statements written by the user and
     ## the increment instruction of the loop iterator.
@@ -278,7 +289,13 @@ method assignment($/) {
     my $rhs := $( $<expression> );
     my $lhs := $( $<variable> );
     $lhs.lvalue(1);
-    make PAST::Op.new( $lhs, $rhs, :pasttype('bind'), :name( $lhs.name() ), :node($/) );
+    make PAST::Op.new(
+        $lhs,
+        $rhs,
+        :pasttype('bind'),
+        :name( $lhs.name() ),
+        :node($/)
+    );
 }
 
 method variable_declaration($/) {
@@ -326,7 +343,10 @@ method func_def($/) {
     # add a return statement if needed
     #
     if @RETID {
-        my $var := PAST::Var.new( :name(@RETID[0].name()), :viviself('Undef') );
+        my $var := PAST::Var.new(
+            :name(@RETID[0].name()),
+            :viviself('Undef')
+        );
         my $retop := PAST::Op.new( $var, :pasttype('return') );
         $past.push($retop);
         @RETID.shift();
@@ -388,6 +408,7 @@ method func_sig($/) {
     }
 
     if $<return_identifier> {
+        # TODO: Why is this listed as a parameter instead of a lexical?
         my $param := $( $<return_identifier>[0] );
         $param.scope('parameter');
         $past.push($param);
@@ -441,7 +462,12 @@ method anon_func_constructor($/) {
     my $var := PAST::Var.new( :viviself('Undef'), :node($/) );
     # $var.lvalue(1);
 
-    my $op := PAST::Op.new( $var,  $($<expression>) , :pasttype('bind'), :node($/) );
+    my $op := PAST::Op.new(
+        $var,
+        $($<expression>),
+        :pasttype('bind'),
+        :node($/)
+    );
     $block.push($op);
 
     my $retop := PAST::Op.new( $var, :pasttype('return') );
@@ -462,8 +488,13 @@ method anon_func_constructor($/) {
 method sub_or_var($/, $key) {
     our @?BLOCK;
     my $invocant := $( $<primary> );
-    my $symbol := @?BLOCK[0].symbol( ~$invocant.name() );
-    if $symbol {
+    # TODO: Figure out how to populate $is_var. We need to determine if a
+    #       variable of this name has already been defined in the current
+    #       lexical scope. If one is defined, $is_var = 1. Otherwise,
+    #       $is_var = 0. At the moment, it's always 0 because I can't figure
+    #       out how to tell if a variable has been defined.
+    my $is_var := 0;
+    if $is_var {
         if $key eq "bare_words" {
             # TODO: We can end up here with a bare symbol name on a line,
             #       so check to see that we actually have any words before
@@ -472,10 +503,12 @@ method sub_or_var($/, $key) {
         }
         elsif $key eq "arguments" {
             my $args := $( $<arguments> );
-            my $past := PAST::Var.new(:scope('keyed'),
-                                      :vivibase('ResizablePMCArray'),
-                                      :viviself('Undef'),
-                                      :node($/));
+            my $past := PAST::Var.new(
+                :scope('keyed'),
+                :vivibase('ResizablePMCArray'),
+                :viviself('Undef'),
+                :node($/)
+            );
             for $args {
                 my $temp := $args.pop();
                 $past.unshift($temp);
@@ -485,12 +518,35 @@ method sub_or_var($/, $key) {
         }
     }
     else {
+        # TODO: This isn't enabled yet because we can't yet faithfully
+        #       differentiate between a variable and a sub, so all bare_words
+        #       calls are treated like vars, and all ()-indexed calls are
+        #       treated like subroutines. Fix this all.
         if $key eq "bare_words" {
-            # TODO: Update this to call !dispatch
-            make PAST::Op.new( :pasttype('call'), :node($/),
-                $invocant,
-                PAST::Val.new( :value( ~$<bare_words> ), :returns('String'), :node($/))
+            our $?NARGIN;
+            $?NARGIN := 0;
+            if $<bare_words> {
+                $?NARGIN := 1;
+            }
+            my $past := PAST::Op.new(
+                :pasttype('call'),
+                :node($/),
+                :name('!dispatch'),
+                PAST::Val.new(
+                    :value($invocant.name()),
+                    :returns('String'),
+                    :node($/)
+                ),
+                PAST::Val.new(
+                    :value(0),   # NARGOUT
+                    :returns('Integer')
+                ),
+                PAST::Val.new(
+                    :value($?NARGIN),
+                    :returns('Integer')
+                )
             );
+            make $past
         }
         elsif $key eq "arguments" {
             our $?NARGIN;
@@ -572,32 +628,44 @@ method postfix_expression($/, $key) {
 method key($/) {
     my $key := $( $<expression> );
 
-    make PAST::Var.new( $key, :scope('keyed'),
-                              :vivibase('Hash'),
-                              :viviself('Undef'),
-                              :node($/) );
-
+    make PAST::Var.new(
+        $key,
+        :scope('keyed'),
+        :vivibase('Hash'),
+        :viviself('Undef'),
+        :node($/)
+    );
 }
 
 method member($/) {
     my $member := $( $<identifier> );
     ## x.y is syntactic sugar for x{"y"}, so stringify the identifier:
-    my $key    := PAST::Val.new( :returns('String'), :value($member.name()), :node($/) );
+    my $key := PAST::Val.new(
+        :returns('String'),
+        :value($member.name()),
+        :node($/)
+    );
 
     ## the rest of this method is the same as method key() above.
-    make PAST::Var.new( $key, :scope('keyed'),
-                              :vivibase('Hash'),
-                              :viviself('Undef'),
-                              :node($/) );
+    make PAST::Var.new(
+        $key,
+        :scope('keyed'),
+        :vivibase('Hash'),
+        :viviself('Undef'),
+        :node($/)
+    );
 }
 
 method index($/) {
     my $index := $( $<expression> );
 
-    make PAST::Var.new( $index, :scope('keyed'),
-                                :vivibase('ResizablePMCArray'),
-                                :viviself('Undef'),
-                                :node($/) );
+    make PAST::Var.new(
+        $index,
+        :scope('keyed'),
+        :vivibase('ResizablePMCArray'),
+        :viviself('Undef'),
+        :node($/)
+    );
 }
 
 method named_field($/) {
@@ -613,7 +681,11 @@ method array_constructor($/) {
     # Create an array of array_rows, which are going to be arrays themselves.
     # All matrices are going to be two dimensional, sometimes that just won't
     # be obvious.
-    my $past := PAST::Op.new( :name('!array_col'), :pasttype('call'), :node($/) );
+    my $past := PAST::Op.new(
+        :name('!array_col'),
+        :pasttype('call'),
+        :node($/)
+    );
     for $<array_row> {
         $past.push($($_));
     }
@@ -621,7 +693,11 @@ method array_constructor($/) {
 }
 
 method array_row($/) {
-    my $past := PAST::Op.new( :name('!array_row'), :pasttype('call'), :node($/) );
+    my $past := PAST::Op.new(
+        :name('!array_row'),
+        :pasttype('call'),
+        :node($/)
+    );
     for $<expression> {
         $past.push($($_));
     }
@@ -629,7 +705,11 @@ method array_row($/) {
 }
 
 method range_constructor($/, $key) {
-    my $past := PAST::Op.new( :name('!range_constructor_' ~ $key), :pasttype('call'), :node($/));
+    my $past := PAST::Op.new(
+        :name('!range_constructor_' ~ $key),
+        :pasttype('call'),
+        :node($/)
+    );
     for $<integer_constant> {
         $past.push($($_));
     }
@@ -640,7 +720,11 @@ method hash_constructor($/) {
     ## use the parrot calling conventions to
     ## create a hash, using the "anonymous" sub
     ## !hash (which is not a valid Squaak name)
-    my $past := PAST::Op.new( :name('!hash'), :pasttype('call'), :node($/) );
+    my $past := PAST::Op.new(
+        :name('!hash'),
+        :pasttype('call'),
+        :node($/)
+    );
     for $<named_field> {
         $past.push($($_));
     }
@@ -667,7 +751,11 @@ method float_constant($/) {
 }
 
 method string_constant($/) {
-    make PAST::Val.new( :value( $($<string_literal>) ), :returns('String'), :node($/) );
+    make PAST::Val.new(
+        :value( $($<string_literal>) ),
+        :returns('String'),
+        :node($/)
+    );
 }
 
 ## Handle the operator precedence table.
@@ -676,12 +764,13 @@ method expression($/, $key) {
         make $($<expr>);
     }
     else {
-        my $past := PAST::Op.new( :name($<type>),
-                                  :pasttype($<top><pasttype>),
-                                  :pirop($<top><pirop>),
-                                  :lvalue($<top><lvalue>),
-                                  :node($/)
-                                );
+        my $past := PAST::Op.new(
+            :name($<type>),
+            :pasttype($<top><pasttype>),
+            :pirop($<top><pirop>),
+            :lvalue($<top><lvalue>),
+            :node($/)
+        );
         for @($/) {
             $past.push( $($_) );
         }
