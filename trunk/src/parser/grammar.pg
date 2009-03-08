@@ -39,20 +39,21 @@ rule statement {
 # Statement types that would display a value if not terminated with an ';'
 rule stmt_with_value {
     | <assignment> <terminator> {*}          #= assignment
-    | <sub_or_var> <terminator> {*}          #= sub_or_var
     | <expression> <terminator> {*}          #= expression
 }
 
+# TODO: This should match a semicolon or a newline. At the moment, newlines are
+#       not detected.
 token terminator {
     ';'?
 }
 
 rule system_call {
-    '!' <bare_words> {*}
+    '!' <sys_bare_words> {*}
 }
 
-token bare_words {
-    \N* \n?
+token sys_bare_words {
+    \N+ \n?
 }
 
 rule assignment {
@@ -63,9 +64,6 @@ rule assignment {
 ################################################################################
 # FUNCTIONS AND VARIABLES
 ################################################################################
-# TODO: The <arguments> should be optional. Also, if parenthesis aren't
-#       supplied the entire line should be treated like a bare string and
-#       passed to the subroutine as a single argument.
 # TODO: A bare identifier should be treated as a function call UNLESS it's
 #       a previously-defined variable in the current scope. So calling "quit"
 #       should exit the program unless we proceed that with "quit = 5", in which
@@ -74,7 +72,13 @@ rule assignment {
 #       of flag could be set to determine which types we are allowed to use.
 rule sub_or_var {
     | <primary> <arguments> {*}          #= arguments
+    | <primary> {*}                      #= bare_words
     #| <primary> <bare_words> {*}         #= bare_words
+}
+
+# TODO: This should match everything upto but not including a terminator token
+token bare_words {
+    <!terminator> \N+ \n?
 }
 
 rule arguments {
@@ -127,7 +131,6 @@ rule term {
    | <array_constructor> {*}         #= array_constructor
    | <anon_func_constructor> {*}     #= anon_func_constructor
    | <sub_or_var> {*}                #= sub_or_var
-   | <primary> {*}                   #= primary
    | '(' <expression> ')' {*}        #= expression
 }
 
