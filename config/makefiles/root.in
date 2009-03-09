@@ -38,21 +38,7 @@ SOURCES = matrixy.pir \
   src/gen_builtins.pir \
 #  $(MATRIXY_GROUP)
 
-BUILTINS_PIR = \
-  src/builtins/read.pir \
-  src/builtins/printf.pir \
-  src/builtins/operators.pir \
-  src/builtins/clearscreen.pir \
-  src/builtins/sprintf.pir \
-  src/builtins/math.pir \
-  src/builtins/stdio.pir \
-  src/builtins/system.pir \
-  src/builtins/dispatch.pir \
-  src/builtins/path.pir \
-  src/builtins/matrix.pir \
-  src/builtins/clapack_helpers.pir \
-  src/builtins/clapack.pir \
-  src/builtins/blas.pir \
+BUILTINS_PIR = @builtins_pir@
   
 # PMCS = matrixy
 # PMC_SOURCES = $(PMC_DIR)/matrixy.pmc

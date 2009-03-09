@@ -1,21 +1,30 @@
-# $Id$
-
 use strict;
 use warnings;
 use 5.008;
 
-my $build_dir = '../..';
-my $hll       = 'matrixy';
-my $cmd       = qq{$^X -Ilib tools/dev/reconfigure.pl --step=gen::languages --languages=$hll};
+use lib "../../lib"; 
+use Parrot::Configure;
+use Parrot::Configure::Options qw( process_options );
 
-print "Running '$cmd' in $build_dir\n";
-chdir $build_dir;
-`$cmd`
+$| = 1;    # $OUTPUT_AUTOFLUSH = 1;
 
-# Local Variables:
-#   mode: cperl
-#   cperl-indent-level: 4
-#   fill-column: 100
-# End:
-# vim: expandtab shiftwidth=4:
+my $args = process_options(
+    {
+        step => 'gen::makefiles',
+        mode => 'reconfigure',
+        conditioned_lines => 1,
+        replace_slashes => 1,
+    }
+);
+exit(1) unless ( defined $args );
 
+my $conf = Parrot::Configure->new;
+$conf->options->set( %{$args} );
+$conf->data()->get_PConfig(); #load configuration data
+
+my @builtins = glob("src/builtins/*.pir");
+$conf->data()->set('builtins_pir', join(' ', @builtins));
+
+$conf->genfile( 'config/makefiles/root.in' => 'Makefile');
+
+exit(0);
