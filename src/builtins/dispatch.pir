@@ -135,19 +135,32 @@ and can share names between them.
     .return($P0)
 .end
 
-.sub '!dispatch_var'
-    .param pmc var
-    .param int nargout
-    .param int nargin
+.sub '!generate_string'
     .param pmc args :slurpy
+    .local pmc myiter
+    .local string s
+    $I0 = args
+    print "found "
+    print $I0
+    say " args"
 
-    $S0 = typeof var
-    unless $S0 == 'Sub' goto just_a_var
-    .tailcall var(nargout, nargin, args :flat)
+    s = ""
+    myiter = iter args
+    unless myiter goto loop_bottom
+    $P0 = shift myiter
+    s = $P0
 
-  just_a_var:
-    .return(var)
+  loop_top:
+    unless myiter goto loop_bottom
+    $P0 = shift myiter
+    $S0 = $P0
+    s .= " "
+    s .= $S0
+    goto loop_top
+  loop_bottom:
+    .return(s)
 .end
+
 .sub '_find_file_in_path'
     .param string name
     .local string filename
