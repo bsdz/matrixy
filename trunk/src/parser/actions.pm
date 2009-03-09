@@ -493,108 +493,77 @@ method anon_func_constructor($/) {
 #       runtime logic without creating a huge mess of PAST nodes.
 method sub_or_var($/, $key) {
     our @?BLOCK;
-    our $?NARGIN;
-    our $?NARGOUT;
     my $invocant := $( $<primary> );
     my $name := $invocant.name();
     #if @?BLOCK[0].symbol($name) {
-    if $key eq "bare_words" {
-        #_disp_all("found var ", $name);
-        if $key eq "bare_words" && $<bare_words> {
-            $/.panic("illegal bare words after a variable name");
-        }
-        elsif $key eq "bare_words" {
-            make $invocant;
-        }
-        elsif $key eq "arguments" {
-            my $past := $( $<arguments> );
-            $past.name("!dispatch_var");
-            $past.unshift(
-                PAST::Val.new(
-                    :value($?NARGIN),
-                    :returns('Integer')
-                )
+    if $key eq "var" {
+        for $<expression> {
+            my $past := PAST::Var.new(
+                $($_),
+                $invocant,
+                :scope('keyed'),
+                :vivibase('ResizablePMCArray'),
+                :viviself('Undef'),
+                :node($/)
             );
-            $past.unshift(
-                PAST::Val.new(
-                    :value($?NARGOUT),
-                    :returns('Integer')
-                )
-            );
-            $past.unshift(
-                PAST::Var.new(
-                    :name($name)
-                    #:scope('lexical')
-                )
-            );
-            make $past;
+            $invocant := $past;
         }
+        make $invocant;
     }
     else {
+        my $nargin := 0;
+        my $nargout := 0;
         #_disp_all("Found Sub ", $name);
-        # TODO: This isn't enabled yet because we can't yet faithfully
-        #       differentiate between a variable and a sub, so all bare_words
-        #       calls are treated like vars, and all ()-indexed calls are
-        #       treated like subroutines. Fix this all.
-        if $key eq "bare_words" {
-            if $<bare_words> {
-                $?NARGIN := 1;
-            }
-            my $past := PAST::Op.new(
+        my $past := PAST::Op.new(
+            :name('!dispatch'),
+            :pasttype('call'),
+            :node($/)
+        );
+        if $<bare_words> {
+            _disp_all("Found barewords, constructing...");
+            $nargin := 1;
+            my $barewords := PAST::Op.new(
                 :pasttype('call'),
-                :node($/),
-                :name('!dispatch'),
-                PAST::Val.new(
-                    :value($invocant.name()),
-                    :returns('String'),
-                    :node($/)
-                ),
-                PAST::Val.new(
-                    :value(0),   # NARGOUT
-                    :returns('Integer')
-                ),
-                PAST::Val.new(
-                    :value($?NARGIN),
-                    :returns('Integer')
-                )
+                :name('!generate_string'),
+                $( $<bare_words> )
             );
-            make $past
+            $past.push($barewords);
         }
-        elsif $key eq "arguments" {
-            my $past := $( $<arguments> );
-            $past.name("!dispatch");
-            $past.unshift(
-                PAST::Val.new(
-                    :value($?NARGIN),
-                    :returns('Integer')
-                )
-            );
-            $past.unshift(
-                PAST::Val.new(
-                    :value($?NARGOUT),
-                    :returns('Integer')
-                )
-            );
-            $past.unshift(
-                PAST::Val.new(
-                    :value($invocant.name()),
-                    :returns('String'),
-                    :node($/)
-                )
-            );
-            make $past;
+        if $<expression> {
+            for $<expression> {
+                $past.push($($_));
+                $nargin++;
+            }
         }
+        $past.unshift(
+            PAST::Val.new(
+                :value($nargin),
+                :returns('Integer')
+            )
+        );
+        $past.unshift(
+            PAST::Val.new(
+                :value($nargout),
+                :returns('Integer')
+            ),
+        );
+        $past.unshift(
+            PAST::Val.new(
+                :value($invocant.name()),
+                :returns('String'),
+                :node($/)
+            )
+        );
+        make $past;
     }
 }
 
-method arguments($/) {
-    my $past := PAST::Op.new( :pasttype('call'), :node($/) );
-    our $?NARGIN := 0;
-    for $<expression> {
-        $past.push($($_));
-        $?NARGIN++;
-    }
-    make $past;
+method bare_words($/) {
+    my $content := ~$/;
+    make PAST::Val.new(
+        :value($content),
+        :node($/)
+    );
 }
 
 method primary($/) {

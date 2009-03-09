@@ -65,25 +65,19 @@ rule assignment {
 # FUNCTIONS AND VARIABLES
 ################################################################################
 # TODO: A bare identifier should be treated as a function call UNLESS it's
-#       a previously-defined variable in the current scope. So calling "quit"
-#       should exit the program unless we proceed that with "quit = 5", in which
-#       case it is treated as a variable.
-# TODO: Matlab supports the bare_word form, Octave does not appear to. Some sort
-#       of flag could be set to determine which types we are allowed to use.
+#       a previously-defined variable in the current scope. At the moment, we
+#       do not do this.
 rule sub_or_var {
-    | <primary> <arguments> {*}          #= arguments
-    | <primary> {*}                      #= bare_words
-    #| <primary> <bare_words> {*}         #= bare_words
+    | <primary>
+      '(' [ <expression> [',' <expression>]* ]? ')'
+      {*}                                       #= sub
+    #| <primary> <bare_words> {*}                #= sub
+    | <primary> {*}                             #= var
 }
 
 # TODO: This should match everything upto but not including a terminator token
 token bare_words {
-    <!terminator> \N+ \n?
-}
-
-rule arguments {
-    '(' [ <expression> [',' <expression>]* ]? ')'
-    {*}
+    \N* {*}
 }
 
 # An ambiguous primary element, could be a subroutine call or a variable
