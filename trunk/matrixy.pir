@@ -25,8 +25,6 @@ object.
 
 #.HLL 'matrixy'
 
-#.include 'src/gen_classes.pir'
-
 .namespace [ 'Matrixy';'Compiler' ]
 
 .loadlib 'matrixy_group'
@@ -74,9 +72,6 @@ to the Matrixy compiler.
 .include 'src/gen_builtins.pir'
 .include 'src/gen_grammar.pir'
 .include 'src/gen_actions.pir'
-
-.include 'src/classes/Data.pir'
-.include 'src/classes/Matrix.pir'
 
 .namespace []
 
