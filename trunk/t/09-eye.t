@@ -1,4 +1,4 @@
-disp("1..18")
+plan(18);
 
 # note: we're using squaak style indexes
 #       until we get M ones.

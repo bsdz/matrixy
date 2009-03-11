@@ -1,4 +1,4 @@
-printf("1..7\n");
+plan(7);
 
 % check default path is '.'
 x = path();

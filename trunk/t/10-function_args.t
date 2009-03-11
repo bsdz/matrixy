@@ -1,4 +1,4 @@
-disp("1..4")
+plan(4);
 
 function argsintest(varargin)
     printf("ok %d\n", nargin);
