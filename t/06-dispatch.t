@@ -1,4 +1,4 @@
-disp("1..9")
+plan(9);
 
 % Defined in t/lib/test1.m
 addpath('t/lib/')

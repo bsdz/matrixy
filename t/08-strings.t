@@ -1,4 +1,4 @@
-disp("1..13")
+plan(13);
 
 % Basic sanity test. We've probably done this elsewhere, but do it here again
 disp(["ok 1"])
