@@ -1,4 +1,4 @@
-disp("1..39")
+plan(39);
 
 # note: we're using squaak style indexes
 #       until we get M ones.
@@ -41,7 +41,7 @@ i = 0;
 j = 0;
 while i <= ATr do
     while j <= ATc do
-        if AT[i][j] == B[i][j]
+        if AT(i, j) == B(i, j)
             printf("ok %s\n", testcount);
         else
             printf("not ok %s\n", testcount);
@@ -76,16 +76,16 @@ if columns(A_T) == columns(B)
 else
     printf("not ok %s\n", testcount);
 end
-    
+
 testcount = testcount + 1;
 
 for var i = 0, rows(A_T) do
     for var j = 0, columns(A_T) do
-        if A_T[i][j] == B[i][j]
+        if A_T(i, j) == B(i, j)
             printf("ok %s\n", testcount);
         else
             printf("not ok %s\n", testcount);
-        end 
+        end
         testcount = testcount + 1;
     end
 end
