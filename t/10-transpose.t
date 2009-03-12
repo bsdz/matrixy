@@ -1,8 +1,5 @@
 plan(39);
 
-# note: we're using squaak style indexes
-#       until we get M ones.
-
 testcount = 1;
 
 # test transpose of square matrix
