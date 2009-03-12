@@ -16,7 +16,7 @@ value of the comment is passed as the second argument to the method.
 
 class Matrixy::Grammar::Actions;
 
-# TODO: I had heard that the stuf about @?BLOCK and manually handling scopes
+# TODO: I had heard that the stuff about @?BLOCK and manually handling scopes
 #       is not necessary anymore with the recent versions of PCT. If this is
 #       the case, update this.
 method TOP($/, $key) {
@@ -41,6 +41,33 @@ method TOP($/, $key) {
         }
         make $past;
     }
+}
+
+sub find_varname($name) {
+    our @?BLOCK;
+    our %?GLOBALS;
+    for @?BLOCK {
+        if $_.symbol($name) {
+            return "lexical";
+        }
+        if $_.blocktype() eq 'declaration' {
+            last;
+        }
+    }
+    if %?GLOBALS{$name} {
+        return "package";
+    }
+    return "NONE";
+}
+
+sub store_global($name) {
+    our %?GLOBALS;
+    %?GLOBALS{$name} := 1;
+}
+
+sub store_lexical($name) {
+    our @?BLOCK;
+    @?BLOCK[0].symbol($name, :scope('lexical'));
 }
 
 method stat_or_def($/, $key) {
@@ -84,6 +111,25 @@ method system_call($/) {
             :node($/)
         )
     );
+}
+
+method global_var_def($/) {
+    my $past := $( $<identifier> );
+    my $name := $past.name();
+    my $scope := find_varname($name);
+    if $scope eq "Lexical" {
+        $/.panic("Lexical variable named " ~ $name ~ " already exists in current scope");
+    }
+    store_global($name);
+    $past := PAST::Var.new(
+        :name($<identifier>.name()),
+        :scope('package'),
+        :node($/)
+    );
+    if $scope eq "NONE" {
+        $past.isdecl(1);
+    }
+    make $past;
 }
 
 method if_statement($/) {
@@ -273,20 +319,10 @@ method assignment($/) {
     #       persistence in interactive mode. This is a known issue with PCT.
     #       Until we get this resolved, we can't both have a unified dispatcher
     #       and a working interactive mode.
-    my $is_var := 0;
-    for @?BLOCK {
-        if $_.symbol($name) {
-            $is_var := 1;
-            last;
-        }
-        if $_.blocktype() eq 'declaration' {
-            last;
-        }
-    }
-    unless $is_var {
+    unless find_varname($name) ne "NONE" {
         $lhs.isdecl(1);
         $lhs.scope("lexical");
-        $?BLOCK.symbol( $name, :scope('lexical') );
+        store_lexical($name);
     }
     make PAST::Op.new(
         $lhs,
@@ -296,36 +332,6 @@ method assignment($/) {
         :node($/)
     );
 }
-
-method variable_declaration($/) {
-    our $?BLOCK;
-
-    my $past := $( $<identifier> );
-    $past.isdecl(1);
-    $past.scope('lexical');
-
-    ## if there's an initialization value, use it to viviself the variable.
-    if $<expression> {
-        $past.viviself( $( $<expression>[0] ) );
-    }
-    else { ## otherwise initialize to undef.
-        $past.viviself( 'Undef' );
-    }
-
-    ## cache this identifier's name
-    my $name := $past.name();
-
-    ## if the symbol is already declared, emit an error. Otherwise,
-    ## enter it into the current block's symbol table.
-    if $?BLOCK.symbol($name) {
-        $/.panic("Error: symbol " ~ $name ~ " was already defined\n");
-    }
-    else {
-        $?BLOCK.symbol($name, :scope('lexical'));
-    }
-    make $past;
-}
-
 
 method func_def($/) {
     our @?BLOCK;
@@ -518,19 +524,8 @@ method sub_or_var($/, $key) {
     our @?BLOCK;
     my $invocant := $( $<primary> );
     my $name := $invocant.name();
-    my $is_var := 0;
-    for @?BLOCK {
-        if $_.symbol($name) {
-            $is_var := 1;
-            last;
-        }
-        if $_.blocktype() eq 'declaration' {
-            last;
-        }
-    }
-    #if @?BLOCK[0].symbol($name) {
-    #if $key eq "var" {
-    if $is_var {
+    my $scope := find_varname($name);
+    if  $scope ne "NONE" {
         if $<bare_words> {
             $/.panic("Illegal barewords following a variable");
         }
@@ -562,7 +557,7 @@ method sub_or_var($/, $key) {
         $past.unshift(
             PAST::Var.new(
                 :name($name),
-                :scope('lexical')
+                :scope($scope)
             )
         );
         make $past;
