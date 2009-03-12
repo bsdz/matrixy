@@ -1,7 +1,4 @@
-disp("1..30")
-
-# note: we're using squaak style indexes
-#       until we get M ones.
+plan(30);
 
 x = zeros(1, 1);
 if x(0, 0) == 0
@@ -10,7 +7,7 @@ else
     disp("not ok 1");
 endif
 
-x = zeros(3, 2);
+x = zeros(3, 3);
 if x(0, 0) + x(1, 1) + x(2, 2) == 0
     disp("ok 2");
 else
