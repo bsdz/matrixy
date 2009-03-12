@@ -159,10 +159,10 @@ rule while_statement {
 
 # TODO: Update this syntax to match that in M
 rule for_statement {
-    'for' <for_init> ',' <expression> [',' <step=expression>]? 'do'
+    'for'
+    <for_init> ',' <expression> [',' <step=expression>]? 'do'
     <statement>*
-    'end'
-    {*}
+    'end' {*}
 }
 
 rule for_init {
@@ -231,9 +231,9 @@ token return_identifier {
 ################################################################################
 
 rule anon_func_constructor {
-    '@' '(' [ <identifier> [',' <identifier>]* ]? ')' 
-    <expression> 
-    {*}
+    '@' '(' [ <identifier> [',' <identifier>]* ]? ')'
+    {*}                                     #= open
+    <expression> {*}                        #= close
 }
 
 # TODO: Does M have things like this, or not? Do we want to keep hashes as a
