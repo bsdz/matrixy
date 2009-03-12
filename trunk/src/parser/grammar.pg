@@ -32,6 +32,7 @@ rule stat_or_def {
 
 rule statement {
     | <control_statement> {*}                #= control_statement
+    | <global_var_def> <terminator> {*}      #= global_var_def
     | <stmt_with_value> {*}                  #= stmt_with_value
     | <system_call> {*}                      #= system_call
 }
@@ -59,6 +60,10 @@ token sys_bare_words {
 rule assignment {
     <variable> '=' <expression>
     {*}
+}
+
+rule global_var_def {
+    'global' <identifier> {*}
 }
 
 ################################################################################
