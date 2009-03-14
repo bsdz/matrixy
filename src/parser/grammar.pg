@@ -70,9 +70,9 @@ rule assignment {
 rule sub_or_var {
     | <primary>
       '(' [ <expression> [',' <expression>]* ]? ')'
-      {*}                                       #= sub
-    #| <primary> <bare_words> {*}                #= sub
-    | <primary> {*}                             #= var
+      {*}
+    #| <primary> <bare_words> {*}
+    | <primary> {*}
 }
 
 # TODO: This should match everything upto but not including a terminator token

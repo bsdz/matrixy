@@ -4,7 +4,7 @@ Creates an identity matrix of dimension n.
 
 =cut
 
-
+.namespace ["_Matrixy";"builtins"]
 .sub 'eye'
     .param int nargout
     .param int nargin
@@ -41,4 +41,4 @@ Creates an identity matrix of dimension n.
 
 .end
 
-
+.namespace []
