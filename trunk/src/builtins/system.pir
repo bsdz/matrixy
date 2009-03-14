@@ -65,8 +65,14 @@ not currently perform any lookups however.
     .param pmc func
     .param pmc args :slurpy
 
+    $S0 = typeof func
+    if $S0 == 'Sub' goto sub_handle
     $S0 = '!get_first_string'(func)
-    .tailcall '!dispatch'($S0, nargout, nargin, args :flat)
+    $P0 = null
+    .tailcall '!dispatch'($S0, $P0, nargout, nargin, args :flat)
+
+  sub_handle:
+    .tailcall func(nargout, nargin, args :flat)
 .end
 
 =item eval(STRING try, STRING catch)

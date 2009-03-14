@@ -54,7 +54,7 @@ and can share names between them.
     .local pmc filehandle
     .local int indocs
     indocs = 0
-    $P0 = get_hll_global '_find_file_in_path'
+    $P0 = get_hll_global '!find_file_in_path'
     filehandle = $P0(name)
     $I0 = defined $P0
     unless $I0 goto _get_out
@@ -88,9 +88,29 @@ and can share names between them.
 
 .sub '!dispatch'
     .param string name
+    .param pmc var
     .param int nargout
     .param int nargin
     .param pmc args :slurpy
+    .local pmc sub_obj
+    .local pmc var_obj
+
+    # if we have a variable value, dispatch that
+    if null var goto not_a_var
+    .tailcall '!index_variable'(var, nargout, nargin, args)
+
+    # if it's not a variable, treat it like a sub and look that up.
+  not_a_var:
+    sub_obj = '!lookup_function'(name)
+    unless null sub_obj goto found_sub
+    _error_all("'", name, "' undefined")
+
+  found_sub:
+    .tailcall sub_obj(nargout, nargin, args :flat)
+.end
+
+.sub '!lookup_function'
+    .param string name
     .local pmc sub_obj
     .local pmc var_obj
 
@@ -100,11 +120,13 @@ and can share names between them.
     if $I0 goto _dispatch_found_sub
 
     # Second, look for a locally-defined function
-    sub_obj = find_name name
+    sub_obj = get_hll_global ["Matrixy::functions"], name
     $I0 = defined sub_obj
     if $I0 goto _dispatch_found_sub
 
     # Third, look for a list of already-loaded external functions
+    # TODO: This might not be necessary, since we are loading subs into their
+    #       own namespace now
     .local pmc func_list
     func_list = get_hll_global ['Matrixy';'Grammar';'Actions'], '%?FUNCTIONS'
     sub_obj = func_list[name]
@@ -113,26 +135,51 @@ and can share names between them.
 
     # Fourth, search for the file "name".m in the /lib
     .local pmc filehandle
-    filehandle = '_find_file_in_path'(name)
+    filehandle = '!find_file_in_path'(name)
     $I0 = defined filehandle
     if $I0 goto _dispatch_found_file
     goto _dispatch_not_found
 
   _dispatch_found_file:
-    sub_obj = '_get_sub_from_code_file'(filehandle, name)
+    sub_obj = '!get_sub_from_code_file'(filehandle, name)
     close filehandle
     $I0 = defined sub_obj
     if $I0 goto _dispatch_found_sub
 
   _dispatch_not_found:
-    # At this point, if we can't find anything, bork
-    '_error_all'(name, " undefined")
     $P0 = null
     .return($P0)
 
   _dispatch_found_sub:
-    $P0 = sub_obj(nargout, nargin, args :flat)
-    .return($P0)
+    .return(sub_obj)
+.end
+
+.sub '!index_variable'
+    .param pmc var
+    .param int nargout
+    .param int nargin
+    .param pmc args
+
+    $S0 = typeof var
+
+    # If it's a function handle variable, dispatch it.
+    unless $S0 == 'Sub' goto its_a_variable
+    .tailcall var(nargout, nargin, args :flat)
+
+    # If it's an ordinary variable, do the indexing
+  its_a_variable:
+    .local pmc myiter
+    myiter = iter args
+    $P1 = var
+  loop_top:
+    unless myiter goto loop_bottom
+    $P0 = shift myiter
+    $I0 = $P0
+    $P2 = $P1[$I0]
+    $P1 = $P2
+    goto loop_top
+  loop_bottom:
+    .return($P1)
 .end
 
 .sub '!generate_string'
@@ -161,7 +208,7 @@ and can share names between them.
     .return(s)
 .end
 
-.sub '_find_file_in_path'
+.sub '!find_file_in_path'
     .param string name
     .local string filename
     .local pmc path
@@ -202,7 +249,7 @@ and can share names between them.
 #       and bare scripts. The former is $P1[1], the later will be $P1[0].
 #       Also, the later will not take any args (so throw an error if any
 #       are passed).
-.sub '_get_sub_from_code_file'
+.sub '!get_sub_from_code_file'
     .param pmc filehandle
     .param string name
     .local pmc code
