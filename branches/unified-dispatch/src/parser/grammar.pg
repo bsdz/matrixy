@@ -1,0 +1,320 @@
+# $Id$
+
+=begin overview
+
+This is the grammar for Matrixy written as a sequence of Perl 6 rules.
+
+=end overview
+
+grammar Matrixy::Grammar is PCT::Grammar;
+
+rule TOP {
+    {*}                                      #= open
+    <stat_or_def>*
+    [ $ || <.panic: 'Syntax error'> ]
+    {*}                                      #= close
+}
+
+################################################################################
+# STATEMENTS AND BLOCKS
+################################################################################
+
+rule block {
+    {*}                                #= open
+    <statement>*
+    {*}                                #= close
+}
+
+rule stat_or_def {
+    | <statement> {*}                         #= statement
+    | <func_def> {*}                         #= func_def
+}
+
+rule statement {
+    | <control_statement> {*}                #= control_statement
+    | <global_var_def> <terminator> {*}      #= global_var_def
+    | <stmt_with_value> {*}                  #= stmt_with_value
+    | <system_call> {*}                      #= system_call
+}
+
+# Statement types that would display a value if not terminated with an ';'
+rule stmt_with_value {
+    | <assignment> <terminator> {*}          #= assignment
+    | <expression> <terminator> {*}          #= expression
+}
+
+# TODO: This should match a semicolon or a newline. At the moment, newlines are
+#       not detected.
+token terminator {
+    ';'?
+}
+
+rule system_call {
+    '!' <sys_bare_words> {*}
+}
+
+token sys_bare_words {
+    \N+ \n?
+}
+
+rule assignment {
+    <variable> '=' <expression>
+    {*}
+}
+
+rule global_var_def {
+    'global' <identifier> {*}
+}
+
+################################################################################
+# FUNCTIONS AND VARIABLES
+################################################################################
+# TODO: A bare identifier should be treated as a function call UNLESS it's
+#       a previously-defined variable in the current scope. At the moment, we
+#       do not do this.
+rule sub_or_var {
+    | <primary>
+      '(' [ <expression> [',' <expression>]* ]? ')'
+      {*}                                       #= sub
+    #| <primary> <bare_words> {*}                #= sub
+    | <primary> {*}                             #= var
+}
+
+# TODO: This should match everything upto but not including a terminator token
+token bare_words {
+    \N* {*}
+}
+
+# An ambiguous primary element, could be a subroutine call or a variable
+# reference, depending on context
+rule primary {
+    <identifier> <postfix_expression>*
+    {*}
+}
+
+# An unambiguous variable reference, based on context
+rule variable {
+    <identifier> <postfix_expression>*
+    {*}
+}
+
+rule postfix_expression {
+    | <key> {*}                      #= key
+    | <index> {*}                    #= index
+    | <member> {*}                   #= member
+}
+
+rule key {
+    '{' <expression> '}'
+    {*}
+}
+
+rule member {
+    '.' <identifier>
+    {*}
+}
+
+# TODO: This isn't really valid M syntax. We're keeping this as a "feature"
+#       to help disambiguate variable and subroutine calls.
+rule index {
+    '[' <expression> ']'
+    {*}
+}
+
+rule term {
+   #| <range_constructor> {*}         #= range_constructor
+   | <float_constant> {*}            #= float_constant
+   | <integer_constant> {*}          #= integer_constant
+   | <string_constant> {*}           #= string_constant
+   | <hash_constructor> {*}          #= hash_constructor
+   | <array_constructor> {*}         #= array_constructor
+   | <anon_func_constructor> {*}     #= anon_func_constructor
+   | <sub_or_var> {*}                #= sub_or_var
+   | '(' <expression> ')' {*}        #= expression
+}
+
+
+################################################################################
+# CONTROL STATEMENTS
+################################################################################
+
+# TODO: Make sure we support all these forms, and weed out any statement
+#       types that aren't in M
+rule control_statement {
+    | <if_statement> {*}                     #= if_statement
+    | <while_statement> {*}                  #= while_statement
+    | <for_statement> {*}                    #= for_statement
+    | <try_statement> {*}                    #= try_statement
+    | <throw_statement> {*}                  #= throw_statement
+    | <do_block> {*}                         #= do_block
+    | <return_statement> <terminator> {*}    #= return_statement
+}
+
+# TODO: Update this syntax to match that in M
+rule if_statement {
+    'if' <expression> <block> ['else' <else=block>]? ['endif'|'end']>>
+    {*}
+}
+
+# TODO: Update this syntax to match that in M
+rule while_statement {
+    'while' <expression> 'do' <block> 'end'
+    {*}
+}
+
+# TODO: Update this syntax to match that in M
+rule for_statement {
+    'for'
+    <for_init> ',' <expression> [',' <step=expression>]? 'do'
+    <statement>*
+    'end' {*}
+}
+
+rule for_init {
+    'var' <identifier> '=' <expression>
+    {*}
+}
+
+# TODO: I don't remember how M handles exceptions. Update this to match
+#       if it doesn't
+rule try_statement {
+    'try' <try=block> 'catch' <exception> <catch=block> 'end'
+    {*}
+}
+
+rule exception {
+    <identifier>
+    {*}
+}
+
+rule throw_statement {
+    'throw' <expression>
+    {*}
+}
+
+# TODO: In M, return statements don't take an expression, because the return
+#       values are specified in the function definition. Update this.
+rule return_statement {
+    'return' <expression>
+    {*}
+}
+
+# TODO: Does M have a do-block? If not, delete this.
+rule do_block {
+    'do' <block> 'end'
+    {*}
+}
+
+################################################################################
+# FUNCTION DEFINITIONS
+################################################################################
+
+# note: the order of endfunction|end are important here!
+#
+rule func_def {
+    <func_sig>
+    <statement>*
+    ['endfunction'|'end']>>
+    {*}
+}
+
+rule func_sig {
+    'function' [<return_identifier> '=']? <identifier>
+        ['(' [ <identifier> [',' <identifier>]* ]? ')']?
+    {*}
+}
+
+# TODO: Expand this to allow mulitple return values in a () comma-separated
+#       list.
+token return_identifier {
+    <!keyword> <ident>
+    {*}
+}
+
+################################################################################
+# CONSTRUCTORS AND CONSTANTS
+################################################################################
+
+rule anon_func_constructor {
+    '@' '(' [ <identifier> [',' <identifier>]* ]? ')'
+    {*}                                     #= open
+    <expression> {*}                        #= close
+}
+
+# TODO: Does M have things like this, or not? Do we want to keep hashes as a
+#       feature?
+rule hash_constructor {
+    '{' [ <named_field> [',' <named_field>]* ]? '}'
+    {*}
+}
+
+rule named_field {
+    <string_constant> '=>' <expression>
+    {*}
+}
+
+# TODO: Should probably be renamed "matrix_constructor", but that's nitpickery
+rule array_constructor {
+    '[' [ <array_row> [';' <array_row>]* ]? ']'
+    {*}
+}
+
+rule array_row {
+    <expression> [','? <expression>]*
+    {*}
+}
+
+#rule range_constructor {
+#    | <expression> ':' <expression> ':' <expression> {*} #= three
+#    | <expression> ':' <expression> {*}                        #= two
+#}
+
+token identifier {
+    <!keyword> <ident>
+    {*}
+}
+
+token integer_constant {
+    \d+
+    {*}
+}
+
+token float_constant {
+    [
+    | \d+ '.' \d*
+    | \d* '.' \d+
+    ]
+    {*}
+}
+
+# TODO: M only supports 'single-quote' string literals, not "double-quote".
+#       Do we keep them as a feature, or give them a special meaning, or what?
+token string_constant {
+    [\" <string_literal: '"'> \" | \' <string_literal: '\''> \']
+    {*}
+}
+
+# TODO: We should be able to get rid of this and all calls to <!keyword>
+#       once PCT implements Longest-token-matching
+token keyword {
+    ['function'|'endfunction'|'return'
+    |'global'|'persistent'
+    |'if'|'elseif'|'else'|'endif'
+    |'and'|'not'|'or'
+    |'try'|'catch'|'throw'
+    |'do'|'until'
+    |'while'|'endwhile'
+    |'for'|'endfor'
+    |'break'|'continue'
+    |'switch'|'case'|'otherwise'|'endswitch'
+    |'end']>>
+}
+
+rule expression is optable { ... }
+
+##  this <ws> rule treats # as "comment to eol"
+##  you may want to replace it with something appropriate
+token ws {
+    <!ww>
+    [ ['#'|'%'] \N* \n? | \s+ ]*
+}
