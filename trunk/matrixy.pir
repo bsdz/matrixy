@@ -97,9 +97,6 @@ to the Matrixy compiler.
     $P4 = new 'Integer'
     $P4 = 0
     set_hll_global ['Matrixy';'Grammar';'Actions'], '$?NARGOUT', $P4
-
-    $P4 = new 'Hash'
-    set_hll_global ['Matrixy';'Grammar';'Actions'], '%?GLOBALS', $P5
 .end
 
 .namespace []

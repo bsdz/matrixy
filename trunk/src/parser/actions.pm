@@ -16,7 +16,7 @@ value of the comment is passed as the second argument to the method.
 
 class Matrixy::Grammar::Actions;
 
-# TODO: I had heard that the stuff about @?BLOCK and manually handling scopes
+# TODO: I had heard that the stuf about @?BLOCK and manually handling scopes
 #       is not necessary anymore with the recent versions of PCT. If this is
 #       the case, update this.
 method TOP($/, $key) {
@@ -43,33 +43,6 @@ method TOP($/, $key) {
     }
 }
 
-sub find_varname($name) {
-    our @?BLOCK;
-    our %?GLOBALS;
-    for @?BLOCK {
-        if $_.symbol($name) {
-            return "lexical";
-        }
-        if $_.blocktype() eq 'declaration' {
-            last;
-        }
-    }
-    if %?GLOBALS{$name} {
-        return "package";
-    }
-    return "NONE";
-}
-
-sub store_global($name) {
-    our %?GLOBALS;
-    %?GLOBALS{$name} := 1;
-}
-
-sub store_lexical($name) {
-    our @?BLOCK;
-    @?BLOCK[0].symbol($name, :scope('lexical'));
-}
-
 method stat_or_def($/, $key) {
     make $( $/{$key} );
 }
@@ -81,18 +54,21 @@ method statement($/, $key) {
 method stmt_with_value($/, $key) {
     if $key eq "expression" {
         make PAST::Op.new(:pasttype('inline'), :node($/),
-            :inline("    _print_result_e(%0, %1)"),
+            :inline("_print_result_e(%0, %1)"),
             $( $<expression> ),
             PAST::Val.new( :value(~$<terminator>), :returns('String'))
         )
     } elsif $key eq "assignment" {
         my $assignment := $( $<assignment> );
-        make PAST::Op.new( :pasttype('inline'), :node($/),
-            :inline('    _print_result_a(%0, %1, %2)'),
-            PAST::Val.new( :value( $assignment.name() ), :returns('String')),
-            $assignment,
-            PAST::Val.new( :value( ~$<terminator> ), :returns('String'))
+        my $past := PAST::Stmts.new( :node($/),
+            PAST::Op.new( :pasttype('inline'), :node($/),
+                :inline('_print_result_a(%0, %1, %2)'),
+                PAST::Val.new( :value( $assignment.name() ), :returns('String')),
+                $assignment,
+                PAST::Val.new( :value( ~$<terminator> ), :returns('String'))
+            )
         );
+        make $past;
     }
 }
 
@@ -111,25 +87,6 @@ method system_call($/) {
             :node($/)
         )
     );
-}
-
-method global_var_def($/) {
-    my $past := $( $<identifier> );
-    my $name := $past.name();
-    my $scope := find_varname($name);
-    if $scope eq "Lexical" {
-        $/.panic("Lexical variable named " ~ $name ~ " already exists in current scope");
-    }
-    store_global($name);
-    $past := PAST::Var.new(
-        :name($<identifier>.name()),
-        :scope('package'),
-        :node($/)
-    );
-    if $scope eq "NONE" {
-        $past.isdecl(1);
-    }
-    make $past;
 }
 
 method if_statement($/) {
@@ -165,9 +122,6 @@ method for_statement($/) {
     our $?BLOCK;
     our @?BLOCK;
 
-    my $innerblock := PAST::Stmts.new( );
-    my $outerblock := @?BLOCK[0];
-
     my $init := $( $<for_init> );
 
     ## cache the name of the loop variable
@@ -186,8 +140,10 @@ method for_statement($/) {
     ## the body of the loop consists of the statements written by the user and
     ## the increment instruction of the loop iterator.
 
+    my $body := @?BLOCK.shift();
+    $?BLOCK  := @?BLOCK[0];
     for $<statement> {
-        $innerblock.push($($_));
+        $body.push($($_));
     }
 
     ## if a step was specified, use that; otherwise, use the default of +1.
@@ -201,32 +157,33 @@ method for_statement($/) {
     else { ## default is increment by 1
         $step := PAST::Op.new( $iter, :pirop('inc'), :node($/) );
     }
-    $innerblock.push($step);
+    $body.push($step);
 
     ## while loop iterator <= end-expression
     my $cond := PAST::Op.new( $iter, $( $<expression> ), :name('infix:<=') );
-    my $loop := PAST::Op.new( $cond, $innerblock, :pasttype('while'), :node($/) );
-    $outerblock.push($init);
-    $outerblock.push($loop);
-    @?BLOCK.shift();
-    make $outerblock;
+    my $loop := PAST::Op.new( $cond, $body, :pasttype('while'), :node($/) );
+
+    make PAST::Stmts.new( $init, $loop, :node($/) );
 }
 
 method for_init($/) {
     our $?BLOCK;
     our @?BLOCK;
 
+    ## create a new scope here, so that we can add the loop variable
+    ## to this block here, which is convenient.
+    $?BLOCK := PAST::Block.new( :blocktype('immediate'), :node($/) );
+    @?BLOCK.unshift($?BLOCK);
+
     my $iter := $( $<identifier> );
+    ## set a flag that this identifier is being declared
     $iter.isdecl(1);
     $iter.scope('lexical');
+    ## the identifier is initialized with this expression
     $iter.viviself( $( $<expression> ) );
 
-    my $outerblock := PAST::Block.new( :blocktype('immediate'), :node($/) );
-    $?BLOCK := $outerblock;
-    @?BLOCK.unshift($outerblock);
-
     ## enter the loop variable as a local into the symbol table.
-    $outerblock.symbol($iter.name(), :scope('lexical'));
+    $?BLOCK.symbol($iter.name(), :scope('lexical'));
 
     make $iter;
 }
@@ -292,7 +249,7 @@ method block($/, $key) {
         for $<statement> {
             $past.push($($_));
         }
-        make $past;
+        make $past
     }
 }
 
@@ -310,7 +267,6 @@ method do_block($/) {
 
 method assignment($/) {
     our $?BLOCK;
-    our @?BLOCK;
     my $rhs := $( $<expression> );
     my $lhs := $( $<variable> );
     $lhs.lvalue(1);
@@ -319,10 +275,10 @@ method assignment($/) {
     #       persistence in interactive mode. This is a known issue with PCT.
     #       Until we get this resolved, we can't both have a unified dispatcher
     #       and a working interactive mode.
-    unless find_varname($name) ne "NONE" {
-        $lhs.isdecl(1);
-        $lhs.scope("lexical");
-        store_lexical($name);
+    unless $?BLOCK.symbol( $name ) {
+        #$lhs.isdecl(1);
+        #$lhs.scope("lexical");
+        #$?BLOCK.symbol( $name, :scope('lexical') );
     }
     make PAST::Op.new(
         $lhs,
@@ -332,6 +288,36 @@ method assignment($/) {
         :node($/)
     );
 }
+
+method variable_declaration($/) {
+    our $?BLOCK;
+
+    my $past := $( $<identifier> );
+    $past.isdecl(1);
+    $past.scope('lexical');
+
+    ## if there's an initialization value, use it to viviself the variable.
+    if $<expression> {
+        $past.viviself( $( $<expression>[0] ) );
+    }
+    else { ## otherwise initialize to undef.
+        $past.viviself( 'Undef' );
+    }
+
+    ## cache this identifier's name
+    my $name := $past.name();
+
+    ## if the symbol is already declared, emit an error. Otherwise,
+    ## enter it into the current block's symbol table.
+    if $?BLOCK.symbol($name) {
+        $/.panic("Error: symbol " ~ $name ~ " was already defined\n");
+    }
+    else {
+        $?BLOCK.symbol($name, :scope('lexical'));
+    }
+    make $past;
+}
+
 
 method func_def($/) {
     our @?BLOCK;
@@ -451,65 +437,50 @@ method return_identifier($/) {
     make PAST::Var.new( :name($name), :node($/) );
 }
 
-method anon_func_constructor($/, $key) {
-    our $?BLOCK;
-    our @?BLOCK;
-    if $key eq "open" {
-        $?BLOCK := PAST::Block.new(
-            :blocktype('declaration'),
-            :node($/),
-            PAST::Var.new(
-                :name('nargout'),
-                :scope('parameter')
-            ),
-            PAST::Var.new(
-                :name('nargin'),
-                :scope('parameter')
-            )
-        );
-        $?BLOCK.symbol("nargout", :scope('lexical'));
-        $?BLOCK.symbol("nargin", :scope('lexical'));
-        for $<identifier> {
-            my $param := $( $_ );
-            $param.isdecl(1);
-            $param.scope('parameter');
-            $?BLOCK.symbol($param.name(), :scope('lexical'));
-            $?BLOCK.push($param);
-        }
-        @?BLOCK.unshift($?BLOCK);
-    }
-    else {
-        $?BLOCK.push(
-            PAST::Op.new(
-                PAST::Var.new(
-                    :name('!retval'),
-                    :scope('lexical'),
-                    :lvalue(1),
-                    :isdecl(1),
-                    :node($/)
-                ),
-                $($<expression>),
-                :pasttype('bind'),
-                :node($/)
-            )
-        );
-        $?BLOCK.push(
-            PAST::Op.new(
-                :pasttype('return'),
-                PAST::Var.new(
-                    :name('!retval'),
-                    :scope('lexical'),
-                    :node($/)
-                )
-            )
-        );
+method anon_func_constructor($/) {
+    my $block := PAST::Block.new( :blocktype('declaration'), :node($/) );
 
-        $?BLOCK.control('return_pir');
-        my $block := $?BLOCK;
-        @?BLOCK.shift();
-        $?BLOCK := @?BLOCK[0];
-        make $block;
+    $block.push(
+        PAST::Var.new(
+            :name('nargout'),
+            :scope('parameter'),
+            :node($/)
+        )
+    );
+    $block.symbol("nargout", :scope('lexical'));
+    $block.push(
+        PAST::Var.new(
+            :name('nargin'),
+            :scope('parameter'),
+            :node($/)
+        )
+    );
+    $block.symbol("nargin", :scope('lexical'));
+    for $<identifier> {
+        my $param := $( $_ );
+        $param.scope('parameter');
+        $block.push($param);
+
+        ## enter the parameter as a lexical into the block's symbol table
+        $block.symbol($param.name(), :scope('lexical'));
     }
+
+    my $var := PAST::Var.new(:node($/) );
+    # $var.lvalue(1);
+
+    my $op := PAST::Op.new(
+        $var,
+        $($<expression>),
+        :pasttype('bind'),
+        :node($/)
+    );
+    $block.push($op);
+
+    my $retop := PAST::Op.new( $var, :pasttype('return') );
+    $block.push($retop);
+
+    $block.control('return_pir');
+    make $block;
 }
 
 
@@ -524,53 +495,32 @@ method sub_or_var($/, $key) {
     our @?BLOCK;
     my $invocant := $( $<primary> );
     my $name := $invocant.name();
-    my $scope := find_varname($name);
-    if  $scope ne "NONE" {
-        if $<bare_words> {
-            $/.panic("Illegal barewords following a variable");
+    #if @?BLOCK[0].symbol($name) {
+    if $key eq "var" {
+        for $<expression> {
+            my $past := PAST::Var.new(
+                $($_),
+                $invocant,
+                :scope('keyed'),
+                :vivibase('ResizablePMCArray'),
+                :viviself('Undef'),
+                :node($/)
+            );
+            $invocant := $past;
         }
-        my $past := PAST::Op.new(
-            :name('!dispatch_var'),
-            :pasttype('call'),
-            :node($/)
-        );
-        my $nargin := 0;
-        my $nargout := 1; # TODO: Figure out how to set this to the real value
-        if $<expression> {
-            for $<expression> {
-                $past.push($($_));
-                $nargin++;
-            }
-        }
-        $past.unshift(
-            PAST::Val.new(
-                :value($nargin),
-                :returns('Integer')
-            )
-        );
-        $past.unshift(
-            PAST::Val.new(
-                :value($nargout),
-                :returns('Integer')
-            ),
-        );
-        $past.unshift(
-            PAST::Var.new(
-                :name($name),
-                :scope($scope)
-            )
-        );
-        make $past;
+        make $invocant;
     }
     else {
         my $nargin := 0;
         my $nargout := 0;
+        #_disp_all("Found Sub ", $name);
         my $past := PAST::Op.new(
             :name('!dispatch'),
             :pasttype('call'),
             :node($/)
         );
         if $<bare_words> {
+            _disp_all("Found barewords, constructing...");
             $nargin := 1;
             my $barewords := PAST::Op.new(
                 :pasttype('call'),
@@ -599,7 +549,7 @@ method sub_or_var($/, $key) {
         );
         $past.unshift(
             PAST::Val.new(
-                :value($name),
+                :value($invocant.name()),
                 :returns('String'),
                 :node($/)
             )
@@ -618,7 +568,6 @@ method bare_words($/) {
 
 method primary($/) {
     my $past := $( $<identifier> );
-    my $name := $past.name();
     for $<postfix_expression> {
         my $expr := $( $_ );
         ## set the current $past as the first child of $expr;
@@ -628,7 +577,6 @@ method primary($/) {
         $expr.unshift($past);
         $past := $expr;
     }
-    $past.name($name);
     make $past;
 }
 
@@ -644,7 +592,6 @@ method variable($/) {
         $expr.unshift($past);
         $past := $expr;
     }
-    $past.name($name);
     make $past;
 }
 
@@ -685,9 +632,9 @@ method member($/) {
 
 method index($/) {
     my $index := $( $<expression> );
+
     make PAST::Var.new(
         $index,
-        :name($index.name()),
         :scope('keyed'),
         :vivibase('ResizablePMCArray'),
         :viviself('Undef'),

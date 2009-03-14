@@ -32,7 +32,6 @@ rule stat_or_def {
 
 rule statement {
     | <control_statement> {*}                #= control_statement
-    | <global_var_def> <terminator> {*}      #= global_var_def
     | <stmt_with_value> {*}                  #= stmt_with_value
     | <system_call> {*}                      #= system_call
 }
@@ -60,10 +59,6 @@ token sys_bare_words {
 rule assignment {
     <variable> '=' <expression>
     {*}
-}
-
-rule global_var_def {
-    'global' <identifier> {*}
 }
 
 ################################################################################
@@ -164,10 +159,10 @@ rule while_statement {
 
 # TODO: Update this syntax to match that in M
 rule for_statement {
-    'for'
-    <for_init> ',' <expression> [',' <step=expression>]? 'do'
+    'for' <for_init> ',' <expression> [',' <step=expression>]? 'do'
     <statement>*
-    'end' {*}
+    'end'
+    {*}
 }
 
 rule for_init {
@@ -236,9 +231,9 @@ token return_identifier {
 ################################################################################
 
 rule anon_func_constructor {
-    '@' '(' [ <identifier> [',' <identifier>]* ]? ')'
-    {*}                                     #= open
-    <expression> {*}                        #= close
+    '@' '(' [ <identifier> [',' <identifier>]* ]? ')' 
+    <expression> 
+    {*}
 }
 
 # TODO: Does M have things like this, or not? Do we want to keep hashes as a
