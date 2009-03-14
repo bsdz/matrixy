@@ -135,44 +135,6 @@ and can share names between them.
     .return($P0)
 .end
 
-=item !dispatch_var
-
-Dispatch a variable. At this point we know it's a variable and not an ordinary
-function call, but the variable could still contain a subroutine reference.
-So test it's type, dispatch the anon func if that's what it is, and take an
-index otherwise.
-
-=cut
-
-.sub '!dispatch_var'
-    .param pmc var
-    .param int nargout
-    .param int nargin
-    .param pmc args :slurpy
-
-  not_null:
-    $S0 = typeof var
-    unless $S0 == 'Sub' goto its_a_variable
-    say nargout
-    say nargin
-    say args
-    .tailcall var(nargout, nargin, args :flat)
-
-  its_a_variable:
-    .local pmc myiter
-    myiter = iter args
-    $P1 = var
-  loop_top:
-    unless myiter goto loop_bottom
-    $P0 = shift myiter
-    $I0 = $P0
-    $P2 = $P1[$I0]
-    $P1 = $P2
-    goto loop_top
-  loop_bottom:
-    .return($P1)
-.end
-
 .sub '!generate_string'
     .param pmc args :slurpy
     .local pmc myiter

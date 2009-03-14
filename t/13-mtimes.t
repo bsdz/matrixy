@@ -1,4 +1,4 @@
-plan(2);
+disp("1..2")
 
 testcount = 1;
 
