@@ -168,6 +168,16 @@ and can share names between them.
 
     # If it's an ordinary variable, do the indexing
   its_a_variable:
+
+    # If we only have a 1-ary index, we need to use a separate vector indexing
+    # algorithm instead of the nested matrix indexing.
+    $I0 = args
+    unless $I0 == 1 goto matrix_indexing
+    $I1 = args[0]
+    dec $I1 # Make sure it's 0-indexed
+    .tailcall '!index_vector'(var, $I1)
+
+  matrix_indexing:
     .local pmc myiter
     myiter = iter args
     $P1 = var
@@ -175,11 +185,47 @@ and can share names between them.
     unless myiter goto loop_bottom
     $P0 = shift myiter
     $I0 = $P0
+    dec $I0   # M Matrices are 1-based, not 0-based like Parrot arrays
+    if $I0 < 0 goto negative_index_attempt
     $P2 = $P1[$I0]
     $P1 = $P2
     goto loop_top
   loop_bottom:
     .return($P1)
+  negative_index_attempt:
+    _error_all("invalid index")
+.end
+
+.sub '!index_vector'
+    .param pmc var
+    .param int idx
+    .local int rows
+    .local int cols
+
+    $P0 = '!get_matrix_sizes'(var)
+    rows = $P0[0]
+    cols = $P0[1]
+    if cols == 1 goto column_vector
+    if rows == 1 goto row_vector
+
+    # here, it's a matrix that's being indexed like a vector
+    .local int row
+    .local int col
+    row = idx % rows
+    col = idx / rows
+    $P1 = var[row]
+    $P2 = $P1[col]
+    .return($P2)
+
+  column_vector:
+    $P1 = var[idx]
+    $P2 = $P1[0]
+    .return($P2)
+
+  row_vector:
+    $P1 = var[0]
+    $P2 = $P1[idx]
+    .return($P2)
 .end
 
 .sub '!generate_string'
