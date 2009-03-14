@@ -24,12 +24,12 @@
 
     .local string error_message
 
-    load_bytecode 'extern/pbc/blas.pbc'
+    load_bytecode 'extern/pbc/cblas.pbc'
 
-    $P0 = get_hll_global ['blas';'RAW'], 'dgemm'
+    $P0 = get_hll_global ['cblas';'RAW'], 'dgemm'
     $I0 = defined $P0
     if $I0 goto do_fn
-    error_message =  'cannot find blas::RAW::dgemm!'
+    error_message =  'cannot find cblas::RAW::dgemm!'
     goto fail
 
 
