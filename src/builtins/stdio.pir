@@ -172,57 +172,20 @@ if the result of the variable x, or the subroutine call x() returns the value
 .sub '_print_result_a'
     .param pmc name
     .param pmc value
-    .param string term
-    iseq $I0, term, ';'
-    if $I0 goto end_p_r_a
     print name
     say " = "
     $S0 = '!get_matrix_string'(value)
     say $S0
-  end_p_r_a:
     .return()
 .end
 
 .sub '_print_result_e'
     .param pmc value
-    .param string term
-
-    # If the value isn't defined, don't do anything
-
     $I0 = defined value
-    if $I0 goto print_value
-    goto end_print_result
-
-    if term == ';' goto end_print_result
-
-    #If the statement is terminated, don't print, but do
-    # set "ans"
-  print_value:
-    if term goto end_p_r_e
-
+    unless $I0 goto end_print_result
     print "ans = "
     $S0 = '!get_matrix_string'(value)
     say $S0
-
-  end_p_r_e:
-    set_hll_global "ans", value
-  end_print_result:
-    .return()
-.end
-
-.sub '_print_result_s'
-    .param pmc value
-    .param string term
-    $I0 = defined value
-    if $I0 goto print_value
-    goto end_print_result
-  print_value:
-    iseq $I0, term, ';'
-    if $I0 goto end_p_r_s
-    print "ans = "
-    $S0 = '!get_matrix_string'(value)
-    say $S0
-  end_p_r_s:
     set_hll_global "ans", value
   end_print_result:
     .return()

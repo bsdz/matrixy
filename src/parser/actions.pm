@@ -51,20 +51,23 @@ method statement($/, $key) {
 }
 
 method stmt_with_value($/, $key) {
-    if $key eq "expression" {
+    my $term := ~$<terminator>;
+    if $term eq ";" {
+        make $( $/{$key} );
+    }
+    elsif $key eq "expression" {
         make PAST::Op.new(:pasttype('inline'), :node($/),
-            :inline("_print_result_e(%0, %1)"),
-            $( $<expression> ),
-            PAST::Val.new( :value(~$<terminator>), :returns('String'))
+            :inline("    _print_result_e(%0)"),
+            $( $<expression> )
         )
-    } elsif $key eq "assignment" {
+    }
+    elsif $key eq "assignment" {
         my $assignment := $( $<assignment> );
         my $past := PAST::Stmts.new( :node($/),
             PAST::Op.new( :pasttype('inline'), :node($/),
-                :inline('_print_result_a(%0, %1, %2)'),
+                :inline('    _print_result_a(%0, %1)'),
                 PAST::Val.new( :value( $assignment.name() ), :returns('String')),
-                $assignment,
-                PAST::Val.new( :value( ~$<terminator> ), :returns('String'))
+                $assignment
             )
         );
         make $past;
