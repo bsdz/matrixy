@@ -5,7 +5,7 @@ F<src/builtins/stdio.pir> - built-in stdio functions
 
 =head1 DESCRIPTION
 
-This file contains some of the basic functions for I/O on 
+This file contains some of the basic functions for I/O on
 the console and in files.
 
 =head1 Functions
@@ -169,17 +169,18 @@ if the result of the variable x, or the subroutine call x() returns the value
 
 =cut
 
-.sub '_print_result_a'
+.sub '!print_result_a'
     .param pmc name
     .param pmc value
     print name
     say " = "
     $S0 = '!get_matrix_string'(value)
     say $S0
+    set_hll_global "ans", value
     .return()
 .end
 
-.sub '_print_result_e'
+.sub '!print_result_e'
     .param pmc value
     $I0 = defined value
     unless $I0 goto end_print_result
@@ -189,6 +190,11 @@ if the result of the variable x, or the subroutine call x() returns the value
     set_hll_global "ans", value
   end_print_result:
     .return()
+.end
+
+.sub '!store_last_ans'
+    .param pmc value
+    set_hll_global "ans", value
 .end
 
 =back
