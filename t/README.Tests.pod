@@ -1,0 +1,16 @@
+=head1 ABOUT
+
+This document talks about the test suite, how it is arranged, how existing
+tests are organized and how new tests are added.
+
+=head1 Test Numbering
+
+=over 4
+
+=item 000-199 Core Syntax and Core Builtins
+
+=item 200-799 Library Function Tests
+
+=item 800-999 Coding STD, Projects, Documentation
+
+=back
