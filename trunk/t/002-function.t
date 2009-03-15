@@ -1,4 +1,4 @@
-disp("1..6");
+disp("1..10");
 
 % Basic function call with no args
 function bar
@@ -62,3 +62,17 @@ if x == 200 * pi2()
 else
     printf("not ok 6\n");
 endif
+
+% Test nargin and varargin
+function argsintest(varargin)
+    printf("ok %d\n", nargin + 6);
+endfunction
+argsintest(5);
+argsintest(6, 7);
+argsintest(8, 9, 10);
+
+% Test nargout
+function x = argsouttest()
+    printf("ok %d\n", 9 + nargout);
+endfunction
+a = argsouttest();

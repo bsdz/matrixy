@@ -1,4 +1,4 @@
-plan(13);
+plan(14);
 
 % Basic sanity test. We've probably done this elsewhere, but do it here again
 disp(["ok 1"])
@@ -25,3 +25,6 @@ disp(["ok ", 49.2, 50.7])
 
 % expressions (with whitespace) inside a string matrix
 disp(["ok ", 48 + 1, 48 + 3])
+
+% printf with the %s placeholder
+printf("ok %s\n", "14");

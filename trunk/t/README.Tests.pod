@@ -7,10 +7,14 @@ tests are organized and how new tests are added.
 
 =over 4
 
-=item 000-199 Core Syntax and Core Builtins
+=item 000-099 Core Syntax
 
-=item 200-799 Library Function Tests
+=item 100-199 Internals and Helpers
 
-=item 800-999 Coding STD, Projects, Documentation
+=item 200-299 PIR Builtins
+
+=item 300-799 M Library functions
+
+=item 800-999 Coding STD, Projects, Documentation, other
 
 =back
