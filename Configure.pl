@@ -25,6 +25,9 @@ $conf->data()->get_PConfig(); #load configuration data
 my @builtins = glob("src/builtins/*.pir");
 $conf->data()->set('builtins_pir', join(' ', @builtins));
 
+my @internals = glob("src/internals/*.pir");
+$conf->data()->set('internals_pir', join(' ', @internals));
+
 $conf->genfile( 'config/makefiles/root.in' => 'Makefile');
 
 exit(0);

@@ -65,8 +65,3 @@
     .return(0)
 
 .end
-
-
-.namespace []
-
-

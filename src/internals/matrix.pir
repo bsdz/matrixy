@@ -8,61 +8,6 @@ matrix objects. These are, at least at first, nested ResizablePMCArray objects.
 
 At the moment, only covers matrices with a dimension of 1 or 2. No 3-D matrices.
 
-=head1 BUILTIN FUNCTIONS
-
-=over 4
-
-=cut
-
-.namespace ["_Matrixy";"builtins"]
-
-.sub 'size'
-    .param int nargout
-    .param int nargin
-    .param pmc x
-    $S0 = typeof x
-    if $S0 == 'ResizablePMCArray' goto _its_an_array
-    .return(1)
-  _its_an_array:
-    $P0 = find_name '!get_matrix_sizes'
-    $P1 = $P0(x)
-    $P0 = find_name '!array_row'
-    $P2 = $P0($P1 :flat)
-    $P0 = find_name '!array_col'
-    .tailcall $P0($P2)
-.end
-
-.sub 'rows'
-    .param int nargout
-    .param int nargin
-    .param pmc x
-    $S0 = typeof x
-    if $S0 == 'ResizablePMCArray' goto _its_an_array
-    .return(1)
-  _its_an_array:
-    $P0 = find_name '!get_matrix_sizes'
-    $P1 = $P0(x)
-    $I0 = $P1[0]
-    .return($I0)
-.end
-
-.sub 'columns'
-    .param int nargout
-    .param int nargin
-    .param pmc x
-    $S0 = typeof x
-    if $S0 == 'ResizablePMCArray' goto _its_an_array
-    .return(1)
-  _its_an_array:
-    $P0 = find_name '!get_matrix_sizes'
-    $P1 = $P0(x)
-    $I0 = $P1[1]
-    .return($I0)
-.end
-
-
-=back
-
 =head1 INTERNAL FUNCTIONS
 
 =over 4

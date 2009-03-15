@@ -1,6 +1,5 @@
 =head1 NAME
 
-
 F<src/builtins/stdio.pir> - built-in stdio functions
 
 =head1 DESCRIPTION
@@ -13,57 +12,6 @@ the console and in files.
 =over 4
 
 =cut
-
-.namespace ["_Matrixy";"builtins"]
-
-=item disp(PMC msg)
-
-prints a single string or value to the terminal. Eventually,
-this function will be able to print all the entries in a
-row matrix as well.
-
-=cut
-
-.sub 'disp'
-    .param int nargout
-    .param int nargin
-    .param pmc msg
-    $S0 = '!get_matrix_string'(msg)
-    say $S0
-    .return()
-.end
-
-=item error(STRING msg)
-
-raises an exception with the supplied message
-
-=cut
-
-.sub 'error'
-    .param int nargout
-    .param int nargin
-    .param pmc msg
-    $S0 = '!get_first_string'(msg)
-    $S1 = "error: " . $S0
-    $P1 = new 'Exception'
-    $P1['message'] = $S1
-    throw  $P1
-    .return ()
-.end
-
-=item parrot_typeof(PMC a)
-
-Return a string representing the Parrot type of the parameter a
-
-=cut
-
-.sub 'parrot_typeof'
-    .param int nargout
-    .param int nargin
-    .param pmc a
-    $S0 = typeof a
-    .return($S0)
-.end
 
 .namespace []
 

@@ -67,12 +67,15 @@ be incorporated into a unit test once inline PIR is complete.
 
 .end
 
+.namespace []
+
 .sub '!matrixy_to_fortran_array'
     .param pmc a :optional
 
     .local int rows, cols
-    rows = 'rows'(1, 1, a)
-    cols = 'columns'(1, 1, a)
+    $P0 = '!get_matrix_sizes'(a)
+    rows = $P0[0]
+    cols = $P0[1]
 
     .local pmc a_rma, a_n
     .local int size
