@@ -1,4 +1,4 @@
-disp("1..5");
+plan(5);
 
 % Tests for expression handling and the default variable "ans"
 "ok 1";
