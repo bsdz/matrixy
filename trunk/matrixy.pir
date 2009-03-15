@@ -69,6 +69,7 @@ to the Matrixy compiler.
     $P1 = $P0.'command_line'(args)
 .end
 
+.include 'src/gen_internals.pir'
 .include 'src/gen_builtins.pir'
 .include 'src/gen_grammar.pir'
 .include 'src/gen_actions.pir'
