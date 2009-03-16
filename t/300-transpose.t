@@ -1,4 +1,4 @@
-disp("1..39")
+disp("1..34")
 
 # note: we're using squaak style indexes
 #       until we get M ones.

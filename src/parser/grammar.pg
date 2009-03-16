@@ -118,6 +118,7 @@ rule index {
 
 rule term {
    #| <range_constructor> {*}         #= range_constructor
+   | <complex_constant> {*}          #= complex_constant
    | <float_constant> {*}            #= float_constant
    | <integer_constant> {*}          #= integer_constant
    | <string_constant> {*}           #= string_constant
@@ -282,8 +283,20 @@ token float_constant {
     {*}
 }
 
-# TODO: M only supports 'single-quote' string literals, not "double-quote".
-#       Do we keep them as a feature, or give them a special meaning, or what?
+
+# TODO: still need to add support for capital I and J
+token complex_constant {
+    [
+        | \d+ '.' \d*
+        | \d* '.' \d+
+        | \d+
+    ]? 
+    ['i' | 'j' ]
+    {*}
+}
+
+# M supports 'single-quote' string literals in Matlab, Octave also supports "double-quote".
+#
 token string_constant {
     [\" <string_literal: '"'> \" | \' <string_literal: '\''> \']
     {*}

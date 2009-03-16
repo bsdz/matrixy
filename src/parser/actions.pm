@@ -705,6 +705,11 @@ method float_constant($/) {
     make PAST::Val.new( :value( ~$/ ), :returns('Float'), :node($/) );
 }
 
+method complex_constant($/) {
+    make PAST::Val.new( :value( ~$/ ), :returns('Complex'), :node($/) );
+
+}
+
 method string_constant($/) {
     make PAST::Val.new(
         :value( $($<string_literal>) ),
