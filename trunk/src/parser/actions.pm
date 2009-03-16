@@ -706,8 +706,21 @@ method float_constant($/) {
 }
 
 method complex_constant($/) {
-    make PAST::Val.new( :value( ~$/ ), :returns('Complex'), :node($/) );
 
+    #my $past := PAST::Op.new(
+    #    :name('!generate_complex'),
+    #    :pasttype('call'),
+    #    :node($/)
+    #);
+    #$past.unshift(
+    #    PAST::Val.new(
+    #        :value(~$/),
+    #        :returns('String')
+    #    )
+    #);
+    #make $past;
+
+    make PAST::Val.new( :value( ~$/ ), :returns('Complex'), :node($/) );
 }
 
 method string_constant($/) {
