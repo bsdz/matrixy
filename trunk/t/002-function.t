@@ -23,7 +23,7 @@ foo2("ok 3\n");
 function y = foo3(x)
     printf("%s\n", x);
 end
-foo3("ok 4\n");
+foo3("ok 4");
 
 % function with 1 return parameter, and another lexically-scoped variable
 function y = foo4(x)
@@ -73,6 +73,10 @@ argsintest(8, 9, 10);
 
 % Test nargout
 function x = argsouttest()
-    printf("ok %d\n", 9 + nargout);
+    if nargout == 1
+        printf("ok 10\n");
+    else
+        printf("not ok 10 # TODO need to implement nargout\n");
+    endif
 endfunction
 a = argsouttest();
