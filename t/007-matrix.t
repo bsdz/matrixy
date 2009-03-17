@@ -1,4 +1,4 @@
-disp("1..15");
+disp("1..19");
 
 % First, test that we can index a matrix like a vector using the same semantics
 % as Octave has
@@ -38,3 +38,30 @@ matrix_tester2(bar(3, 1), 7);
 matrix_tester2(bar(3, 2), 8);
 matrix_tester2(bar(3, 3), 9);
 
+% Relational operator tests
+a = [1 2 3;4 5 6];
+b = [1 2 3;4 5 6];
+c = [4 5 6;7 8 9];
+if a == b
+    disp("ok 16");
+else
+    disp("not ok 16");
+end
+
+if a == c
+    disp("not ok 17");
+else
+    disp("ok 17");
+end
+
+if a != b
+    disp("not ok 18");
+else
+    disp("ok 18");
+end
+
+if a != c
+    disp("ok 19");
+else
+    disp("not ok 19");
+end
