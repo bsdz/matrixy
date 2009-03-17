@@ -2,6 +2,40 @@
 
 # TODO: Make sure all these operators are matrix-aware and string-aware.
 
+.sub 'infix:+'
+    .param pmc a
+    .param pmc b
+    $P0 = a + b
+    .return($P0)
+.end
+
+.sub 'infix:-'
+    .param pmc a
+    .param pmc b
+    $P0 = a - b
+    .return($P0)
+.end
+
+.sub 'infix:*'
+    .param pmc a
+    .param pmc b
+    $P0 = a * b
+    .return($P0)
+.end
+
+.sub 'infix:/'
+    .param pmc a
+    .param pmc b
+    $P0 = a / b
+    .return($P0)
+.end
+
+.sub 'prefix:-'
+    .param pmc a
+    $P0 = neg a
+    .return($P0)
+.end
+
 .sub 'infix:<'
     .param pmc a
     .param pmc b
