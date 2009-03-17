@@ -11,23 +11,19 @@ proto 'infix:>='       is equiv('infix:<')                          { ... }
 proto 'infix:=='       is equiv('infix:<')                          { ... }
 proto 'infix:!='       is equiv('infix:<')                          { ... }
 
-proto 'infix:+'        is tighter('infix:<')    is pirop('add')     { ... }
-proto 'infix:-'        is equiv('infix:+')      is pirop('sub')     { ... }
+proto 'infix:+'        is tighter('infix:<')                        { ... }
+proto 'infix:-'        is equiv('infix:+')                          { ... }
 
-# TODO: In M, string concatination is done with bracket syntax. The .. operator
-#       is used instead to construct an iterator or an array. Fix this.
-proto 'infix:..'       is equiv('infix:+')      is pirop('concat')  { ... }
-
-proto 'infix:*'        is tighter('infix:+')    is pirop('mul')     { ... }
+proto 'infix:*'        is tighter('infix:+')                        { ... }
 proto 'infix:%'        is equiv('infix:*')      is pirop('mod')     { ... }
-proto 'infix:/'        is equiv('infix:*')      is pirop('div')     { ... }
+proto 'infix:/'        is equiv('infix:*')                          { ... }
 
 proto 'prefix:not'     is tighter('infix:*')    is pirop('not')     { ... }
-proto 'prefix:-'       is tighter('prefix:not') is pirop('neg')     { ... }
+proto 'prefix:-'       is tighter('prefix:not')                     { ... }
 
 # TODO: I can't make these work, the colon doesn't appear to be recognized
 #       by the parser.
-#proto 'ternary:: :'    is looser('infix:+')                         { ... }
-#proto infix:<:>        is looser('infix:+')                         { ... }
+#proto 'ternary:: :'    is looser('infix:+')                        { ... }
+#proto infix:<:>        is looser('infix:+')                        { ... }
 
 proto 'term:'          is tighter('prefix:-')    is parsed(&term)   { ... }
