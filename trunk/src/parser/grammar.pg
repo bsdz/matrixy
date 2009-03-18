@@ -290,7 +290,7 @@ token complex_constant {
         | \d+ '.' \d*
         | \d* '.' \d+
         | \d+
-    ]? 
+    ] 
     ['i' | 'j' ]
     {*}
 }
