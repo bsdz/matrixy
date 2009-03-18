@@ -1,4 +1,4 @@
-plan(14);
+plan(18);
 
 % sanity checks
 
@@ -70,4 +70,33 @@ if 1+2i == 10
     disp("not ok 14")
 else 
     disp("ok 14")
+end
+
+# i, j should behave like ordinary variables. although they default to sqrt(-1).
+# see http://ccrma.stanford.edu/~jos/st/Complex_Numbers_Matlab_Octave.html
+
+if i == 0+1i
+    disp("ok 15")
+else
+    disp("not ok 15")
+end
+
+if j == 0+1j
+    disp("ok 16")
+else
+    disp("not ok 16")
+end
+
+i = 100
+if i == 100
+    disp("ok 17")
+else
+    disp("not ok 17")
+end
+
+j = 101
+if j == 101
+    disp("ok 18")
+else
+    disp("not ok 18")
 end
