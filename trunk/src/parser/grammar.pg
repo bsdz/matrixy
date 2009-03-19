@@ -32,6 +32,7 @@ rule stat_or_def {
 
 rule statement {
     | <control_statement> {*}                #= control_statement
+    | <global_statement> {*}                 #= global_statement
     | <stmt_with_value> {*}                  #= stmt_with_value
     | <system_call> {*}                      #= system_call
 }
@@ -57,7 +58,7 @@ token sys_bare_words {
 }
 
 rule assignment {
-    <variable> '=' <expression>
+    <variable> '=' <expression>            #= expression
     {*}
 }
 
@@ -70,14 +71,20 @@ rule assignment {
 rule sub_or_var {
     | <primary>
       '(' [ <expression> [',' <expression>]* ]? ')'
-      {*}
+      {*}                                   #= args
     #| <primary> <bare_words> {*}
-    | <primary> {*}
+    | <primary> {*}                         #= noargs
 }
 
 # TODO: This should match everything upto but not including a terminator token
 token bare_words {
     \N* {*}
+}
+
+# TODO: Do this right! Add allow a comma-separated list and an autovivification
+#       option
+rule global_statement {
+    'global' <identifier>
 }
 
 # An ambiguous primary element, could be a subroutine call or a variable
@@ -124,9 +131,14 @@ rule term {
    | <string_constant> {*}           #= string_constant
    | <hash_constructor> {*}          #= hash_constructor
    | <array_constructor> {*}         #= array_constructor
+   | <function_handle> {*}           #= function_handle
    | <anon_func_constructor> {*}     #= anon_func_constructor
    | <sub_or_var> {*}                #= sub_or_var
    | '(' <expression> ')' {*}        #= expression
+}
+
+rule function_handle {
+    '@' <identifier> {*}
 }
 
 

@@ -19,7 +19,7 @@ not currently perform any lookups however.
     if $S0 == 'Sub' goto sub_handle
     $S0 = '!get_first_string'(func)
     $P0 = null
-    .tailcall '!dispatch'($S0, $P0, nargout, nargin, args :flat)
+    .tailcall '!dispatch'($S0, $P0, nargout, nargin, 1, args :flat)
 
   sub_handle:
     .tailcall func(nargout, nargin, args :flat)

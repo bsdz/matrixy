@@ -48,13 +48,14 @@ and can share names between them.
     .param pmc var
     .param int nargout
     .param int nargin
+    .param int parens
     .param pmc args :slurpy
     .local pmc sub_obj
     .local pmc var_obj
 
     # if we have a variable value, dispatch that
     if null var goto not_a_var
-    .tailcall '!index_variable'(var, nargout, nargin, args)
+    .tailcall '!index_variable'(var, nargout, nargin, parens, args)
 
     # if it's not a variable, treat it like a sub and look that up.
   not_a_var:
@@ -115,12 +116,16 @@ and can share names between them.
     .param pmc var
     .param int nargout
     .param int nargin
+    .param int parens
     .param pmc args
 
     $S0 = typeof var
 
     # If it's a function handle variable, dispatch it.
     unless $S0 == 'Sub' goto its_a_variable
+    if parens == 1 goto execute_sub_handle
+    .return(var)
+  execute_sub_handle:
     .tailcall var(nargout, nargin, args :flat)
 
     # If it's an ordinary variable, do the indexing
