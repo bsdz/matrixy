@@ -50,6 +50,19 @@ method statement($/, $key) {
     make $( $/{$key} );
 }
 
+method function_handle($/) {
+    my $past := $( $<identifier>  );
+    my $name := $past.name();
+    make PAST::Op.new(
+        :pasttype('call'),
+        :name('!lookup_function'),
+        PAST::Val.new(
+            :value($name),
+            :returns('String')
+        )
+    );
+}
+
 method stmt_with_value($/, $key) {
     my $term := ~$<terminator>;
     if $term eq ";" {
@@ -489,22 +502,14 @@ method anon_func_constructor($/) {
     make $block;
 }
 
-
-# TODO: A bare word can be either a function or a subroutine call. This is
-#       complicated by the fact that both array indexing and function arguments
-#       are specified with (). When we see a subcall like this, we have to
-#       first check to see if a variable with that name exists. If we have a
-#       variable, always use that. If not, look for a subroutine. We probably
-#       need to always call a generic "_dispatch" function here to handle the
-#       runtime logic without creating a huge mess of PAST nodes.
-method sub_or_var($/) {
+# TODO: This all isn't very clean right now. I think we can refactor this to
+#       be a little cleaner/better
+method sub_or_var($/, $key) {
     our @?BLOCK;
     my $invocant := $( $<primary> );
     my $name := $invocant.name();
-    #if @?BLOCK[0].symbol($name) {
     my $nargin := 0;
     my $nargout := 0;
-    #_disp_all("Found Sub ", $name);
     my $past := PAST::Op.new(
         :name('!dispatch'),
         :pasttype('call'),
@@ -516,6 +521,12 @@ method sub_or_var($/) {
             $nargin++;
         }
     }
+    $past.unshift(
+        PAST::Val.new(
+            :value($key eq "args"),
+            :returns('Integer')
+        )
+    );
     $past.unshift(
         PAST::Val.new(
             :value($nargin),
