@@ -10,8 +10,9 @@ $S0 = <<"EOS"
     .param int nargout
     .param int nargin
     .param pmc x
-    $N0 = x + 0.5
-    $I0 = floor $N0
+    $N0 = x
+    $N1 = $N0 + 0.5
+    $I0 = floor $N1
     .return($I0)
 .end
 EOS
