@@ -64,6 +64,13 @@ TOD0: These all need to be fixed!
     .return($P0)
 .end
 
+.sub 'infix:^'
+    .param pmc a
+    .param pmc b
+    $P0 = pow a, b
+    .return($P0)
+.end
+
 .sub 'infix:/'
     .param pmc a
     .param pmc b
