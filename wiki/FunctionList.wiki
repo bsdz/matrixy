@@ -193,7 +193,6 @@ dialog
 diary
 diff
 dir
-disp
 display
 divergence
 dlmread
@@ -212,13 +211,9 @@ eigs
 ellipj
 ellipke
 ellipsoid
-else
-elseif
-end
 eomday
 eps
 erf, erfc, erfcx, erfinv, erfcinv
-error
 etime
 eval
 evalc
@@ -236,7 +231,6 @@ fclose
 fclose (serial)
 feof
 ferror
-feval
 fft
 fft2
 fftn
@@ -272,7 +266,6 @@ fminbnd
 fmins
 fminsearch
 fopen
-for
 format
 frame2im
 frameedit
@@ -326,8 +319,6 @@ hold
 home
 horzcat
 hsv2rgb
-i
-if
 ifft
 ifft2
 ifftn
@@ -709,12 +700,6 @@ support
 svd
 svds
 switch
-symamd
-symbfact
-symmlq
-symmmd
-symrcm
-symvar
 system
 tan
 tanh
@@ -750,7 +735,6 @@ urlread
 urlwrite
 vander
 var
-varargin, varargout
 vectorize
 ver
 verctrl
