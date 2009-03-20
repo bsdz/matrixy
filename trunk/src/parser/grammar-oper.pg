@@ -15,6 +15,7 @@ proto 'infix:+'        is tighter('infix:<')                        { ... }
 proto 'infix:-'        is equiv('infix:+')                          { ... }
 
 proto 'infix:*'        is tighter('infix:+')                        { ... }
+proto 'infix:^'        is tighter('infix:*')                        { ... }
 proto 'infix:%'        is equiv('infix:*')      is pirop('mod')     { ... }
 proto 'infix:/'        is equiv('infix:*')                          { ... }
 

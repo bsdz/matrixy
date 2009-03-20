@@ -183,10 +183,10 @@ rule for_init {
     {*}
 }
 
-# TODO: I don't remember how M handles exceptions. Update this to match
-#       if it doesn't
+# both Octave and Matlab support try/catch
+# see http://www.network-theory.co.uk/docs/octave3/octave_96.html
 rule try_statement {
-    'try' <try=block> 'catch' <exception> <catch=block> 'end'
+    'try' <try=block> 'catch' <exception> <catch=block> ['end_try_catch'|'end']>>
     {*}
 }
 
@@ -321,7 +321,7 @@ token keyword {
     |'global'|'persistent'
     |'if'|'elseif'|'else'|'endif'
     |'and'|'not'|'or'
-    |'try'|'catch'|'throw'
+    |'try'|'catch'|'throw'|'end_try_catch'
     |'do'|'until'
     |'while'|'endwhile'
     |'for'|'endfor'
