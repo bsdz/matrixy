@@ -1,0 +1,21 @@
+#summary Checklist for things needing to be implemented for the core syntax of M
+#labels Phase-Requirements
+
+This is an unordered checklist of things that need to be implemented to complete the "core" M syntax. There are also large numbers of library functions that need to be implemented, but those will not be listed here.
+
+= TODO List =
+
+# varagin/varargout
+# Breaking lines with {{{...}}}.
+# Relational operators are matrix-aware {{{ > >= == != <= < }}}
+# Arithmetic operators are matrix-aware {{{ + - * / \ % ^ }}}
+# Dot-Arithmetic operators {{{ .+ .- .* ./ .\ .^ }}}
+# Bitwise Logical operators {{{ & | ~ }}}
+# Transpose and Hermitian transpose operators {{{ ' .' }}}
+# Ranges {{{ x:y x:y:z }}}
+# Cell arrays
+# Structs and Struct Members
+# Row/Column indexing with {{{:}}}
+# Proper for loops
+# Proper while loops
+# Classes and Objects {{{ classdef properties }}}
