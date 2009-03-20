@@ -19,6 +19,15 @@ Apply a function 'func' to each element of an array 'A'.
     f = '!lookup_function'($S1)
 
     main:
+    $S0 = typeof A
+    if $S0 == 'ResizablePMCArray' goto process_array
+
+    process_scalar:
+
+    $P0 = f(1,1,A)
+    .return ($P0)
+
+    process_array:
 
     .local int rows, cols
     $P0 = '!get_matrix_sizes'(A)
