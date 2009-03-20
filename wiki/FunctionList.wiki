@@ -5,6 +5,10 @@
 
 This is a checklist of functions that will need to be implemented eventually to form our standard library. We can delete items from this list that we won't be supporting initially, such as audio/video functions, graphic functions, or rare functions.
 
+This list initially from: http://www.math.carleton.ca/old/help/matlab/MathWorks_R13Doc/techdoc/ref/refbookl.html
+
+Delete items from this list as we implement them.
+
 = Function List  =
 
 {{{
@@ -15,7 +19,6 @@ acot
 acoth
 acsc
 acsch
-addpath
 alim
 all
 allchild
@@ -77,7 +80,6 @@ cell2mat
 cell2struct
 celldisp
 cellfun
-cellplot
 cellstr
 cgs
 char
@@ -108,7 +110,6 @@ computer
 cond
 condeig
 condest
-coneplot
 conj
 continue
 contour
@@ -228,15 +229,6 @@ exp
 expint
 expm
 eye
-ezcontour
-ezcontourf
-ezmesh
-ezmeshc
-ezplot
-ezplot3
-ezpolar
-ezsurf
-ezsurfc
 factor
 factorial
 false
@@ -314,13 +306,6 @@ getenv
 getfield
 getframe
 global
-gmres
-gplot
-grid
-gsvd
-gtext
-guidata
-guide
 hadamard
 hankel
 hdf
@@ -427,10 +412,6 @@ isunix
 isvalid
 isvarname
 j
-javaArray
-javachk
-javaMethod
-javaObject
 keyboard
 kron
 lasterr
@@ -478,12 +459,8 @@ mean
 median
 memory
 menu
-mesh, meshc, meshz
-meshgrid
 methods
 methodsview
-mex
-mexext
 mfilename
 min
 minres
@@ -493,7 +470,6 @@ mkpp
 mlock
 mod
 more
-move (COM)
 movefile
 movegui
 movie
@@ -501,18 +477,14 @@ movie2avi
 moviein
 msgbox
 mu2lin
-multibandread
-multibandwrite
 munlock
 namelengthmax
 NaN
 nargchk
-nargin, nargout
 nargoutchk
 nchoosek
 ndgrid
 ndims
-newplot
 nextpow2
 nnls
 nnz
@@ -568,12 +540,6 @@ pi
 pie
 pie3
 pinv
-planerot
-plot
-plot3
-plotedit
-plotmatrix
-plotyy
 pol2cart
 polar
 poly
@@ -640,8 +606,6 @@ reshape
 residue
 rethrow
 return
-rgb2hsv
-rgbplot
 ribbon
 rmappdata
 rmdir
@@ -651,8 +615,6 @@ roots
 rose
 rosser
 rot90
-rotate
-rotate3d
 round
 rref
 rsf2csf
@@ -661,15 +623,10 @@ runtime
 save
 saveas
 saveobj
-scatter
-scatter3
 schur
 script
 sec
 sech
-selectmoveresize
-semilogx, semilogy
-sendmail
 set
 setappdata
 setdiff
@@ -713,8 +670,6 @@ start
 startat
 startup
 std
-stop
-stopasync
 str2double
 str2func
 str2mat
@@ -742,7 +697,6 @@ struct
 struct2cell
 strvcat
 sub2ind
-subplot
 subsasgn
 subsindex
 subspace
@@ -752,12 +706,6 @@ subvolume
 sum
 superiorto
 support
-surf, surfc
-surf2patch
-surface
-Surface Properties
-surfl
-surfnorm
 svd
 svds
 switch
@@ -773,10 +721,7 @@ tanh
 tempdir
 tempname
 terminal
-tetramesh
-texlabel
 text
-Text Properties
 textread
 textwrap
 tic, toc
@@ -786,34 +731,13 @@ title
 toeplitz
 trace
 trapz
-treelayout
-treeplot
 tril
-trimesh
-triplequad
-triplot
-trisurf
 triu
 true
 try
 tsearch
 tsearchn
 type
-uicontextmenu
-uicontextmenu Properties
-uicontrol
-Uicontrol Properties
-uigetdir
-uigetfile
-uiimport
-uimenu
-Uimenu Properties
-uint8, uint16, uint32, uint64
-uiputfile
-uiresume, uiwait
-uisetcolor
-uisetfont
-uistack
 undocheckout
 union
 unique
@@ -824,7 +748,6 @@ unzip
 upper
 urlread
 urlwrite
-usejava
 vander
 var
 varargin, varargout
@@ -838,18 +761,11 @@ viewmtx
 voronoi
 voronoin
 warning
-waterfall
-wavplay
-wavread
-wavrecord
-wavwrite
-web
 weekday
 what
 whatsnew
 which
 while
-whitebg
 who, whos
 wilkinson
 winopen
