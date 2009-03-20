@@ -90,6 +90,21 @@ method stmt_with_value($/, $key) {
     }
 }
 
+method global_statement($/) {
+    my $past := $( $<identifier> );
+    my $name := $past.name();
+    $past.scope("package");
+    our %?GLOBALS;
+    if %?GLOBALS{$name} {
+        make PAST::Stmts.new();
+    } else {
+        $past.isdecl(1);
+        $past.namespace("Matrixy::globals");
+        %?GLOBALS{$name} := 1;
+        make $past;
+    }
+}
+
 method control_statement($/, $key) {
     make $( $/{$key} );
 }
@@ -285,10 +300,14 @@ method do_block($/) {
 
 method assignment($/) {
     our $?BLOCK;
+    our %?GLOBALS;
     my $rhs := $( $<expression> );
     my $lhs := $( $<variable> );
     $lhs.lvalue(1);
     my $name := $lhs.name();
+    if %?GLOBALS{$name} {
+        $lhs.namespace("Matrixy::globals");
+    }
     # TODO: Enabling all these statements "works", but kills variable
     #       persistence in interactive mode. This is a known issue with PCT.
     #       Until we get this resolved, we can't both have a unified dispatcher
@@ -506,8 +525,12 @@ method anon_func_constructor($/) {
 #       be a little cleaner/better
 method sub_or_var($/, $key) {
     our @?BLOCK;
+    our %?GLOBALS;
     my $invocant := $( $<primary> );
     my $name := $invocant.name();
+    if %?GLOBALS{$name} {
+        $invocant.namespace("Matrixy::globals");
+    }
     my $nargin := 0;
     my $nargout := 0;
     my $past := PAST::Op.new(

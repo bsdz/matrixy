@@ -32,7 +32,7 @@ rule stat_or_def {
 
 rule statement {
     | <control_statement> {*}                #= control_statement
-    | <global_statement> {*}                 #= global_statement
+    | <global_statement> <terminator> {*}    #= global_statement
     | <stmt_with_value> {*}                  #= stmt_with_value
     | <system_call> {*}                      #= system_call
 }
@@ -84,7 +84,7 @@ token bare_words {
 # TODO: Do this right! Add allow a comma-separated list and an autovivification
 #       option
 rule global_statement {
-    'global' <identifier>
+    'global' <identifier> {*}
 }
 
 # An ambiguous primary element, could be a subroutine call or a variable

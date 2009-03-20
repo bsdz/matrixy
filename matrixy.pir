@@ -91,6 +91,9 @@ to the Matrixy compiler.
     $P2[1] = "toolbox/"
     set_hll_global ['Matrixy';'Grammar';'Actions'], '@?PATH', $P2
 
+    $P3 = new 'Hash'
+    set_hll_global ['Matrixy';'Grammar';'Actions'], '%?GLOBALS', $P3
+
 .end
 
 .namespace []
