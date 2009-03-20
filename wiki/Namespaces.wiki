@@ -64,3 +64,11 @@ Instead of calling a non-native M function directly, use a wrapper function to h
 {{{
 callexternfunction(namespace, funcname, args);
 }}}
+
+We could have special functions for various special calling targets:
+
+{{{
+callinternalfunction(funcname, args);  % ["_Matrixy";"builtins"]
+callperl6function(funcname, args);
+callpirfunction(funcname, args);
+}}}
