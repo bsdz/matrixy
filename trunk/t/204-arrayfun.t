@@ -1,4 +1,4 @@
-plan(2)
+plan(3)
 
 function y = f(x) y=x+1; endfunction
 A = [1 2 3; 4 5 6];
@@ -16,4 +16,11 @@ if A2 == B
     disp("ok 2");
 else
     disp("not ok 2");
+end
+
+A3 = arrayfun("f", 10);
+if A3 == 11
+    disp("ok 3");
+else
+    disp("not ok 3");
 end
