@@ -1,4 +1,4 @@
-plan(5)
+plan(6)
 
 testcount = 1;
 
@@ -50,6 +50,19 @@ A = [1.1 2.2; 3.3 4.4];
 B = [2 2; 2 2];
 C = [0.01 0.002; 0.0003 0.0004];
 D = [3.11 4.2020; 5.3003 6.4004];
+E = arrayfun("f1", A, B, C);
+if D == E
+    printf("ok %s\n", testcount);
+else
+    printf("not ok %s\n", testcount);
+end
+testcount = testcount + 1;
+
+# should handle scalars too
+A = 3;
+B = 5;
+C = 15;
+D = 23;
 E = arrayfun("f1", A, B, C);
 if D == E
     printf("ok %s\n", testcount);
