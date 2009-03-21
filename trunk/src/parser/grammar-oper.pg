@@ -19,6 +19,12 @@ proto 'infix:^'        is tighter('infix:*')                        { ... }
 proto 'infix:%'        is equiv('infix:*')      is pirop('mod')     { ... }
 proto 'infix:/'        is equiv('infix:*')                          { ... }
 
+proto 'infix:.*'        is equiv('infix:*')                          { ... }
+proto 'infix:./'        is equiv('infix:/')                          { ... }
+proto 'infix:.^'        is equiv('infix:^')                          { ... }
+# TODO: how do we get this operator to work?
+#proto 'infix:.\\'        is equiv('infix:/')                          { ... }
+
 proto 'prefix:not'     is tighter('infix:*')    is pirop('not')     { ... }
 proto 'prefix:-'       is tighter('prefix:not')                     { ... }
 

@@ -14,9 +14,11 @@ Apply a function 'func' to each element of an array 'A'.
     .param pmc O :slurpy
 
     .local pmc matrix_list
+    .local int matrix_list_size
     matrix_list = new 'ResizablePMCArray'
     push matrix_list, A
     matrix_list.'append'(O)
+    matrix_list_size = matrix_list
 
     $S0 = typeof f
     if $S0 == 'Sub' goto main
@@ -24,12 +26,26 @@ Apply a function 'func' to each element of an array 'A'.
     f = '!lookup_function'($S1)
 
     main:
+    .local pmc arg_list
+    .local int n
     $S0 = typeof A
     if $S0 == 'ResizablePMCArray' goto process_array
 
     process_scalar:
 
-    $P0 = f(1,1,A)
+    arg_list = new 'ResizablePMCArray'
+    n = -1
+    next_n_scalar:
+        n = n + 1
+        unless n < matrix_list_size goto call_fun_scalar
+        $P0 = matrix_list[n]
+        #$P1 = $P0[i;j]
+        $P1 = $P0
+        push arg_list, $P1
+        goto next_n_scalar
+
+    call_fun_scalar:
+    $P0 = f(1,1, arg_list :flat)
     .return ($P0)
 
     process_array:
@@ -46,8 +62,7 @@ Apply a function 'func' to each element of an array 'A'.
     .local pmc B
     B = new 'ResizablePMCArray'
 
-    .local int i, j, n
-    .local pmc arg_list
+    .local int i, j
     i = -1
     next_i:
         i = i + 1
@@ -60,12 +75,11 @@ Apply a function 'func' to each element of an array 'A'.
             j = j + 1
             unless j < cols goto next_i
 
-            $I0 = matrix_list
             arg_list = new 'ResizablePMCArray'
             n = -1
             next_n:
                 n = n + 1
-                unless n < $I0 goto call_fun
+                unless n < matrix_list_size goto call_fun
                 $P0 = matrix_list[n]
                 $P1 = $P0[i;j]
                 push arg_list, $P1
