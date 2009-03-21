@@ -9,7 +9,7 @@ The output nci file contains signatures that currently need adding to the parrot
 
 h_to_dll.pl --name clapack --headerfile ./extern/include/clapack.h 
     --outputpir ./extern/pir/clapack.pir --outputnci ./extern/pir/clapack.nci
-       [--libsymformat "f2c_%s"]
+       [--libsymformat "f2c_%s"] [--ncihints ./extern/include/clapack.hints]
 
 =cut
 
@@ -24,10 +24,11 @@ my $nci_signatures;
 my $name;
 my $header_file;
 my $symformat = '%s_'; # if given prefixes external symbol with prefix 
+my $nci_hints_file;
 
 GetOptions("headerfile=s" => \$header_file, "name=s" => \$name, 
     "outputpir=s" => \$output_pir, "outputnci=s" => \$nci_signatures,
-    "libsymformat=s" => \$symformat);
+    "libsymformat=s" => \$symformat, "ncihints=s" => \$nci_hints_file);
 
 die "h_to_dll.pl --name clapack --headerfile ./extern/include/clapack.h --outputpir ./extern/pir/clapack.pir --outputnci ./extern/pir/clapack.nci" 
     if (!-f $header_file || $name eq '' || $output_pir eq '' || $nci_signatures eq '');
@@ -54,6 +55,16 @@ L_fp p
 sub get_nci_code {
     die "Can't find type '$_[0]'!" if not exists $nci_typemap{$_[0]};
     return $nci_typemap{$_[0]};
+}
+
+my %nci_hints;
+if (-f $nci_hints_file) {
+    open my $fh, $nci_hints_file or die "cannot open file: $!";
+    while (my $line = <$fh>) {
+        my ($fname, $fsig) = ( $line =~ m/^(\S+):(\S+)$/); 
+        $nci_hints{$fname} = $fsig;
+    }
+    close $fh;
 }
 
 my %nci_sigs;
@@ -107,6 +118,11 @@ foreach my $arg (split(/,/, $args)) {
     $nci_sig .= get_nci_code($ftype.$mod);
     push @pir_raw_funcs, qq|  .param pmc $pname|;
     push @dlargs, $pname;
+}
+
+# override signature if in hints
+if (exists $nci_hints{$fname}) {
+    $nci_sig = $nci_hints{$fname};
 }
 
 my $symbolname = sprintf($symformat, $fname);

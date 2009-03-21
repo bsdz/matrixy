@@ -4,52 +4,103 @@
 
 .include 'library/dumper.pir'
 
-.sub 'dgesvd'
+.sub 'dgetri'
     .param int nargout
     .param int nargin
-    .param pmc jobu
-    .param pmc jobvt
-    .param pmc m
-    .param pmc n
-    .param pmc a
-    .param pmc lda
-    .param pmc s
-    .param pmc u
-    .param pmc ldu
-    .param pmc vt
-    .param pmc ldvt
-    .param pmc work
-    .param pmc lwork
+    .param int N
+    .param pmc A
+    .param int lda
+    .param pmc IPIV
+    .param pmc WORK
+    .param num lwork
     .param pmc info
+
+    .local string error_message
 
     load_bytecode 'extern/pbc/clapack.pbc'
 
-    $P0 = get_hll_global ['clapack';'RAW'], 'dgesvd'
+    $P0 = get_hll_global ['clapack';'RAW'], 'dgetri'
     $I0 = defined $P0
     if $I0 goto do_fn
+    error_message =  'cannot find clapack::RAW::dgetri!'
+    goto fail
 
-    print 'cannot find dgesvd!'
-    .return ()
 
   do_fn:
-    .local pmc u1, vt1, a1, s1, work1
-    u1 = _matrixy_to_clapack_array(u)
-    vt1 = _matrixy_to_clapack_array(vt)
-    a1 = _matrixy_to_clapack_array(a)
-    s1 = _matrixy_to_clapack_array(s)
-    work1 = _matrixy_to_clapack_array(work)
+    .local pmc A1, IPIV1, WORK1
+    A1 = '!matrixy_to_fortran_array'(A)
+    IPIV1 = '!matrixy_to_fortran_array'(IPIV, 'Integer')
+    WORK1 = '!matrixy_to_fortran_array'(WORK)
 
-    #.local pmc stdin
-    #stdin= getstdin
-    #$S0 = readline stdin
+    $I0 = $P0(N,A1,lda,IPIV1,WORK1,lwork,info)
 
-    $I1 = $P0(jobu,jobvt,m,n,a1,lda,s1,u1,ldu,vt1,ldvt,work1,lwork,info)
-    a = _clapack_to_matrixy_array(a1, 4, 4)
-    say $I1
+  success:
+    A1 = '!fortran_to_matrixy_array'(A1, N, N)
+    setref A, A1
 
-    .return(a)
+    WORK1 = '!fortran_to_matrixy_array'(WORK1, lwork, 1)
+    setref WORK, WORK1
+
+    setref info, info
+
+    .return($I0)
+
+  fail:
+    printerr error_message
+    .return()
+
+.end
+
+
+.sub 'dgetrf'
+    .param int nargout
+    .param int nargin
+    .param int M
+    .param pmc N
+    .param pmc A
+    .param int lda
+    .param pmc IPIV
+    .param pmc info
+
+    .local string error_message
+
+    load_bytecode 'extern/pbc/clapack.pbc'
+
+    $P0 = get_hll_global ['clapack';'RAW'], 'dgetrf'
+    $I0 = defined $P0
+    if $I0 goto do_fn
+    error_message =  'cannot find clapack::RAW::dgetrf!'
+    goto fail
+
+
+  do_fn:
+    .local pmc A1, IPIV1
+    .local int IPIV_dim
+    IPIV_dim = '!min'(M, N)
+
+    A1 = '!matrixy_to_fortran_array'(A)
+    IPIV1 = '!matrixy_to_fortran_array'(IPIV, 'Integer')
+
+    $I0 = $P0(M,N,A1,lda,IPIV1,info)
+
+  success:
+    A1 = '!fortran_to_matrixy_array'(A1, M, N)
+    setref A, A1
+
+    IPIV1 = '!fortran_to_matrixy_array'(IPIV1, IPIV_dim, 1, 'Integer')
+    setref IPIV, IPIV1
+
+    setref info, info
+
+    .return($I0)
+
+  fail:
+    printerr error_message
+    .return()
 
 .end
 
 .namespace []
+
+
 
