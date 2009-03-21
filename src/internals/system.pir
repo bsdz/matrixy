@@ -1,6 +1,6 @@
 =head1 NAME
 
-F<src/builtins/system.pir> - built-in system functions
+F<src/internals/system.pir> - built-in system functions
 
 =head1 DESCRIPTION
 
@@ -21,3 +21,8 @@ do secret system stuff.
     $P0 = get_hll_global ["_Matrixy";"builtins"], 'system'
     $P0(0, 1, args :flat)
 .end
+
+=back
+
+=cut
+
