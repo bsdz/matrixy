@@ -1,4 +1,4 @@
-disp("1..26")
+disp("1..27")
 
 testcount = 1;
 
@@ -178,6 +178,14 @@ else
 end 
 testcount = testcount + 1;
 
+X = [ 2 12.5; 4.5 8 ];
+Y = A./2;
+if X == Y
+    printf("ok %s\n", testcount);
+else
+    printf("not ok %s\n", testcount);
+end 
+testcount = testcount + 1;
 
 
 # ldivide
