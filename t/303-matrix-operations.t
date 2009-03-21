@@ -1,4 +1,4 @@
-disp("1..24")
+disp("1..26")
 
 testcount = 1;
 
@@ -112,8 +112,27 @@ else
 end 
 testcount = testcount + 1;
 
+X = [4 50; 27 64];
 y = a.*b;
 if x == y
+    printf("ok %s\n", testcount);
+else
+    printf("not ok %s\n", testcount);
+end 
+testcount = testcount + 1;
+
+X = [3156 19725; 7101 12624];
+Y = A.*b;
+if X == Y
+    printf("ok %s\n", testcount);
+else
+    printf("not ok %s\n", testcount);
+end 
+testcount = testcount + 1;
+
+X = [123 246 ; 369 492];
+Y = a.*B;
+if X == Y
     printf("ok %s\n", testcount);
 else
     printf("not ok %s\n", testcount);
