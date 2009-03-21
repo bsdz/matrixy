@@ -1,22 +1,10 @@
 plan(3);
 
 a = sprintf("%d", 5);
-if a == "5"
-    disp("ok 1");
-else
-    disp("not ok 1");
-end
+ok(a == "5", "sprintf() with a %d");
 
 a = sprintf("%s world", "hello");
-if a == "hello world"
-    disp("ok 2");
-else
-    disp("not ok 2");
-end
+ok(a == "hello world", "sprinf() with a %s");
 
 a = sprintf("%.2f", 123.456789);
-if a == "123.46"
-    disp("ok 3");
-else
-    disp("not ok 3");
-end
+is(a, "123.46", "sprintf() with %f and modifiers");
