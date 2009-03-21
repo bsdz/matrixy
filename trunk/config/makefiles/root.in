@@ -74,14 +74,14 @@ $(MATRIXY_GROUP): $(PARROT) $(PMC_SOURCES)
 
 extern/pir/clapack.pir: extern/include/clapack.h
 	$(PERL) tools/nci/h_to_pir.pl --name clapack --headerfile ./extern/include/clapack.h \
-	    --outputpir ./extern/pir/clapack.pir --outputnci ./extern/pir/clapack.nci
+	    --outputpir ./extern/pir/clapack.pir --outputnci ./extern/pir/clapack.nci --ncihints ./extern/include/clapack.hints
 
 extern/pbc/clapack.pbc: extern/pir/clapack.pir 
 	$(PARROT) $(PARROT_ARGS) -o extern/pbc/clapack.pbc extern/pir/clapack.pir
 
 extern/pir/cblas.pir: extern/include/fblaswr.h
 	$(PERL) tools/nci/h_to_pir.pl --name cblas --headerfile ./extern/include/fblaswr.h \
-	    --outputpir ./extern/pir/cblas.pir --outputnci ./extern/pir/cblas.nci \
+	    --outputpir ./extern/pir/cblas.pir --outputnci ./extern/pir/cblas.nci --ncihints ./extern/include/cblas.hints \
 #IF(win32):		 --libsymformat "f2c_%%s" 
 #ELSE:		 --libsymformat "f2c_%s" 
 
