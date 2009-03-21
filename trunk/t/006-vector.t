@@ -1,4 +1,4 @@
-disp("1..12");
+disp("1..13");
 
 % Test indexing into vectors
 function vector_tester(a, b, c)
@@ -47,4 +47,16 @@ if a != c
     disp("ok 12");
 else
     disp("not ok 12");
+end
+
+% Test the use of whitespace in specifying column vectors:
+foo = [1
+       2
+       3];
+
+bar = [1;2;3];
+if foo == bar
+    disp("ok 13");
+else
+    disp("not ok 13");
 end
