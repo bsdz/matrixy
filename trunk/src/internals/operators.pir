@@ -45,8 +45,13 @@ These operators properly act on matrix arguments.
     .param pmc a
     .param pmc b
 
-$S0 = <<"EOS"
-.sub '' :anon
+    $P2 = find_name "__infix:+_helper"
+    $P3 = '!lookup_function'('arrayfun')
+    $P4 = $P3(1,1,$P2,a,b)
+    .return($P4)
+.end
+
+.sub '__infix:+_helper'
     .param int nargout
     .param int nargin
     .param pmc a
@@ -54,22 +59,18 @@ $S0 = <<"EOS"
     $P0 = add a, b
     .return($P0)
 .end
-EOS
-
-    $P0 = compreg "PIR"
-    $P1 = $P0($S0)
-    $P2 = $P1[0]
-    $P3 = '!lookup_function'('arrayfun')
-    $P4 = $P3(1,1,$P2,a,b)
-    .return($P4)
-.end
 
 .sub 'infix:-'
     .param pmc a
     .param pmc b
 
-$S0 = <<"EOS"
-.sub '' :anon
+    $P2 = find_name "__infix:-_helper"
+    $P3 = '!lookup_function'('arrayfun')
+    $P4 = $P3(1,1,$P2,a,b)
+    .return($P4)
+.end
+
+.sub '__infix:-_helper'
     .param int nargout
     .param int nargin
     .param pmc a
@@ -77,15 +78,7 @@ $S0 = <<"EOS"
     $P0 = sub a, b
     .return($P0)
 .end
-EOS
 
-    $P0 = compreg "PIR"
-    $P1 = $P0($S0)
-    $P2 = $P1[0]
-    $P3 = '!lookup_function'('arrayfun')
-    $P4 = $P3(1,1,$P2,a,b)
-    .return($P4)
-.end
 .sub 'infix:.^'
     .param pmc a
     .param pmc b
