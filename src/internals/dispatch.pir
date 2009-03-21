@@ -276,4 +276,3 @@ and can share names between them.
 
 .namespace []
 
-
