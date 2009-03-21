@@ -37,8 +37,10 @@ These operators properly act on matrix arguments.
     .return($I0)
 .end
 
-# TODO: would linking to M file slow these down?
-# leave until proper benchmarking function exists.
+
+# we cannot define these in terms of 
+# builtin M files since it would create
+# circular reference to the same operators.
 .sub 'infix:+'
     .param pmc a
     .param pmc b
@@ -62,7 +64,6 @@ EOS
     .return($P4)
 .end
 
-
 .sub 'infix:-'
     .param pmc a
     .param pmc b
@@ -85,28 +86,13 @@ EOS
     $P4 = $P3(1,1,$P2,a,b)
     .return($P4)
 .end
-
 .sub 'infix:.^'
     .param pmc a
     .param pmc b
 
-$S0 = <<"EOS"
-.sub '' :anon
-    .param int nargout
-    .param int nargin
-    .param pmc a
-    .param pmc b
-    $P0 = pow a, b
-    .return($P0)
-.end
-EOS
-
-    $P0 = compreg "PIR"
-    $P1 = $P0($S0)
-    $P2 = $P1[0]
-    $P3 = '!lookup_function'('arrayfun')
-    $P4 = $P3(1,1,$P2,a,b)
-    .return($P4)
+    $P0 = '!lookup_function'('power')
+    $P1 = $P0(1,1,a,b)
+    .return($P1)
 .end
 
 
@@ -114,46 +100,18 @@ EOS
     .param pmc a
     .param pmc b
 
-$S0 = <<"EOS"
-.sub '' :anon
-    .param int nargout
-    .param int nargin
-    .param pmc a
-    .param pmc b
-    $P0 = mul a, b
-    .return($P0)
-.end
-EOS
-
-    $P0 = compreg "PIR"
-    $P1 = $P0($S0)
-    $P2 = $P1[0]
-    $P3 = '!lookup_function'('arrayfun')
-    $P4 = $P3(1,1,$P2,a,b)
-    .return($P4)
+    $P0 = '!lookup_function'('times')
+    $P1 = $P0(1,1,a,b)
+    .return($P1)
 .end
 
 .sub 'infix:./'
     .param pmc a
     .param pmc b
 
-$S0 = <<"EOS"
-.sub '' :anon
-    .param int nargout
-    .param int nargin
-    .param pmc a
-    .param pmc b
-    $P0 = div a, b
-    .return($P0)
-.end
-EOS
-
-    $P0 = compreg "PIR"
-    $P1 = $P0($S0)
-    $P2 = $P1[0]
-    $P3 = '!lookup_function'('arrayfun')
-    $P4 = $P3(1,1,$P2,a,b)
-    .return($P4)
+    $P0 = '!lookup_function'('rdivide')
+    $P1 = $P0(1,1,a,b)
+    .return($P1)
 .end
 
 
@@ -161,23 +119,9 @@ EOS
     .param pmc a
     .param pmc b
 
-$S0 = <<"EOS"
-.sub '' :anon
-    .param int nargout
-    .param int nargin
-    .param pmc a
-    .param pmc b
-    $P0 = div b, a
-    .return($P0)
-.end
-EOS
-
-    $P0 = compreg "PIR"
-    $P1 = $P0($S0)
-    $P2 = $P1[0]
-    $P3 = '!lookup_function'('arrayfun')
-    $P4 = $P3(1,1,$P2,a,b)
-    .return($P4)
+    $P0 = '!lookup_function'('ldivide')
+    $P1 = $P0(1,1,a,b)
+    .return($P1)
 .end
 
 =head1 Matrix-Unaware Operators
