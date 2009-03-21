@@ -1,4 +1,4 @@
-disp("1..19");
+disp("1..20");
 
 % First, test that we can index a matrix like a vector using the same semantics
 % as Octave has
@@ -65,3 +65,14 @@ if a != c
 else
     disp("not ok 19");
 end
+
+% Test the use of whitespace in specifying matrix rows (instead of ';')
+foo = [1 2 3
+       4 5 6
+       7 8 9];
+bar = [1 2 3;4 5 6;7 8 9];
+if foo == bar
+    disp("ok 20");
+else
+    disp("not ok 20");
+endif

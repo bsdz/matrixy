@@ -63,9 +63,14 @@ method function_handle($/) {
     );
 }
 
+method terminator($/) {
+    our $?TERMINATOR;
+    $?TERMINATOR := _terminator_has_semicolon(~$/);
+}
+
 method stmt_with_value($/, $key) {
-    my $term := ~$<terminator>;
-    if $term eq ";" {
+    our $?TERMINATOR;
+    if $?TERMINATOR == 1 {
         make PAST::Op.new(:pasttype('inline'), :node($/),
             :inline("    '!store_last_ans'(%0)"),
             $( $/{$key} )

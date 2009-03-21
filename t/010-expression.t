@@ -1,4 +1,4 @@
-plan(5);
+plan(7);
 
 % Tests for expression handling and the default variable "ans"
 "ok 1";
@@ -32,4 +32,10 @@ else
     disp("not ok 5");
 end
 
-
+% Test the use of ellipses for breaking a single statement over multiple lines
+foo = ...
+  "ok 6";
+disp(foo);
+disp( ...
+    "ok 7" ...
+);

@@ -20,9 +20,9 @@ rule TOP {
 ################################################################################
 
 rule block {
-    {*}                                #= open
+    {*}                                      #= open
     <statement>*
-    {*}                                #= close
+    {*}                                      #= close
 }
 
 rule stat_or_def {
@@ -43,10 +43,15 @@ rule stmt_with_value {
     | <expression> <terminator> {*}          #= expression
 }
 
-# TODO: This should match a semicolon or a newline. At the moment, newlines are
-#       not detected.
 token terminator {
-    ';'?
+    [ ';' \s* | \n \s* | $ ]
+    {*}
+}
+
+# Since the <ws> rule doesn't allow newlines, we have to have this rule for
+# places where a newline might need to be treated as simple whitespace
+token maybenewline {
+    \n*
 }
 
 rule system_call {
@@ -58,7 +63,7 @@ token sys_bare_words {
 }
 
 rule assignment {
-    <variable> '=' <expression>            #= expression
+    <variable> '=' <expression>              #= expression
     {*}
 }
 
@@ -71,7 +76,7 @@ rule assignment {
 rule sub_or_var {
     | <primary>
       '(' [ <expression> [',' <expression>]* ]? ')'
-      {*}                                   #= args
+      {*}                                    #= args
     #| <primary> <bare_words> {*}
     | <primary> {*}                         #= noargs
 }
@@ -160,7 +165,10 @@ rule control_statement {
 
 # TODO: Update this syntax to match that in M
 rule if_statement {
-    'if' <expression> <block> ['else' <else=block>]? ['endif'|'end']>>
+    'if' <expression> <maybenewline>
+    <block>
+    ['else' <maybenewline> <else=block>]?
+    ['endif'|'end']>> <maybenewline>
     {*}
 }
 
@@ -220,9 +228,9 @@ rule do_block {
 # note: the order of endfunction|end are important here!
 #
 rule func_def {
-    <func_sig>
+    <func_sig> <maybenewline>
     <statement>*
-    ['endfunction'|'end']>>
+    ['endfunction'|'end']>> <maybenewline>
     {*}
 }
 
@@ -263,7 +271,7 @@ rule named_field {
 
 # TODO: Should probably be renamed "matrix_constructor", but that's nitpickery
 rule array_constructor {
-    '[' [ <array_row> [';' <array_row>]* ]? ']'
+    '[' [ <array_row> [<terminator> <array_row>]* ]? ']'
     {*}
 }
 
@@ -332,9 +340,12 @@ token keyword {
 
 rule expression is optable { ... }
 
-##  this <ws> rule treats # as "comment to eol"
-##  you may want to replace it with something appropriate
+# Whitespace in M. Space, Tab, comments, and an ellipses followed by a newline
 token ws {
-    <!ww>
-    [ ['#'|'%'] \N* \n? | \s+ ]*
+    [ ' '
+        | \t
+        | '#' \N* \s+
+        | '%' \N* \s+
+        | '...' \s*
+    ]*
 }
