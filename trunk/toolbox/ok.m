@@ -1,6 +1,8 @@
 function ok(good, comment)
 %% ok(num, comment)
-%% Indicate that test num has passed with comment
+%% Indicate that test num has passed with comment.
+%% The behavior of ok() might be altered by other functions, such as
+%% start_todo() or end_todo()
     global _TAP_TODO;       % if this is 1, we're in todo mode
     global _TAP_TODO_MSG;   % the todo message,
     global _TAP_TEST_CNT;   % the number of the current test
