@@ -1,24 +1,11 @@
 plan(3);
 
 x = ones(1, 1);
-if x(1, 1) == 1
-    disp("ok 1");
-else
-    disp("not ok 1");
-endif
+is(x(1, 1), 1, "the first element is 1");
 
 x = ones(3, 3);
-if x(1, 1) + x(2, 2) + x(3, 3) == 3
-    disp("ok 2");
-else
-    disp("not ok 2");
-endif
+ok(x(1, 1) + x(2, 2) + x(3, 3) == 3, "an assortment of values are 1");
 
-testcount = 3;
 x = ones(4, 7);
 y = [ 1 1 1 1 1 1 1; 1 1 1 1 1 1 1; 1 1 1 1 1 1 1; 1 1 1 1 1 1 1 ];
-if x == y
-    printf("ok %s\n", testcount);
-else
-    printf("not ok %s\n", testcount);
-end 
+is(x, y, "ones() with arguments that aren't equal");
