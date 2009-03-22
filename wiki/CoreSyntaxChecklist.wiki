@@ -9,6 +9,7 @@ This is an unordered checklist of things that need to be implemented to complete
   # Multiple function return values (proper {{{ nargout }}} handling)
   # Relational operators are matrix-aware {{{ > >= != <= < }}}
   # Arithmetic operators are matrix-aware {{{ * / \ % ^ }}}
+  # Indexed assignment {{{ foo(1, 2) = bar }}}
   # LDivide operators {{{ .\ }}}
   # Bitwise Logical operators {{{ & | ~ }}}
   # Transpose and Hermitian transpose operators {{{ ' .' }}}
