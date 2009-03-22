@@ -189,7 +189,7 @@ method for_statement($/) {
     ##
     my $step;
     if $<step> {
-        my $stepsize := $( $<step>[0] );
+        my $stepsize := $( $<step> );
         $step := PAST::Op.new( $iter, $stepsize, :pirop('add'), :node($/) );
     }
     else { ## default is increment by 1
@@ -704,10 +704,14 @@ method range_constructor($/, $key) {
         :pasttype('call'),
         :node($/)
     );
-    for $<integer_constant> {
+    for $<subexpression> {
         $past.push($($_));
     }
     make $past;
+}
+
+method subexpression($/, $key) {
+    make $( $/{$key} );
 }
 
 method hash_constructor($/) {
