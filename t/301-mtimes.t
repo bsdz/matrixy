@@ -1,25 +1,17 @@
-disp("1..2")
+plan(3)
 
-testcount = 1;
 
-A1 = [1,2;3,4];
-B1 = [5,6;7,8];
-C1 = [19,22;43,50];
-D1 = mtimes(A1, B1);
-if isequal(C1, D1) == 1
-    printf("ok %s\n", testcount);
-else
-    printf("not ok %s\n", testcount);
-end
-testcount = testcount + 1;
+A = [1,2;3,4];
+B = [5,6;7,8];
+C = [19,22;43,50];
+is(mtimes(A, B), C, "product 2 square matrices");
 
-A2 = [1,2;3,4;5,6];
-B2 = [7,8,9;10,11,12];
-C2 = [27,30,33;61,68,75;95,106,117];
-D2 = mtimes(A2, B2);
-if isequal(C2, D2) == 1
-    printf("ok %s\n", testcount);
-else
-    printf("not ok %s\n", testcount);
-end
-testcount = testcount + 1;
+A = [1,2;3,4;5,6];
+B = [7,8,9;10,11,12];
+C = [27,30,33;61,68,75;95,106,117];
+is(mtimes(A, B), C, "product 2 non square matrices")
+
+A = [ 1+2i 2+3i ; 4+5i 6+7i; 8+9i 9+1i ];
+B = [ 1+2i 2+3i 3+4i; 5+6i 7+8i 9+1i ];
+C = [ -11+31i, -14+44i, 10+39i; -18+84i, -21+119i, 39+100i; 29+84i, 44+121i, 68+77i ];
+is(mtimes(A, B), C, "product 2 non square complex matrices")
