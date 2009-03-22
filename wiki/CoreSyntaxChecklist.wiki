@@ -6,7 +6,7 @@ This is an unordered checklist of things that need to be implemented to complete
 = TODO List =
 
   # varagin/varargout
-  # Breaking lines with {{{...}}}.
+  # Multiple function return values (proper {{{ nargout }}} handling)
   # Relational operators are matrix-aware {{{ > >= != <= < }}}
   # Arithmetic operators are matrix-aware {{{ * / \ % ^ }}}
   # LDivide operators {{{ .\ }}}
@@ -18,4 +18,8 @@ This is an unordered checklist of things that need to be implemented to complete
   # Row/Column indexing with {{{:}}}
   # Proper for loops
   # Proper while loops
+  # Do-Until loops
+  # Loop actions {{{ continue break }}}
+  # Persistent variables
   # Classes and Objects {{{ classdef properties }}}
+  # Exception handling {{{ try catch throw end_try_catch }}}
