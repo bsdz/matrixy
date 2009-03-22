@@ -50,8 +50,8 @@ LAPACKLIBSO = clapack.so
 
 Edit SRC/Makefile and add the following lines: -
 
-../$(LAPACKLIBSO): $(ALLOBJ) ../F2CLIBS/libf2c.a
-        $(LOADER) $(LOADOPTS) -shared -Wl,-soname,clapack.so -o $@ $(ALLOBJ) ../F2CLIBS/libf2c.a
+../$(LAPACKLIBSO): $(ALLOBJ) ../F2CLIBS/libf2c.a ../blas_LINUX.a
+        $(LOADER) $(LOADOPTS) -shared -Wl,-soname,clapack.so -o $@ $(ALLOBJ) ../F2CLIBS/libf2c.a ../blas_LINUX.a
 
 Also, change
 
