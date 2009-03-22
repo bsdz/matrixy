@@ -61,7 +61,7 @@ my %nci_hints;
 if (-f $nci_hints_file) {
     open my $fh, $nci_hints_file or die "cannot open file: $!";
     while (my $line = <$fh>) {
-        my ($fname, $fsig) = ( $line =~ m/^(\S+):(\S+)$/); 
+        my ($fname, $fsig) = ( $line =~ m/^(\S+):(\S+)\r?$/); 
         $nci_hints{$fname} = $fsig;
     }
     close $fh;
@@ -76,13 +76,23 @@ push @pir_raw_header, <<EOD1;
 .include 'library/dumper.pir'
 .include 'datatypes.pasm'
 
-
 .sub '_init' :load
   .local pmc lib, func
-  lib = loadlib 'extern/lib/$name'
+
+  \$P0 = new 'ResizablePMCArray'
+  \$S1 = sysinfo 4
+  \$S2 = sysinfo 7
+  push \$P0, \$S2
+  push \$P0, \$S1
+  \$S0 = sprintf "extern/lib/%s-%s/$name", \$P0
+
+  lib = loadlib \$S0
   if lib goto loaded_ok
   \$P0 = new 'Exception'
-  printerr "ensure library $name.(dll|so) is in path!\\n"
+  \$P1 = new 'ResizablePMCArray'
+  push \$P1, \$S0
+  \$S1 = sprintf "library failed to load: ensure path '%s' exists!\\n", \$P1
+  printerr \$S1
   throw \$P0
 loaded_ok:
 EOD1
