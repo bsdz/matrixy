@@ -160,70 +160,37 @@ method for_statement($/) {
     our $?BLOCK;
     our @?BLOCK;
 
-    my $init := $( $<for_init> );
+    # Create a new block for the loop body
+    my $body :=  PAST::Block.new( :blocktype('immediate'), :node($/) );
+    $?BLOCK := $body;
+    @?BLOCK.unshift($?BLOCK);
 
-    ## cache the name of the loop variable
-    my $itername := $init.name();
+    my $var := $( $<identifier> );
+    $var.isdecl(1);
+    $var.scope('parameter');
+    $body.symbol($var.name(), :scope('lexical'));
+    $body.push($var);
 
-    ## create another PAST::Var node for the loop variable, this one is used
-    ## for the loop condition; the node in $init has a isdecl(1) flag and a
-    ## viviself object; $init represents the declaration of the loop var,
-    ## $iter represents the loop variable in normal usage.
-    my $iter := PAST::Var.new(
-        :name($itername),
-        :scope('lexical'),
-        :node($/)
-    );
-
-    ## the body of the loop consists of the statements written by the user and
-    ## the increment instruction of the loop iterator.
-
-    my $body := @?BLOCK.shift();
-    $?BLOCK  := @?BLOCK[0];
     for $<statement> {
         $body.push($($_));
     }
 
-    ## if a step was specified, use that; otherwise, use the default of +1.
-    ## Note that a negative step will NOT work (unless YOU fix that :-) ).
-    ##
-    my $step;
-    if $<step> {
-        my $stepsize := $( $<step> );
-        $step := PAST::Op.new( $iter, $stepsize, :pirop('add'), :node($/) );
-    }
-    else { ## default is increment by 1
-        $step := PAST::Op.new( $iter, :pirop('inc'), :node($/) );
-    }
-    $body.push($step);
-
-    ## while loop iterator <= end-expression
-    my $cond := PAST::Op.new( $iter, $( $<expression> ), :name('infix:<=') );
-    my $loop := PAST::Op.new( $cond, $body, :pasttype('while'), :node($/) );
-
-    make PAST::Stmts.new( $init, $loop, :node($/) );
+    @?BLOCK.shift();
+    $?BLOCK := @?BLOCK[0];
+    make PAST::Op.new(
+        :pasttype('for'),
+        :node($/),
+        PAST::Op.new(
+            :pasttype('call'),
+            :name('!get_first_array_row'),
+            $( $<array_or_range> )
+        ),
+        $body
+    );
 }
 
-method for_init($/) {
-    our $?BLOCK;
-    our @?BLOCK;
-
-    ## create a new scope here, so that we can add the loop variable
-    ## to this block here, which is convenient.
-    $?BLOCK := PAST::Block.new( :blocktype('immediate'), :node($/) );
-    @?BLOCK.unshift($?BLOCK);
-
-    my $iter := $( $<identifier> );
-    ## set a flag that this identifier is being declared
-    $iter.isdecl(1);
-    $iter.scope('lexical');
-    ## the identifier is initialized with this expression
-    $iter.viviself( $( $<expression> ) );
-
-    ## enter the loop variable as a local into the symbol table.
-    $?BLOCK.symbol($iter.name(), :scope('lexical'));
-
-    make $iter;
+method array_or_range($/, $key) {
+    make $( $/{$key} );
 }
 
 method try_statement($/) {
