@@ -103,6 +103,7 @@ to the Matrixy compiler.
     .return (fields)
 .end
 
+# TODO: Move this to somewhere in src/internals/*
 .sub '_terminator_has_semicolon'
     .param string term
     $S0 = substr term, 0, 1
@@ -111,6 +112,7 @@ to the Matrixy compiler.
   has_semicolon:
     .return(1)
 .end
+
 
 =back
 

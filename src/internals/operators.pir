@@ -209,17 +209,3 @@ TOD0: These all need to be fixed!
     isge $I0, a, b
     .return ($I0)
 .end
-
-.sub 'ternary:: :'
-    .param pmc start
-    .param pmc step
-    .param pmc stop
-    .tailcall '!range_constructor_three'(start, step, stop)
-.end
-
-.sub 'infix::'
-    .param pmc start
-    .param pmc stop
-    .tailcall '!range_constructor_two'(start, stop)
-.end
-

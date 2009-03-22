@@ -344,9 +344,12 @@ Construct an array from a range of the form a:b:c
     .param pmc stop
     $N0 = start
     $N1 = stop
-    if $N1 < $N0 goto negative_constructor
+    if $N0 < $N1 goto positive_range
+    if $N0 > $N1 goto negative_range
+    .return(start)
+  positive_range:
     .tailcall '!range_constructor_three'(start, 1, stop)
-  negative_constructor:
+  negative_range:
     .tailcall '!range_constructor_three'(start, -1, stop)
 .end
 
@@ -355,62 +358,58 @@ Construct an array from a range of the form a:b:c
     .param pmc step
     .param pmc stop
     $N0 = start
-    $N1 = stop
-    $N2 = step
-    if $N2 == 0 goto null_step_panic
-    if $N0 == $N1 goto null_constructor
-    if $N0 > $N1 goto expect_negative_step
-    if $N2 < 0 goto bad_step_panic
-
-    .tailcall '!range_constructor_three_positive'(start, step, stop)
+    $N1 = step
+    $N2 = stop
+    if $N0 < $N2 goto expect_positive_step
+    if $N0 > $N2 goto expect_negative_step
+    .return(start)
+  expect_positive_step:
+    if $N1 <= 0 goto bad_step
+    .tailcall '!range_constructor_positive'(start, step, stop)
   expect_negative_step:
-    if $N2 > 0 goto bad_step_panic
-    .tailcall '!range_constructor_three_negative'(start, step, stop)
-  null_constructor:
-    $P0 = '!array_row'(1)
-    .tailcall '!array_col'($P0)
-  null_step_panic:
-    _error_all("Cannot have a stepsize of 0")
-  bad_step_panic:
-    _error_all("Step sign does not match range direction")
+    if $N1 >= 0 goto bad_step
+    .tailcall '!range_constructor_negative'(start, step, stop)
+  bad_step:
+    _error_all("Step parameter is incorrect")
 .end
 
-.sub '!range_constructor_three_positive'
+# Actually construct the array. We know a few things right now: start and
+# stop are not equal. Start, stop, and step are all properly aligned so that
+# we won't loop infinitely looking for a value that we can't get.
+.sub '!range_constructor_positive'
     .param pmc start
     .param pmc step
     .param pmc stop
-    .local pmc range
-    range = new 'ResizablePMCArray'
+    .local pmc newarray
+    newarray = new 'ResizablePMCArray'
     $N0 = start
     $N1 = step
     $N2 = stop
   loop_top:
-    if $N0 > $N2 goto just_exit
-    $P0 = box $N0
-    push range, $P0
-    $N0 += $N1
+    push newarray, $N0
+    $N0 = $N0 + $N1
+    if $N0 > $N2 goto loop_end
     goto loop_top
-  just_exit:
-    .tailcall '!array_col'(range)
+  loop_end:
+    .tailcall '!array_col'(newarray)
 .end
 
-.sub '!range_constructor_three_negative'
+.sub '!range_constructor_negative'
     .param pmc start
     .param pmc step
     .param pmc stop
-    .local pmc range
-    range = new 'ResizablePMCArray'
+    .local pmc newarray
+    newarray = new 'ResizablePMCArray'
     $N0 = start
     $N1 = step
     $N2 = stop
   loop_top:
-    if $N0 < $N2 goto just_exit
-    $P0 = box $N0
-    push range, $P0
-    $N0 += $N1
+    push newarray, $N0
+    $N0 = $N0 + $N1
+    if $N0 < $N2 goto loop_end
     goto loop_top
-  just_exit:
-    .tailcall '!array_col'(range)
+  loop_end:
+    .tailcall '!array_col'(newarray)
 .end
 
 =item !distribute_matrix_op(PMC a, PMC b, PMC op)

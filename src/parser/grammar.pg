@@ -128,8 +128,18 @@ rule index {
     {*}
 }
 
+# This rule is used in places like ranges where using <expression> would cause
+# left recursion in the parser, or where not all the options in <expression>
+# are legal. This only handles numerical options
+rule subexpression {
+   | <float_constant> {*}            #= float_constant
+   | <integer_constant> {*}          #= integer_constant
+   | <sub_or_var> {*}                #= sub_or_var
+   | '(' <expression> ')' {*}        #= expression
+}
+
 rule term {
-   #| <range_constructor> {*}         #= range_constructor
+   | <range_constructor> {*}         #= range_constructor
    | <complex_constant> {*}          #= complex_constant
    | <float_constant> {*}            #= float_constant
    | <integer_constant> {*}          #= integer_constant
@@ -180,14 +190,24 @@ rule while_statement {
 
 # TODO: Update this syntax to match that in M
 rule for_statement {
-    'for' <for_init> ',' <expression> [',' <step=expression>]? 'do'
+    'for' <for_init> ',' <expression> [',' <step=expression>]? 'do' <maybenewline>
     <statement>*
-    'end'
+    ['endfor'|'end']>> <maybenewline>
     {*}
 }
 
+# TODO: This is probably going to be the final form of the for loop. However,
+#       we're going to have to implement some kind of iterator to make this
+#       work like normal.
+# rule for_statement {
+#    'for' <identifier> '=' <array_or_range> <maybenewline>
+#    <statement>*
+#    ['endfor'|'end']>> <maybenewline>
+#    {*}
+#}
+
 rule for_init {
-    'var' <identifier> '=' <expression>
+    <identifier> '=' <expression>
     {*}
 }
 
@@ -280,10 +300,10 @@ rule array_row {
     {*}
 }
 
-#rule range_constructor {
-#    | <expression> ':' <expression> ':' <expression> {*} #= three
-#    | <expression> ':' <expression> {*}                        #= two
-#}
+rule range_constructor {
+      <subexpression> ':' <subexpression> ':' <subexpression> {*}    #= three
+    | <subexpression> ':' <subexpression> {*}                        #= two
+}
 
 token identifier {
     <!keyword> <ident>
@@ -310,7 +330,7 @@ token complex_constant {
         | \d+ '.' \d*
         | \d* '.' \d+
         | \d+
-    ] 
+    ]
     ['i' | 'j' ]
     {*}
 }
@@ -321,6 +341,7 @@ token string_constant {
     [\" <string_literal: '"'> \" | \' <string_literal: '\''> \']
     {*}
 }
+
 
 # TODO: We should be able to get rid of this and all calls to <!keyword>
 #       once PCT implements Longest-token-matching
