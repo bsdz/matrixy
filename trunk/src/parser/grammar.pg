@@ -188,27 +188,20 @@ rule while_statement {
     {*}
 }
 
-# TODO: Update this syntax to match that in M
+# TODO: This is probably going to be the final form of the for loop. However,
+#       we're going to have to implement some kind of iterator to make this
+#       work like normal.
 rule for_statement {
-    'for' <for_init> ',' <expression> [',' <step=expression>]? 'do' <maybenewline>
+    'for' <identifier> '=' <array_or_range> <maybenewline>
     <statement>*
     ['endfor'|'end']>> <maybenewline>
     {*}
 }
 
-# TODO: This is probably going to be the final form of the for loop. However,
-#       we're going to have to implement some kind of iterator to make this
-#       work like normal.
-# rule for_statement {
-#    'for' <identifier> '=' <array_or_range> <maybenewline>
-#    <statement>*
-#    ['endfor'|'end']>> <maybenewline>
-#    {*}
-#}
-
-rule for_init {
-    <identifier> '=' <expression>
-    {*}
+rule array_or_range {
+    | <primary> {*}             #= primary
+    | <array_constructor> {*}   #= array_constructor
+    | <range_constructor> {*}   #= range_constructor
 }
 
 # both Octave and Matlab support try/catch

@@ -113,6 +113,15 @@ to the Matrixy compiler.
     .return(1)
 .end
 
+.sub '!get_first_array_row'
+    .param pmc m
+    $S0 = typeof m
+    if $S0 == 'ResizablePMCArray' goto have_matrix
+    .return(m)
+  have_matrix:
+    $P0 = m[0]
+    .return($P0)
+.end
 
 =back
 
