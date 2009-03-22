@@ -117,6 +117,22 @@ These operators properly act on matrix arguments.
     .return($P1)
 .end
 
+.sub "postfix:'"
+    .param pmc a
+
+    $P0 = '!lookup_function'('ctranspose')
+    $P1 = $P0(1,1,a)
+    .return($P1)
+.end
+
+.sub "postfix:.'"
+    .param pmc a
+
+    $P0 = '!lookup_function'('transpose')
+    $P1 = $P0(1,1,a)
+    .return($P1)
+.end
+
 =head1 Matrix-Unaware Operators
 
 TOD0: These all need to be fixed!
