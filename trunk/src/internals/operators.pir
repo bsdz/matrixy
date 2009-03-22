@@ -133,6 +133,25 @@ These operators properly act on matrix arguments.
     .return($P1)
 .end
 
+.sub 'infix:*'
+    .param pmc a
+    .param pmc b
+
+    $S0 = typeof a
+    if $S0 == 'ResizablePMCArray' goto do_mtimes
+    $S1 = typeof b
+    if $S1 == 'ResizablePMCArray' goto do_mtimes
+
+    # since we override '*' in M world
+    $P1 = a * b
+    .return ($P1)
+
+  do_mtimes:
+    $P0 = '!lookup_function'('mtimes')
+    $P1 = $P0(1,1,a,b)
+    .return($P1)
+.end
+
 =head1 Matrix-Unaware Operators
 
 TOD0: These all need to be fixed!
@@ -141,12 +160,6 @@ TOD0: These all need to be fixed!
 
 # TODO: link to mtimes as soon as
 #    it can handle scalar args
-.sub 'infix:*'
-    .param pmc a
-    .param pmc b
-    $P0 = a * b
-    .return($P0)
-.end
 
 .sub 'infix:^'
     .param pmc a

@@ -13,7 +13,9 @@ function y = mtimes(A, B)
     ldb = K;
     ldc = M;
 
-    ret = dgemm ('N', 'N', M, N, K, alpha, A, lda, B, ldb, beta, C, ldc );
+    # could use a modifier to specify double routine for speed?
+    #ret = dgemm ('N', 'N', M, N, K, alpha, A, lda, B, ldb, beta, C, ldc );
+    ret = zgemm ('N', 'N', M, N, K, alpha, A, lda, B, ldb, beta, C, ldc );
 
     return C;
 
