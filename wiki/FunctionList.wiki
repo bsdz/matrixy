@@ -3,13 +3,88 @@
 
 = Introduction =
 
+This is a list of supported and unsupported functions in alphabetical order.
+
+= Function List  =
+
+== Supported functions ==
+{{{
+addpath
+arrayfun
+ceil
+columns
+computer
+conj
+ctranspose
+disp
+doc
+e
+error
+exit
+eye
+feval
+floor
+getenv
+help
+i
+inverse
+isequal
+isscalar
+j
+ldivide
+length
+minus
+mtimes
+ones
+path
+printf
+pi
+plus
+power
+printf
+quit
+rdivide
+round
+rows
+rmpath
+setenv
+size
+sprintf
+sum
+system
+times
+transpose
+zeros
+}}}
+
+== Matrixy Specific Functions ==
+
+{{{
+clearscreen
+end_todo
+is
+nok
+ok
+parrot_typeof
+pir
+plan
+start_todo
+}}}
+
+== BLAS/CLAPACK Functions ==
+
+{{{
+dgemm
+zgemm
+dgetri
+dgetrf
+}}}
+
+= Matlab Functions =
+
 This is a checklist of functions that will need to be implemented eventually to form our standard library. We can delete items from this list that we won't be supporting initially, such as audio/video functions, graphic functions, or rare functions.
 
 This list initially from: http://www.math.carleton.ca/old/help/matlab/MathWorks_R13Doc/techdoc/ref/refbookl.html
-
-Delete items from this list as we implement them.
-
-= Function List  =
 
 {{{
 abs
