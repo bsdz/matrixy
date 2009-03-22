@@ -1,102 +1,61 @@
-plan(18);
+plan(24);
 
 % sanity checks
 
 1 + i;
-disp("ok 1")
+ok(1, "1+i");
 
 1.0 + i;
-disp("ok 2")
+ok(1, "1.0+i");
 
 2.0 + 10j;
-disp("ok 3")
+ok(1, "2.0+10i");
 
 20 + 5.5i;
-disp("ok 4")
+ok(1, "20+5.5i");
 
 31.5 - 20.7j;
-disp("ok 5")
+ok(1, "20-20.7");
 
-if parrot_typeof(1 + 2i) == "Complex"
-    disp("ok 6");
-else
-    disp("not ok 6");
-end
+is(parrot_typeof(1 + 2i), "Complex", "check type with i is complex")
+is(parrot_typeof(1 + 2j), "Complex", "check type with i is complex")
 
-if parrot_typeof(1 + 2j) == "Complex"
-    disp("ok 7");
-else
-    disp("not ok 7");
-end
+is(1 + 2i + 4 , 5+2i, "check add real part")
 
-if 1 + 2i + 4 == 5+2i
-    disp("ok 8")
-else 
-    disp("not ok 8")
-end
+is(1+2i , 1+2i, "check identical")
 
-if 1+2i == 1+2i
-    disp("ok 9")
-else 
-    disp("not ok 9")
-end
-
-if 1 + 2i + 4 +3j == 5+5i
-    disp("ok 10")
-else 
-    disp("not ok 10")
-end
+is(1 + 2i + 4 +3j , 5+5i, "complex + complex")
 
 
-if (1+2j)*(2+3j) == -4+7i
-    disp("ok 11")
-else 
-    disp("not ok 11")
-end
+is((1+2j)*(2+3j) , -4+7i, "check product")
 
-if sprintf("%s", 1+2i) == "1+2i"
-    disp("ok 12")
-else 
-    disp("not ok 12")
-end
+is(sprintf("%s", 1+2i) , "1+2i", "sprintf 1")
 
-if sprintf("%s", 20+5.5i) == "20+5.5i"
-    disp("ok 13")
-else 
-    disp("not ok 13")
-end
+is(sprintf("%s", 20+5.5i) , "20+5.5i", "sprintf 2")
 
-if 1+2i == 10
-    disp("not ok 14")
-else 
-    disp("ok 14")
-end
+nok(1+2i  == 10, "check nothing crazy happens")
 
 # i, j should behave like ordinary variables. although they default to sqrt(-1).
 # see http://ccrma.stanford.edu/~jos/st/Complex_Numbers_Matlab_Octave.html
 
-if i == 0+1i
-    disp("ok 15")
-else
-    disp("not ok 15")
-end
+is(i , 0+1i, "i defaults to i")
 
-if j == 0+1j
-    disp("ok 16")
-else
-    disp("not ok 16")
-end
+is(j , 0+1j, "j defaults to j")
 
-i = 100
-if i == 100
-    disp("ok 17")
-else
-    disp("not ok 17")
-end
+i = 100;
+is(i , 100, "can overide i")
 
-j = 101
-if j == 101
-    disp("ok 18")
-else
-    disp("not ok 18")
-end
+j = 101;
+is(j , 101, "can override j")
+
+# conj
+
+is(conj(10+20i), 10-20i, "complex conj 1")
+is(conj(1-2i), 1+2i, "complex conj 2")
+is(conj(10), 10, "complex conj of non complex")
+is(conj(5i), -5i, "complex conj imaginary")
+is(conj(0), 0, "complex conj of 0")
+
+A = [ 1+2i 2-3i; 10 0];
+B = [ 1-2i 2+3i; 10 0];
+is(conj(A), B, "array conj");
