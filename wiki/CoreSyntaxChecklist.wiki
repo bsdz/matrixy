@@ -6,10 +6,11 @@ This is an unordered checklist of things that need to be implemented to complete
 = TODO List =
 
   # varagin/varargout
+  # Subfunctions (lexically-scoped functions)
   # Multiple function return values (proper {{{ nargout }}} handling)
   # Relational operators are matrix-aware {{{ > >= != <= < }}}
   # Arithmetic operators are matrix-aware {{{ / \ % ^ }}}
-  # Indexed assignment {{{ foo(1, 2) = bar }}}
+  # Vector-indexed assignments {{{ x(1) = 2 }}}
   # LDivide operators {{{ .\ }}}
   # Bitwise Logical operators {{{ & | ~ }}}
   # Ranges {{{ x:y x:y:z }}}
