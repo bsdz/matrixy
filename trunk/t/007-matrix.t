@@ -1,4 +1,4 @@
-disp("1..21");
+disp("1..22");
 
 % First, test that we can index a matrix like a vector using the same semantics
 % as Octave has
@@ -87,4 +87,13 @@ if baz == [5 6; 7 8]
     disp("ok 21");
 else
     disp("not ok 21");
+endif
+
+% Test that scalar values autopromote to matrices when index-assigned
+x = 1;
+x(1, 1) = 2;
+if x == [2]
+    disp("ok 22");
+else
+    disp("not ok 22");
 endif
