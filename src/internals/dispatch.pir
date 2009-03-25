@@ -190,14 +190,29 @@ and can share names between them.
     .return($P2)
 .end
 
+.sub '!is_scalar'
+    .param pmc var
+    $S0 = typeof var
+    if $S0 == 'ResizablePMCArray' goto is_not_scalar
+    .return(1)
+  is_not_scalar:
+    .return(0)
+.end
+
 .sub '!indexed_assign'
     .param pmc var
     .param pmc value
     .param pmc indices :slurpy
     $I0 = indices
     if $I0 == 0 goto assign_scalar
-    # TODO: Check if the value is a scalar. If we have indices, autopromote
-    #       to a matrix of the appropriate size and zero-pad it.
+
+    # If we have a scalar, autopromote it to a matrix
+    $I1 = '!is_scalar'(var)
+    if $I1 == 0 goto not_scalar
+    $P0 = '!array_row'(var)
+    var = '!array_col'($P0)
+
+  not_scalar:
     if $I0 == 1 goto assign_vector
     if $I0 == 2 goto assign_matrix
     _error_all("Number of indices is too great, only 2D matrices are supported")
@@ -230,6 +245,7 @@ and can share names between them.
     # TODO: If the index is larger then the matrix/vector, extend it.
     _error_all("1-ary indexing not implemented!")
 .end
+
 .sub '!generate_string'
     .param pmc args :slurpy
     .local pmc myiter
