@@ -1,4 +1,4 @@
-disp("1..20");
+disp("1..21");
 
 % First, test that we can index a matrix like a vector using the same semantics
 % as Octave has
@@ -75,4 +75,16 @@ if foo == bar
     disp("ok 20");
 else
     disp("not ok 20");
+endif
+
+% Test assignment to individual matrix cells
+baz = [1 2;3 4];
+baz(1, 1) = 5;
+baz(1, 2) = 6;
+baz(2, 1) = 7;
+baz(2, 2) = 8;
+if baz == [5 6; 7 8]
+    disp("ok 21");
+else
+    disp("not ok 21");
 endif

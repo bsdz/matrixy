@@ -145,17 +145,6 @@ method while_statement($/) {
     make PAST::Op.new( $cond, $body, :pasttype('while'), :node($/) );
 }
 
-## for var <ident> = <expr1> , <expr2> do <block> end
-##
-## translates to:
-## do
-##   var <ident> = <expr1>
-##   while <ident> <= <expr2> do
-##     <block>
-##     <ident> = <ident> + 1
-##   end
-## end
-##
 method for_statement($/) {
     our $?BLOCK;
     our @?BLOCK;
@@ -270,24 +259,33 @@ method do_block($/) {
     make $( $<block> );
 }
 
+# We're turning this:
+#     x[a, b] = c
+# into this:
+#     x = '!indexed_assign'(x, c, a, b)
+# We have to do this because of the way that indices are managed in M, and how
+# matrices can be indexed like vectors.
 method assignment($/) {
     our $?BLOCK;
     our %?GLOBALS;
-    my $rhs := $( $<expression> );
+    my $rhs := $( $<value> );
     my $lhs := $( $<variable> );
     $lhs.lvalue(1);
     my $name := $lhs.name();
     if %?GLOBALS{$name} {
         $lhs.namespace("Matrixy::globals");
     }
-    # TODO: Enabling all these statements "works", but kills variable
-    #       persistence in interactive mode. This is a known issue with PCT.
-    #       Until we get this resolved, we can't both have a unified dispatcher
-    #       and a working interactive mode.
-    unless $?BLOCK.symbol( $name ) {
-        #$lhs.isdecl(1);
-        #$lhs.scope("lexical");
-        #$?BLOCK.symbol( $name, :scope('lexical') );
+    $rhs := PAST::Op.new(
+        :pasttype('call'),
+        :name('!indexed_assign'),
+        PAST::Var.new(
+            :name($lhs.name()),
+            :scope('package')
+        ),
+        $rhs
+    );
+    for $<expression> {
+        $rhs.push($($_));
     }
     make PAST::Op.new(
         $lhs,

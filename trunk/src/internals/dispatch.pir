@@ -190,6 +190,46 @@ and can share names between them.
     .return($P2)
 .end
 
+.sub '!indexed_assign'
+    .param pmc var
+    .param pmc value
+    .param pmc indices :slurpy
+    $I0 = indices
+    if $I0 == 0 goto assign_scalar
+    # TODO: Check if the value is a scalar. If we have indices, autopromote
+    #       to a matrix of the appropriate size and zero-pad it.
+    if $I0 == 1 goto assign_vector
+    if $I0 == 2 goto assign_matrix
+    _error_all("Number of indices is too great, only 2D matrices are supported")
+  assign_scalar:
+    .return(value)
+  assign_vector:
+    $P0 = indices[0]
+    $I1 = $P0
+    .tailcall '!indexed_assign_vector'(var, value, $I1)
+  assign_matrix:
+    # TODO: Check the current size of the matrix. If the indices are larger,
+    #       expand the matrix and zero-pad it.
+    $P0 = indices[0]
+    $P1 = indices[1]
+    $I1 = $P0
+    $I2 = $P1
+    dec $I1
+    dec $I2
+    var[$I1;$I2] = value
+    .return(var)
+.end
+
+.sub '!indexed_assign_vector'
+    .param pmc var
+    .param pmc value
+    .param int index
+    # TODO: If we have a row or column vector, assign to the spot directly.
+    # TODO: If we have a matrix, dollow the same indexing algorithm as we use
+    #       for indexed fetch.
+    # TODO: If the index is larger then the matrix/vector, extend it.
+    _error_all("1-ary indexing not implemented!")
+.end
 .sub '!generate_string'
     .param pmc args :slurpy
     .local pmc myiter
