@@ -63,7 +63,9 @@ token sys_bare_words {
 }
 
 rule assignment {
-    <variable> '=' <expression>              #= expression
+    <variable>
+    [ '(' <expression> [ ',' <expression> ]* ')' ]?
+    '=' <value=expression>
     {*}
 }
 
@@ -173,7 +175,6 @@ rule control_statement {
     | <return_statement> <terminator> {*}    #= return_statement
 }
 
-# TODO: Update this syntax to match that in M
 rule if_statement {
     'if' <expression> <maybenewline>
     <block>
@@ -182,15 +183,12 @@ rule if_statement {
     {*}
 }
 
-# TODO: Update this syntax to match that in M
 rule while_statement {
-    'while' <expression> 'do' <block> 'end'
+    'while' <expression> ','? <maybenewline> <block> 
+    ['endwhile'|'end']>>
     {*}
 }
 
-# TODO: This is probably going to be the final form of the for loop. However,
-#       we're going to have to implement some kind of iterator to make this
-#       work like normal.
 rule for_statement {
     'for' <identifier> '=' <array_or_range> <maybenewline>
     <statement>*
