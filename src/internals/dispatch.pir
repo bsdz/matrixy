@@ -1,47 +1,27 @@
 
 =head1 Function/Variable dispatch routines
 
-The routines in this function deal with dispatching function calls or variable
+The routines in this file deal with dispatching function calls or variable
 lookups. This issue is complicated slightly by the fact that that both
 subroutines and variables use the same syntax for dispatching and array lookup.
 Given the code C<x(5)>, if x is a variable it performs an array lookup.
 Otherwise, attempts to dispatch to the subroutine x with the argument list
 C<(5)>.
 
-Rules:
-
-=over 4
-
-=item*
-
-Look up the name in the list of local variables. If we find it, dispatch
-the request to the variable as a table lookup. This should already be done
-in the grammar.
-
-=item*
-
-If a variable is not found, dispatch as a subroutine call. Look up the
-subroutine name locally.
-
-=item*
-
-If a subroutine with that name isn't already loaded, it might exist in a
-library file somewhere. For instance, the function C<x()> might be defined
-in file C<x.m>, so search there
-
-=item*
-
-If all else fails, print a warning saying that C<x> is undefined.
-
-=back
-
-TODO: To make all this work, we may require that local variable names and
-subroutines be stored in different namespaces so we don't get them confused
-and can share names between them.
-
 =cut
 
 .namespace []
+
+=item !dispatch(name, var, nargout, nargin, parens, args :slurpy)
+
+retrieve a value using the following syntax:
+
+  foo = bar(1, 2)
+
+bar could be either a matrix or a subroutine. Handles all the idiosyncratic
+rules for these kinds of things in M.
+
+=cut
 
 .sub '!dispatch'
     .param string name
@@ -66,6 +46,14 @@ and can share names between them.
   found_sub:
     .tailcall sub_obj(nargout, nargin, args :flat)
 .end
+
+=item !lookup_function(name)
+
+Searches for a function of the given name. The function could be a builtin
+PIR function or a function written in M. Returns a Sub PMC object if one is
+found, null otherwise.
+
+=cut
 
 .sub '!lookup_function'
     .param string name
@@ -111,6 +99,16 @@ and can share names between them.
   _dispatch_found_sub:
     .return(sub_obj)
 .end
+
+=item !index_variable(var, nargout, nargin, parens)
+
+Handles equations of the following types:
+
+  a = var(b, ...)
+
+Returns the value
+
+=cut
 
 .sub '!index_variable'
     .param pmc var
@@ -158,6 +156,16 @@ and can share names between them.
     _error_all("invalid index")
 .end
 
+=item !index_vector(var, idx)
+
+Handles simple vector indexing of the form:
+
+  a = var(b)
+
+Here, var could be either a 2D matrix or a 1D vector
+
+=cut
+
 .sub '!index_vector'
     .param pmc var
     .param int idx
@@ -190,6 +198,12 @@ and can share names between them.
     .return($P2)
 .end
 
+=item !is_scalar
+
+Returns 1 if the variable is a scalar type, 0 if it's a vector or matrix
+
+=cut
+
 .sub '!is_scalar'
     .param pmc var
     $S0 = typeof var
@@ -198,6 +212,19 @@ and can share names between them.
   is_not_scalar:
     .return(0)
 .end
+
+=item !indexed_assign
+
+Handles equations of the type:
+
+ var(a, b) = c
+ var(a) = c
+ var() = c
+ var = c
+
+Returns the modified variable
+
+=cut
 
 .sub '!indexed_assign'
     .param pmc var
@@ -215,6 +242,7 @@ and can share names between them.
   not_scalar:
     if $I0 == 1 goto assign_vector
     if $I0 == 2 goto assign_matrix
+    # TODO: Eventually we are going to need to support 3D matrices and higher
     _error_all("Number of indices is too great, only 2D matrices are supported")
   assign_scalar:
     .return(value)
@@ -235,6 +263,16 @@ and can share names between them.
     .return(var)
 .end
 
+=item '!indexed_assign_vector'
+
+Handles equations of the type:
+
+ var(a) = c
+
+Where var could be either a vector or a 2D matrix
+
+=cut
+
 .sub '!indexed_assign_vector'
     .param pmc var
     .param pmc value
@@ -243,6 +281,8 @@ and can share names between them.
     # TODO: If we have a matrix, dollow the same indexing algorithm as we use
     #       for indexed fetch.
     # TODO: If the index is larger then the matrix/vector, extend it.
+    # TODO: If we have a 1x1 matrix and we need to extend it, extend as a
+    #       row matrix with zero padding.
     _error_all("1-ary indexing not implemented!")
 .end
 
