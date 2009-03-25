@@ -24,4 +24,5 @@ This is an unordered checklist of things that need to be implemented to complete
   # Loop actions {{{ continue break }}}
   # Persistent variables
   # Classes and Objects {{{ classdef properties }}}
+  # Class constructors (@foo/foo.m)
   # Exception handling {{{ try catch throw end_try_catch }}}
