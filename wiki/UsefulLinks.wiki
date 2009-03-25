@@ -10,6 +10,10 @@
   * [http://www.gnu.org/software/octave/doc/interpreter/ Octave Documentation]
   * [http://hg.savannah.gnu.org/hgweb/octave/file/949708f930d0/test/ Octave Test Suite]
 
+== Matlab ==
+
+  * [http://www.mathworks.com/access/helpdesk/help/techdoc/index.html?/access/helpdesk/help/techdoc/matlab_prog/f7-58170.html#bresuvu-6 Function dispatch resolution order]
+
 == Articles ==
 
 Some interesting articles..
