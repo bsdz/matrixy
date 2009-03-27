@@ -218,7 +218,7 @@ Adds n columns to the end of a matrix
 .sub '!add_cols_zero_pad'
     .param pmc var
     .param int cols
-    _error_all('!add_cols_zero_pad not yet implemented!')
+    .tailcall '!matrix_extend_n_columns'(var, cols)
 .end
 
 =item !add_rows_zero_pad
@@ -267,6 +267,35 @@ Creates a new row of all zeros, of the given length
     goto loop_top
   loop_end:
     .return(newrow)
+.end
+
+=item !matrix_extend_n_columns
+
+extends a matrix with m columns to have n+m columns, zero padded
+
+=cut
+
+# TODO: There has to be a faster algorithm to do this!
+# TODO: Double-check that all the rows are the same length
+.sub '!matrix_extend_n_columns'
+    .param pmc var
+    .param int cols
+    $I0 = var
+  outer_loop_top:
+        if $I0 == 0 goto outer_loop_end
+        dec $I0
+        $P0 = var[$I0]
+        $I1 = $P0
+        $I3 = cols
+      inner_loop_top:
+            if $I3 == 0 goto inner_loop_end
+            push $P0, 0
+            dec $I3
+            goto inner_loop_top
+      inner_loop_end:
+        goto outer_loop_top
+  outer_loop_end:
+    .return(var)
 .end
 
 =item !array_col_force_strings(PMC m)
