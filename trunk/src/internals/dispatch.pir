@@ -302,7 +302,7 @@ Where var is any 2D matrix
     $P0 = var[0]
     $I0 = var
     $I1 = $P0
-    
+
     if idrow <= $I0 goto row_size_ok
     $I2 = idrow - $I0
     var = '!add_rows_zero_pad'(var, $I2)
@@ -316,10 +316,9 @@ Where var is any 2D matrix
     $I0 = var
     $P0 = var[0]
     $I1 = $P0
-    say $I1
     var[idrow;idcol] = value
     .return(var)
-.end   
+.end
 
 .sub '!generate_string'
     .param pmc args :slurpy

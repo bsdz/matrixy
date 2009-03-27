@@ -1,4 +1,4 @@
-disp("1..22");
+disp("1..23");
 
 % First, test that we can index a matrix like a vector using the same semantics
 % as Octave has
@@ -96,4 +96,16 @@ if x == [2]
     disp("ok 22");
 else
     disp("not ok 22");
+endif
+
+% Test that matrices autoextend if we try to assign to a higher row
+x = [1 2 3];
+x(3, 3) = 9;
+y = [1 2 3
+     0 0 0
+     0 0 9];
+if x == y
+    disp("ok 23");
+else
+    disp("not ok 23");
 endif
