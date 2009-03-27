@@ -93,67 +93,7 @@ throw an error that no strings are found.
     .tailcall '!get_first_string'($P0)
 .end
 
-=item _verify_matrix(m)
-
-Verify that the matrix is square (or cube, or whatever). Zero pad it out
-otherwise.
-
-TODO: Unused and untested
-
-=cut
-
-.sub '_verify_matrix'
-    .param pmc m
-    .local pmc myiter
-    .local pmc sizes
-    .local int max
-
-    # TODO: This function ONLY handles 2-D matrices right now, it doesn't work
-    #       for 1xN vectors yet. Fix that, and maybe generalize it so it will
-    #       work for N-D vectors
-
-    # We're only handling square matrices right now.
-    $I0 = elements m
-    myiter = iter m
-    sizes = new 'ResizableIntegerArray'
-    max = 0
-
-    # Iterate over the rows of the matrix. Get the length of each row and store
-    # that in another array. Also, keep track of the maximum value seen, so
-    # we can zero-pad everything later if needed.
-  _loop_top:
-    unless myiter goto _loop_bottom
-    $P0 = shift myiter
-    $I1 = $P0
-    unless $I1 > max goto _not_max
-    max = $I1
-  _not_max:
-    push sizes, $I0
-    goto _loop_top
-  _loop_bottom:
-
-    # Now we have an array of all the row lengths. Iterate through that
-    # looking for any rows that don't have at least a length of max
-    .local int idx
-    idx = sizes
-    idx = idx - 1
-  _loop_topb:
-    if idx < 0 goto _loop_bottomb
-    $I0 = sizes[idx]
-    idx = idx - 1
-    if $I0 == max goto _loop_topb
-    $P0 = m[idx]
-    $P0 = max
-    m[idx] = $P0
-    goto _loop_topb
-    $I0 = $P0
-  _loop_bottomb:
-
-    # Okay, the matrix should be square now. At least, I hope so. Return
-    .return(m)
-.end
-
-=item _get_matrix_dimensions
+=item !get_matrix_dimensions
 
 Return the number of dimensions of the matrix. Probably 1 or 2
 
@@ -171,7 +111,7 @@ Return the number of dimensions of the matrix. Probably 1 or 2
     .return($I0)
 .end
 
-=item _get_matrix_size
+=item !get_matrix_sizes
 
 Return the sizes of the matrix along each dimension, in an RIA.
 
@@ -253,6 +193,12 @@ the list of them. Otherwise, builds a simple array of the row PMCs.
     .return (fields)
 .end
 
+=item !get_array_row_length
+
+Returns the row-length of the matrix
+
+=cut
+
 .sub '!get_array_row_length'
     .param pmc x
     $S0 = typeof x
@@ -261,6 +207,66 @@ the list of them. Otherwise, builds a simple array of the row PMCs.
   is_array:
     $I0 = x
     .return(x)
+.end
+
+=item !add_cols_zero_pad
+
+Adds n columns to the end of a matrix
+
+=cut
+
+.sub '!add_cols_zero_pad'
+    .param pmc var
+    .param int cols
+    _error_all('!add_cols_zero_pad not yet implemented!')
+.end
+
+=item !add_rows_zero_pad
+
+Adds n rows to the bottom of a matrix
+
+=cut
+
+.sub '!add_rows_zero_pad'
+    .param pmc var
+    .param int rows
+    # TODO: We assume here that the var is a proper matrix. Either make sure
+    #       that this is tested by the caller, or do the test here.
+    $I0 = rows
+    $P0 = var[0]
+    $I1 = $P0
+  loop_top:
+    if $I0 == 0 goto loop_bottom
+    $P0 = '!row_of_zeros'($I1)
+    push var, $P0
+    dec $I0
+    goto loop_top
+  loop_bottom:
+    .return(var)
+.end
+
+=item !row_of_zeros
+
+Creates a new row of all zeros, of the given length
+
+=cut
+
+# TODO: There has to be a faster way to do this?
+.sub '!row_of_zeros'
+    .param int n
+    .local pmc newrow
+    newrow = new 'ResizablePMCArray'
+    newrow = n  # Does this work?
+    .local int idx
+    idx = 0
+  loop_top:
+    if n == 0 goto loop_end
+    newrow[idx] = 0
+    inc idx
+    dec n
+    goto loop_top
+  loop_end:
+    .return(newrow)
 .end
 
 =item !array_col_force_strings(PMC m)

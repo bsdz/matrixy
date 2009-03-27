@@ -234,6 +234,7 @@ Returns the modified variable
     if $I0 == 0 goto assign_scalar
 
     # If we have a scalar, autopromote it to a matrix
+    # TODO: do a more robust check here for matrix-ness
     $I1 = '!is_scalar'(var)
     if $I1 == 0 goto not_scalar
     $P0 = '!array_row'(var)
@@ -249,18 +250,14 @@ Returns the modified variable
   assign_vector:
     $P0 = indices[0]
     $I1 = $P0
+    dec $I1
     .tailcall '!indexed_assign_vector'(var, value, $I1)
   assign_matrix:
-    # TODO: Check the current size of the matrix. If the indices are larger,
-    #       expand the matrix and zero-pad it.
     $P0 = indices[0]
     $P1 = indices[1]
     $I1 = $P0
     $I2 = $P1
-    dec $I1
-    dec $I2
-    var[$I1;$I2] = value
-    .return(var)
+    .tailcall '!indexed_assign_matrix'(var, value, $I1, $I2)
 .end
 
 =item '!indexed_assign_vector'
@@ -285,6 +282,44 @@ Where var could be either a vector or a 2D matrix
     #       row matrix with zero padding.
     _error_all("1-ary indexing not implemented!")
 .end
+
+=item '!indexed_assign_matrix'
+
+Handles equations of the form:
+
+ var(a, b) = c
+
+Where var is any 2D matrix
+
+=cut
+
+.sub '!indexed_assign_matrix'
+    .param pmc var
+    .param pmc value
+    .param int idrow
+    .param int idcol
+
+    $P0 = var[0]
+    $I0 = var
+    $I1 = $P0
+    
+    if idrow <= $I0 goto row_size_ok
+    $I2 = idrow - $I0
+    var = '!add_rows_zero_pad'(var, $I2)
+  row_size_ok:
+    if idcol <= $I1 goto col_size_ok
+    $I2 = idcol - $I1
+    var = '!add_cols_zero_pad'(var, $I2)
+  col_size_ok:
+    dec idrow
+    dec idcol
+    $I0 = var
+    $P0 = var[0]
+    $I1 = $P0
+    say $I1
+    var[idrow;idcol] = value
+    .return(var)
+.end   
 
 .sub '!generate_string'
     .param pmc args :slurpy
