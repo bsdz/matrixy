@@ -1,4 +1,4 @@
-disp("1..25");
+disp("1..27");
 
 % First, test that we can index a matrix like a vector using the same semantics
 % as Octave has
@@ -132,4 +132,28 @@ if x == y
     disp("ok 25");
 else
     disp("not ok 25");
+endif
+
+% Prove that lvalue indexes lead to the same places as rvalue indexes
+x = [2 3; 4 5];
+y = [0 0; 0 0];
+y(1, 1) = x(1, 1);
+y(1, 2) = x(1, 2);
+y(2, 1) = x(2, 1);
+y(2, 2) = x(2, 2);
+if x == y
+    disp("ok 26");
+else
+    disp("not ok 26");
+endif
+
+% Show that non-existent matrices autovivify if we assign to an index
+_not_existing_matrix(3, 3) = 1;
+y = [0 0 0
+     0 0 0
+     0 0 1];
+if _not_existing_matrix == y
+    disp("ok 27");
+else
+    disp("not ok 27");
 endif

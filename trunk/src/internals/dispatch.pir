@@ -230,6 +230,12 @@ Returns the modified variable
     .param pmc var
     .param pmc value
     .param pmc indices :slurpy
+
+    unless null var goto no_autovivify
+    $P0 = '!array_row'(0)
+    var = '!array_col'($P0)
+
+  no_autovivify:
     $I0 = indices
     if $I0 == 0 goto assign_scalar
 
@@ -250,7 +256,6 @@ Returns the modified variable
   assign_vector:
     $P0 = indices[0]
     $I1 = $P0
-    dec $I1
     .tailcall '!indexed_assign_vector'(var, value, $I1)
   assign_matrix:
     $P0 = indices[0]
@@ -273,14 +278,37 @@ Where var could be either a vector or a 2D matrix
 .sub '!indexed_assign_vector'
     .param pmc var
     .param pmc value
-    .param int index
-    # TODO: If we have a row or column vector, assign to the spot directly.
-    # TODO: If we have a matrix, dollow the same indexing algorithm as we use
-    #       for indexed fetch.
-    # TODO: If the index is larger then the matrix/vector, extend it.
-    # TODO: If we have a 1x1 matrix and we need to extend it, extend as a
-    #       row matrix with zero padding.
-    _error_all("1-ary indexing not implemented!")
+    .param int idx
+    .local int rows
+    .local int cols
+    .local int row
+    .local int col
+    rows = var
+    $P0 = var[0]
+    cols = $P0
+    if rows == 1 goto row_vector
+    if cols == 1 goto col_vector
+
+    # Here, it's a matrix that we're indexing like a vector.
+    # Get it's matrix coordinates.
+    dec idx
+    row = idx % rows
+    col = idx / rows
+    inc row
+    inc col
+    if row > rows goto cant_extend
+    if col > cols goto cant_extend
+    .tailcall '!indexed_assign_matrix'(var, value, row, col)
+
+  row_vector:
+    .tailcall '!indexed_assign_matrix'(var, value, 1, idx)
+
+  col_vector:
+    .tailcall '!indexed_assign_matrix'(var, value, idx, 1)
+
+  cant_extend:
+    # We can't extend a matrix using vector-indexing. Throw an error here
+    _error_all("Cannot autoextend a matrix using vector indexing")
 .end
 
 =item '!indexed_assign_matrix'

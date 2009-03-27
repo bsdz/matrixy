@@ -1,4 +1,4 @@
-disp("1..13");
+disp("1..19");
 
 % Test indexing into vectors
 function vector_tester(a, b, c)
@@ -53,10 +53,63 @@ end
 foo = [1
        2
        3];
-
 bar = [1;2;3];
 if foo == bar
     disp("ok 13");
 else
     disp("not ok 13");
 end
+
+% Test that we can assign to a row vector cell
+y = [1 2 3];
+y(3) = 4;
+if y == [1 2 4]
+    disp("ok 14");
+else
+    disp("not ok 14");
+endif
+
+% Test that we can assign to a column vector cell
+y = [1;2;3];
+y(3) = 4;
+if y == [1;2;4]
+    disp("ok 15");
+else
+    disp("not ok 15");
+endif
+
+% Test that assigning to a row vector causes autoextending
+y = [1 2 3];
+y(5) = 5;
+if y == [1 2 3 0 5]
+    disp("ok 16");
+else
+    disp("not ok 16");
+endif
+
+% Test that assigning to a column vector causes autoextending
+y = [1;2;3];
+y(5) = 5;
+if y == [1;2;3;0;5]
+    disp("ok 17");
+else
+    disp("not ok 17");
+endif
+
+% Test that a 1x1 matrix autoextends like a row vector
+y = [1];
+y(3) = 3;
+if y == [1 0 3]
+    disp("ok 18");
+else
+    disp("not ok 18");
+endif
+
+% Test that row vectors autovivify when we assign to an index of them
+_not_existing_vector(3) = 3;
+if _not_existing_vector == [0 0 3]
+    disp("ok 19");
+else
+    disp("not ok 19");
+endif
+
