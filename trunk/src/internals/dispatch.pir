@@ -1,4 +1,6 @@
 
+.namespace []
+
 =head1 Function/Variable dispatch routines
 
 The routines in this file deal with dispatching function calls or variable
@@ -8,9 +10,9 @@ Given the code C<x(5)>, if x is a variable it performs an array lookup.
 Otherwise, attempts to dispatch to the subroutine x with the argument list
 C<(5)>.
 
-=cut
+=head1 Functions
 
-.namespace []
+=over 4
 
 =item !dispatch(name, var, nargout, nargin, parens, args :slurpy)
 
@@ -202,6 +204,8 @@ Here, var could be either a 2D matrix or a 1D vector
 
 Returns 1 if the variable is a scalar type, 0 if it's a vector or matrix
 
+TODO: This is probably redundant and unneccessary. Remove this if not needed.
+
 =cut
 
 .sub '!is_scalar'
@@ -215,14 +219,15 @@ Returns 1 if the variable is a scalar type, 0 if it's a vector or matrix
 
 =item !indexed_assign
 
-Handles equations of the type:
+Handles equations of the types:
 
  var(a, b) = c
  var(a) = c
  var() = c
  var = c
 
-Returns the modified variable
+Determines where to assign the value, and does the assignment as necssarry.
+Returns the modified variable.
 
 =cut
 
@@ -271,7 +276,7 @@ Handles equations of the type:
 
  var(a) = c
 
-Where var could be either a vector or a 2D matrix
+Where var could be either a vector or a 2D matrix.
 
 =cut
 
@@ -290,7 +295,7 @@ Where var could be either a vector or a 2D matrix
     if cols == 1 goto col_vector
 
     # Here, it's a matrix that we're indexing like a vector.
-    # Get it's matrix coordinates.
+    # Get the matrix coordinates.
     dec idx
     row = idx % rows
     col = idx / rows
@@ -348,31 +353,12 @@ Where var is any 2D matrix
     .return(var)
 .end
 
-.sub '!generate_string'
-    .param pmc args :slurpy
-    .local pmc myiter
-    .local string s
-    $I0 = args
-    print "found "
-    print $I0
-    say " args"
+=item !find_file_in_path(String name)
 
-    s = ""
-    myiter = iter args
-    unless myiter goto loop_bottom
-    $P0 = shift myiter
-    s = $P0
+Finds a file named "name.m" in the path. Returns a FileHandle PMC for the file
+if found, null otherwise.
 
-  loop_top:
-    unless myiter goto loop_bottom
-    $P0 = shift myiter
-    $S0 = $P0
-    s .= " "
-    s .= $S0
-    goto loop_top
-  loop_bottom:
-    .return(s)
-.end
+=cut
 
 .sub '!find_file_in_path'
     .param string name
@@ -411,10 +397,17 @@ Where var is any 2D matrix
     .return(filehandle)
 .end
 
-# TODO: We need to be able to handle two types of files: Function files
-#       and bare scripts. The former is $P1[1], the later will be $P1[0].
-#       Also, the later will not take any args (so throw an error if any
-#       are passed).
+=item !get_sub_from_code_file
+
+Given a FileHandle of a code file, compile it and return the appropriate Sub
+PMC for that file. Notice that the file could be a script file or a function
+file.
+
+=cut
+
+# TODO: Script files take no arguments. An error message should be thrown if
+#       we try to pass arguments to one. Should we handle that here, or let
+#       Parrot's PCC system deal with it?
 .sub '!get_sub_from_code_file'
     .param pmc filehandle
     .param string name
@@ -424,8 +417,24 @@ Where var is any 2D matrix
     code = filehandle.'readall'()
     $P0 = compreg "matrixy"
     $P1 = $P0.'compile'(code)
-    # Add this to the loaded function hash
+
+    # Get the number of subs in the codefile, and try to determine whether it's
+    # a script or a function file.
+    $I0 = elements $P1 # Need Parrot r37779 for this to work.
+    if $I0 == 1 goto script_file
+
+    # Here, we just assume it's a function-file. Take the first function.
+    # Other functions are private to that file and are ignored
     sub_obj = $P1[1]
+    $S0 = sub_obj
+    if $S0 == name goto has_sub_obj
+    _disp_all("Warning: function name '", $S0, "' does not agree with file name ", name, ".m")
+    goto has_sub_obj
+
+  script_file:
+    sub_obj = $P1[0]
+
+  has_sub_obj:
     func_list = get_hll_global ['Matrixy';'Grammar';'Actions'], '%?FUNCTIONS'
     func_list[name] = sub_obj
     .return(sub_obj)
