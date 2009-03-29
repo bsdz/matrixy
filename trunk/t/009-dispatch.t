@@ -1,4 +1,4 @@
-plan(11);
+plan(14);
 
 % Dispatch to a function with no args and no returns
 % Defined in t/lib/test1.m
@@ -40,3 +40,10 @@ end
 % Show that we can still feval a function if we've overridden it with a variable
 % of the same name
 feval('disp', "ok 11");
+
+% Show that we can find and execute a script file
+test_script(); % Test 12
+
+test_script2(); % Test 13
+
+test_script3(); % Test 14
