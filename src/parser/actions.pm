@@ -34,11 +34,29 @@ method TOP($/, $key) {
     }
     else {
         ## retrieve the block created in the "if" section in this method.
-        my $past := @?BLOCK.shift();
+        my $past := PAST::Stmts.new();
         for $<stat_or_def> {
             $past.push($($_));
         }
-        make $past;
+        my $block := @?BLOCK.shift();
+        $block.unshift(
+            PAST::Op.new(
+                :pasttype('try'),
+                :node($/),
+                $past,
+                PAST::Op.new(
+                    :pasttype('inline'),
+                    :inline(
+                        "    .get_results(%r)\n" ~
+                        "    .local string msg\n" ~
+                        "    msg = %r['message']\n" ~
+                        "    print 'error: '\n" ~
+                        "    say msg\n"
+                    )
+                )
+            )
+        );
+        make $block;
     }
 }
 
@@ -181,46 +199,22 @@ method array_or_range($/, $key) {
 }
 
 method try_statement($/) {
-    ## get the try block
-    my $try := $( $<try> );
-
-    ## create a new PAST::Stmts node for the catch block;
-    ## note that no PAST::Block is created, as this currently
-    ## has problems with the exception object. For now this will do.
-    my $catch := PAST::Stmts.new( :node($/) );
-    $catch.push( $( $<catch> ) );
-
-    ## get the exception identifier;
-    my $exc := $( $<exception> );
-    $exc.isdecl(1);
-    $exc.scope('lexical');
-    $exc.viviself( PAST::Val.new( :value(0) ) );
-
-    ## generate instruction to retrieve the exception objct (and the exception message,
-    ## that is passed automatically in PIR, this is stored into $S0 (but not used).
-    my $pir := "    .get_results (%r)\n"
-             ~ "    store_lex '" ~ $exc.name() ~ "', %r";
-
-    $catch.unshift( PAST::Op.new( :inline($pir), :node($/) ) );
-    ## do the declaration of the exception object as a lexical here:
-    $catch.unshift( $exc );
-
-    make PAST::Op.new( $try, $catch, :pasttype('try'), :node($/) );
+    make PAST::Op.new(
+        :pasttype('try'),
+        :node($/),
+        $( $<try> ),
+        PAST::Stmts.new(
+            PAST::Op.new(
+                :pasttype('inline'),
+                :inline(
+                    "    .get_results (%r)\n" ~
+                    "    set_hll_global ['Matrixy';'Grammar';'Actions'], '$?LASTERR', %r"
+                )
+            ),
+            $( $<catch> )
+        )
+    );
 }
-
-method exception($/) {
-    our $?BLOCK;
-
-    my $exc := $( $<identifier> );
-    ## the exception identifier is local to the exception handler
-    $?BLOCK.symbol($exc.name(), :scope('lexical'));
-    make $exc;
-}
-
-method throw_statement($/) {
-    make PAST::Op.new( $( $<expression> ), :pirop('throw'), :node($/) );
-}
-
 
 # TODO: See the comment for "TOP" above. The $?BLOCK stuff might need to
 #       Disappear.

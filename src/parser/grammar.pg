@@ -174,7 +174,6 @@ rule control_statement {
     | <while_statement> {*}                  #= while_statement
     | <for_statement> {*}                    #= for_statement
     | <try_statement> {*}                    #= try_statement
-    | <throw_statement> {*}                  #= throw_statement
     | <do_block> {*}                         #= do_block
     | <return_statement> <terminator> {*}    #= return_statement
 }
@@ -209,17 +208,9 @@ rule array_or_range {
 # both Octave and Matlab support try/catch
 # see http://www.network-theory.co.uk/docs/octave3/octave_96.html
 rule try_statement {
-    'try' <try=block> 'catch' <exception> <catch=block> ['end_try_catch'|'end']>>
-    {*}
-}
-
-rule exception {
-    <identifier>
-    {*}
-}
-
-rule throw_statement {
-    'throw' <expression>
+    'try' <maybenewline> <try=statement_list>
+    'catch' <maybenewline> <catch=statement_list>
+    ['end_try_catch'|'end']>> <maybenewline>
     {*}
 }
 
