@@ -27,19 +27,6 @@ object.
 
 .namespace [ 'Matrixy';'Compiler' ]
 
-.loadlib 'matrixy_group'
-
-# .sub '' :anon :load :init
-    # load_bytecode 'PCT.pbc'
-
-    # .local pmc parrotns, hllns, exports
-    # parrotns = get_root_namespace ['parrot']
-    # hllns = get_hll_namespace
-    # exports = split ' ', 'PAST PCT PGE'
-    # parrotns.'export_to'(hllns, exports)
-# .end
-
-
 .sub 'onload' :anon :load :init
     load_bytecode 'PCT.pbc'
 
@@ -94,6 +81,10 @@ to the Matrixy compiler.
     $P3 = new 'Hash'
     set_hll_global ['Matrixy';'Grammar';'Actions'], '%?GLOBALS', $P3
 
+    # load start up file
+    $P0 = null
+    '!dispatch'('matrixyrc', $P0, 1, 1, 1)
+    
 .end
 
 .namespace []

@@ -47,7 +47,7 @@ INTERNALS_PIR = @internals_pir@
 # PMC_SOURCES = $(PMC_DIR)/matrixy.pmc
 
 # the default target
-matrixy.pbc: $(PARROT) $(SOURCES) extern/pbc/clapack.pbc extern/pbc/cblas.pbc
+matrixy.pbc: $(PARROT) $(SOURCES) 
 	$(PARROT) $(PARROT_ARGS) -o matrixy.pbc matrixy.pir
 
 src/gen_grammar.pir: $(PERL6GRAMMAR) src/parser/grammar.pg src/parser/grammar-oper.pg
@@ -71,22 +71,6 @@ $(MATRIXY_GROUP): $(PARROT) $(PMC_SOURCES)
 	cd $(PMC_DIR) && $(BUILD_DYNPMC) compile $(PMCS)
 	cd $(PMC_DIR) && $(BUILD_DYNPMC) linklibs $(PMCS)
 	cd $(PMC_DIR) && $(BUILD_DYNPMC) copy --destination=$(PARROT_DYNEXT) $(PMCS)
-
-extern/pir/clapack.pir: extern/include/clapack.h
-	$(PERL) tools/nci/h_to_pir.pl --name clapack --headerfile ./extern/include/clapack.h \
-	    --outputpir ./extern/pir/clapack.pir --outputnci ./extern/pir/clapack.nci --ncihints ./extern/include/clapack.hints
-
-extern/pbc/clapack.pbc: extern/pir/clapack.pir 
-	$(PARROT) $(PARROT_ARGS) -o extern/pbc/clapack.pbc extern/pir/clapack.pir
-
-extern/pir/cblas.pir: extern/include/fblaswr.h
-	$(PERL) tools/nci/h_to_pir.pl --name cblas --headerfile ./extern/include/fblaswr.h \
-	    --outputpir ./extern/pir/cblas.pir --outputnci ./extern/pir/cblas.nci --ncihints ./extern/include/cblas.hints \
-#IF(win32):		 --libsymformat "f2c_%%s" 
-#ELSE:		 --libsymformat "f2c_%s" 
-
-extern/pbc/cblas.pbc: extern/pir/cblas.pir 
-	$(PARROT) $(PARROT_ARGS) -o extern/pbc/cblas.pbc extern/pir/cblas.pir
 
 # regenerate the Makefile
 Makefile: config/makefiles/root.in
@@ -120,14 +104,7 @@ testclean:
 
 CLEANUPS = \
   matrixy.pbc \
-  "src/gen_*.pir" \
-  extern/pir/clapack.pir \
-  extern/pir/clapack.nci \
-  extern/pbc/clapack.pbc \
-  extern/pir/cblas.pir \
-  extern/pir/cblas.nci \
-  extern/pbc/cblas.pbc 
-
+  "src/gen_*.pir" 
 
 PMC_CLEANUPS = \
   "$(PMC_DIR)/*.h" \
