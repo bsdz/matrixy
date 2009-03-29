@@ -129,7 +129,7 @@ method system_call($/) {
 
 method if_statement($/) {
     my $cond := $( $<expression> );
-    my $then := $( $<block> );
+    my $then := $( $<statement_list> );
     my $past := PAST::Op.new( $cond, $then, :pasttype('if'), :node($/) );
 
     ## if there's an else clause, add it to the PAST node.
@@ -141,7 +141,7 @@ method if_statement($/) {
 
 method while_statement($/) {
     my $cond := $( $<expression> );
-    my $body := $( $<block> );
+    my $body := $( $<statement_list> );
     make PAST::Op.new( $cond, $body, :pasttype('while'), :node($/) );
 }
 
@@ -160,9 +160,7 @@ method for_statement($/) {
     $body.symbol($var.name(), :scope('lexical'));
     $body.push($var);
 
-    for $<statement> {
-        $body.push($($_));
-    }
+    $body.push($($<statement_list>));
 
     @?BLOCK.shift();
     $?BLOCK := @?BLOCK[0];
@@ -245,6 +243,14 @@ method block($/, $key) {
         }
         make $past
     }
+}
+
+method statement_list($/) {
+    my $past := PAST::Stmts.new(:node($/));
+    for $<statement> {
+        $past.push($($_));
+    }
+    make $past;
 }
 
 # TODO: I don't think return statements take values, because the function's

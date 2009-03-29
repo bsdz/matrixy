@@ -25,6 +25,10 @@ rule block {
     {*}                                      #= close
 }
 
+rule statement_list {
+    <statement>* {*}
+}
+
 rule stat_or_def {
     | <statement> {*}                         #= statement
     | <func_def> {*}                         #= func_def
@@ -177,21 +181,21 @@ rule control_statement {
 
 rule if_statement {
     'if' <expression> <maybenewline>
-    <block>
-    ['else' <maybenewline> <else=block>]?
+    <statement_list>
+    ['else' <maybenewline> <else=statement_list>]?
     ['endif'|'end']>> <maybenewline>
     {*}
 }
 
 rule while_statement {
-    'while' <expression> ','? <maybenewline> <block> 
+    'while' <expression> ','? <maybenewline> <statement_list>
     ['endwhile'|'end']>>
     {*}
 }
 
 rule for_statement {
     'for' <identifier> '=' <array_or_range> <maybenewline>
-    <statement>*
+    <statement_list>
     ['endfor'|'end']>> <maybenewline>
     {*}
 }
