@@ -60,10 +60,8 @@ and the resulting message is used to raise an exception.
     $S0 = $S0 . $S1
     goto iter_loop
   iter_end:
-    $S0 = $S0 . "\n\n"
-    $S1 = "??? " . $S0 
     $P1 = new 'Exception'
-    $P1['message'] = $S1
+    $P1['message'] = $S0
     throw  $P1
     .return()
 .end
