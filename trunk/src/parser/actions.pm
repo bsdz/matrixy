@@ -260,40 +260,65 @@ method do_block($/) {
 }
 
 # We're turning this:
-#     x[a, b] = c
+#     x(a, b) = c
 # into this:
 #     x = '!indexed_assign'(x, c, a, b)
 # We have to do this because of the way that indices are managed in M, and how
 # matrices can be indexed like vectors.
-method assignment($/) {
+method assignment($/, $key) {
     our $?BLOCK;
     our %?GLOBALS;
-    my $rhs := $( $<value> );
-    my $lhs := $( $<variable> );
-    $lhs.lvalue(1);
-    my $name := $lhs.name();
-    if %?GLOBALS{$name} {
-        $lhs.namespace("Matrixy::globals");
+    our @?PARAMS;
+    if $key eq "open" {
+        @?PARAMS := _new_empty_array();
     }
-    $rhs := PAST::Op.new(
-        :pasttype('call'),
-        :name('!indexed_assign'),
-        PAST::Var.new(
-            :name($lhs.name()),
-            :scope('package')
-        ),
-        $rhs
-    );
-    for $<expression> {
-        $rhs.push($($_));
+    else {
+        my $rhs := $( $<expression> );
+        my $lhs := $( $<variable> );
+        $lhs.lvalue(1);
+        my $name := $lhs.name();
+        if %?GLOBALS{$name} {
+            $lhs.namespace("Matrixy::globals");
+        }
+        $rhs := PAST::Op.new(
+            :pasttype('call'),
+            :name('!indexed_assign'),
+            PAST::Var.new(
+                :name($lhs.name()),
+                :scope('package')
+            ),
+            $rhs
+        );
+        for @?PARAMS {
+            $rhs.push($_);
+        }
+        make PAST::Op.new(
+            $lhs,
+            $rhs,
+            :pasttype('bind'),
+            :name( $lhs.name() ),
+            :node($/)
+        );
     }
-    make PAST::Op.new(
-        $lhs,
-        $rhs,
-        :pasttype('bind'),
-        :name( $lhs.name() ),
-        :node($/)
-    );
+}
+
+method lvalue_postfix_index($/, $key) {
+    our @?PARAMS;
+    if $key eq "expressions" {
+        for $<expression> {
+            @?PARAMS.push($($_));
+        }
+    }
+    else {
+        my $name := $( $<identifier> ).name();
+        @?PARAMS.push(
+            PAST::Val.new(
+                :value($name),
+                :returns('String')
+            )
+        );
+    }
+    make PAST::Stmts.new();
 }
 
 method variable_declaration($/) {

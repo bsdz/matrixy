@@ -81,10 +81,12 @@ to the Matrixy compiler.
     $P3 = new 'Hash'
     set_hll_global ['Matrixy';'Grammar';'Actions'], '%?GLOBALS', $P3
 
+    $P0 = new 'ResizablePMCArray'
+    set_hll_global['Matrixy';'Grammar';'Actions'], '@?PARAMS', $P0
+
     # load start up file
     $P0 = null
     '!dispatch'('matrixyrc', $P0, 1, 1, 1)
-    
 .end
 
 .namespace []
@@ -92,6 +94,11 @@ to the Matrixy compiler.
 .sub '!hash'
     .param pmc fields :slurpy :named
     .return (fields)
+.end
+
+.sub '_new_empty_array'
+    $P0 = new 'ResizablePMCArray'
+    .return($P0)
 .end
 
 # TODO: Move this to somewhere in src/internals/*

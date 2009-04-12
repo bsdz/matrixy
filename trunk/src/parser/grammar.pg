@@ -67,10 +67,16 @@ token sys_bare_words {
 }
 
 rule assignment {
+    {*} #= open
     <variable>
-    [ '(' <expression> [ ',' <expression> ]* ')' ]?
-    '=' <value=expression>
-    {*}
+    <lvalue_postfix_index>*
+    '=' <expression>
+    {*} #= close
+}
+
+rule lvalue_postfix_index {
+    | '.' <identifier> {*}                           #= identifier
+    | '(' <expression> [ ',' <expression> ]* ')' {*} #= expressions
 }
 
 ################################################################################
@@ -114,16 +120,10 @@ rule variable {
 rule postfix_expression {
     | <key> {*}                      #= key
     | <index> {*}                    #= index
-    | <member> {*}                   #= member
 }
 
 rule key {
     '{' <expression> '}'
-    {*}
-}
-
-rule member {
-    '.' <identifier>
     {*}
 }
 
