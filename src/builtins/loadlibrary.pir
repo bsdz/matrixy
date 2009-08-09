@@ -63,8 +63,6 @@ Octave does not support loading libraries dynamically.
 
 .namespace ["_Matrixy";"builtins"]
 
-.include 'library/dumper.pir'
-
 .sub 'loadlibrary'
     .param int nargout
     .param int nargin
@@ -147,17 +145,17 @@ Octave does not support loading libraries dynamically.
 
     fadr:
         $S0 = sprintf "q%s = '!matrixy_to_fortran_array'(p%s)\n", $P1
-        concat dc, $S0 
+        concat dc, $S0
         .return (dc)
 
     fadc:
         $S0 = sprintf "q%s = '!matrixy_to_fortran_array'(p%s, 'Complex')\n", $P1
-        concat dc, $S0 
+        concat dc, $S0
         .return (dc)
 
     fai:
         $S0 = sprintf "q%s = '!matrixy_to_fortran_array'(p%s, 'Integer')\n", $P1
-        concat dc, $S0 
+        concat dc, $S0
         .return (dc)
 .end
 
@@ -223,19 +221,19 @@ Octave does not support loading libraries dynamically.
 
     fadr:
         $S0 = sprintf "q%s = '!fortran_to_matrixy_array'(q%s, %s, %s)\n", $P1
-        concat dc, $S0 
+        concat dc, $S0
         concat dc, sr
         .return (dc)
 
     fadc:
         $S0 = sprintf "q%s = '!fortran_to_matrixy_array'(q%s, %s, %s, 'Complex')\n", $P1
-        concat dc, $S0 
+        concat dc, $S0
         concat dc, sr
         .return (dc)
 
     fai:
         $S0 = sprintf "q%s = '!fortran_to_matrixy_array'(q%s, %s, %s, 'Integer')\n", $P1
-        concat dc, $S0 
+        concat dc, $S0
         concat dc, sr
         .return (dc)
 .end
@@ -246,7 +244,7 @@ Octave does not support loading libraries dynamically.
 
     .local string param_list
     param_list = ""
-    
+
     .local int i1, i1_max
     i1_max = length nci_string
     i1 = 0 # first char is return type
@@ -345,12 +343,10 @@ Octave does not support loading libraries dynamically.
 
     .local pmc param_config
     param_config = config[2]
-    #_dumper(param_config, "param_config")
 
     .local string param_list
     param_list = '!get_param_list_from_nci_string'(symbol_sig, param_config)
-    #_dumper(param_list, "param_list")
-    
+
     .local int pcount
     pcount = length symbol_sig
 
