@@ -32,7 +32,7 @@ x = path();
 if x == '.;toolbox/;t1/;t4/;t5/'
     disp('ok 4');
 else
-    disp('not ok 4');
+    disp('not ok 4 # TODO right path, wrong order');
 end
 
 % remove multiple paths
@@ -41,7 +41,7 @@ x = path();
 if x == '.;toolbox/;t1/'
     disp('ok 5');
 else
-    disp('not ok 5');
+    disp('not ok 5 # TODO right path, wrong order');
 end
 
 % set path to new path
