@@ -10,6 +10,7 @@ grammar Matrixy::Grammar is PCT::Grammar;
 
 rule TOP {
     {*}                                      #= open
+    \s*
     <stat_or_def>*
     [ $ || <.panic: 'Syntax error'> ]
     {*}                                      #= close
@@ -258,8 +259,8 @@ token return_identifier {
 ################################################################################
 
 rule anon_func_constructor {
-    '@' '(' [ <identifier> [',' <identifier>]* ]? ')' 
-    <expression> 
+    '@' '(' [ <identifier> [',' <identifier>]* ]? ')'
+    <expression>
     {*}
 }
 
