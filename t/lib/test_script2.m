@@ -3,7 +3,7 @@
 
 x = 1;
 if x == 1
-    printf("ok 13\n");
+    printf("ok 14\n");
 else
-    printf("not ok 13\n");
+    printf("not ok 14\n");
 endif
